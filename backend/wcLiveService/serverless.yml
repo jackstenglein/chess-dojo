@@ -220,6 +220,98 @@ functions:
           - dynamodb:UpdateItem
         Resource: !GetAtt WcLiveTable.Arn
 
+  # Guest links: senseis copy a link per guest; the guest routes are public and
+  # check the link's token in the body.
+  listInvites:
+    handler: invites.list
+    events:
+      - httpApi:
+          path: /wc-live/invites
+          method: get
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+          - dynamodb:GetItem
+          - dynamodb:PutItem
+        Resource: !GetAtt WcLiveTable.Arn
+
+  resetInvite:
+    handler: invites.reset
+    events:
+      - httpApi:
+          path: /wc-live/invites
+          method: put
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+          - dynamodb:PutItem
+        Resource: !GetAtt WcLiveTable.Arn
+
+  guestMe:
+    handler: guestAccess.me
+    events:
+      - httpApi:
+          path: /public/wc-live/guest/me
+          method: post
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+          - dynamodb:GetItem
+        Resource: !GetAtt WcLiveTable.Arn
+
+  guestEval:
+    handler: guestAccess.putEval
+    events:
+      - httpApi:
+          path: /public/wc-live/guest/eval
+          method: put
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+          - dynamodb:GetItem
+          - dynamodb:PutItem
+          - dynamodb:UpdateItem
+        Resource: !GetAtt WcLiveTable.Arn
+
+  guestGetAnalysis:
+    handler: guestAccess.getAnalysisForGuest
+    events:
+      - httpApi:
+          path: /public/wc-live/guest/analysis/read
+          method: post
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+          - dynamodb:GetItem
+          - dynamodb:UpdateItem
+        Resource: !GetAtt WcLiveTable.Arn
+
+  guestPutAnalysis:
+    handler: guestAccess.putAnalysis
+    events:
+      - httpApi:
+          path: /public/wc-live/guest/analysis
+          method: put
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+          - dynamodb:GetItem
+          - dynamodb:PutItem
+          - dynamodb:UpdateItem
+        Resource: !GetAtt WcLiveTable.Arn
+
 resources:
   Conditions:
     IsProd: !Equals ['${sls:stage}', 'prod']

@@ -4,6 +4,7 @@ import {
     formatEval,
     WC_EVAL_MAX,
     WC_EVAL_MIN,
+    WC_EVAL_PRESETS,
     WC_SENSEI_COLORS,
     WcRosterRequest,
     WcSensei,
@@ -11,6 +12,7 @@ import {
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
 import ArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import ArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import LinkIcon from '@mui/icons-material/Link';
 import PaletteIcon from '@mui/icons-material/PaletteOutlined';
 import PersonAddIcon from '@mui/icons-material/PersonAddAlt1Outlined';
 import PowerIcon from '@mui/icons-material/PowerSettingsNew';
@@ -22,7 +24,11 @@ import {
     DialogContent,
     DialogTitle,
     IconButton,
+    ListItemText,
+    Menu,
+    MenuItem,
     Popover,
+    Snackbar,
     Stack,
     TextField,
     Tooltip,
@@ -44,8 +50,22 @@ interface SenseiPanelProps {
     values: Record<string, number | undefined>;
     /** The move the shown position comes after, for the heading. */
     positionLabel: string;
+    /** The signed-in sensei. Their own card also gets the chess symbol buttons. */
+    me?: string;
+    /**
+     * Senseis manage the bar: anyone's eval, guests, colors, on and off. A
+     * guest from a guest link only changes their own eval. Defaults to true.
+     */
+    canManage?: boolean;
     onScore: (senseiId: string, value: number) => Promise<void>;
     onRoster: (request: WcRosterRequest) => Promise<void>;
+    /** Senseis only: a guest's link, and a new one that turns the old one off. */
+    guestLinks?: GuestLinks;
+}
+
+export interface GuestLinks {
+    get: (guestId: string) => Promise<string>;
+    renew: (guestId: string) => Promise<string>;
 }
 
 /**
@@ -57,8 +77,11 @@ export function SenseiPanel({
     roster,
     values,
     positionLabel,
+    me,
+    canManage = true,
     onScore,
     onRoster,
+    guestLinks,
 }: SenseiPanelProps) {
     const [adding, setAdding] = useState(false);
 
@@ -71,22 +94,27 @@ export function SenseiPanel({
                 <Typography variant='subtitle1' sx={{ fontWeight: 800, lineHeight: 1.2 }}>
                     Sensei evals
                 </Typography>
-                <Button
-                    variant='contained'
-                    size='small'
-                    startIcon={<PersonAddIcon />}
-                    onClick={() => setAdding(true)}
-                    sx={{ textTransform: 'none', fontWeight: 700 }}
-                >
-                    Add Sensei
-                </Button>
+                {canManage && (
+                    <Button
+                        variant='contained'
+                        size='small'
+                        startIcon={<PersonAddIcon />}
+                        onClick={() => setAdding(true)}
+                        sx={{ textTransform: 'none', fontWeight: 700 }}
+                    >
+                        Add Sensei
+                    </Button>
+                )}
             </Stack>
             <Stack spacing={1}>
                 {roster.map((s) => (
                     <SenseiCard
                         key={s.id}
                         sensei={s}
-                        canScore
+                        canScore={canManage || s.id === me}
+                        canManage={canManage}
+                        mine={s.id === me}
+                        guestLinks={canManage && s.guest ? guestLinks : undefined}
                         saved={values[s.id]}
                         positionLabel={positionLabel}
                         onScore={onScore}
@@ -107,6 +135,10 @@ export function SenseiPanel({
 interface SenseiCardProps {
     sensei: WcSensei;
     canScore: boolean;
+    canManage: boolean;
+    /** The signed-in sensei's own card, which also gets the symbol buttons. */
+    mine?: boolean;
+    guestLinks?: GuestLinks;
     saved?: number;
     positionLabel: string;
     onScore: (senseiId: string, value: number) => Promise<void>;
@@ -116,6 +148,9 @@ interface SenseiCardProps {
 function SenseiCard({
     sensei,
     canScore,
+    canManage,
+    mine,
+    guestLinks,
     saved,
     positionLabel,
     onScore,
@@ -185,24 +220,26 @@ function SenseiCard({
         >
             {/* Power, name, score with steppers, color, remove */}
             <Stack direction='row' spacing={1} sx={{ alignItems: 'center' }}>
-                <Tooltip title={off ? 'Put on the bar' : 'Take off the bar'}>
-                    <IconButton
-                        size='small'
-                        aria-label={`${sensei.name} on the bar`}
-                        aria-pressed={!off}
-                        onClick={() =>
-                            void onRoster({ action: 'update', id: sensei.id, active: off })
-                        }
-                        sx={{
-                            width: 30,
-                            height: 30,
-                            bgcolor: off ? 'action.hover' : 'rgba(46, 125, 50, 0.25)',
-                            color: off ? 'text.disabled' : 'success.light',
-                        }}
-                    >
-                        <PowerIcon fontSize='small' />
-                    </IconButton>
-                </Tooltip>
+                {canManage && (
+                    <Tooltip title={off ? 'Put on the bar' : 'Take off the bar'}>
+                        <IconButton
+                            size='small'
+                            aria-label={`${sensei.name} on the bar`}
+                            aria-pressed={!off}
+                            onClick={() =>
+                                void onRoster({ action: 'update', id: sensei.id, active: off })
+                            }
+                            sx={{
+                                width: 30,
+                                height: 30,
+                                bgcolor: off ? 'action.hover' : 'rgba(46, 125, 50, 0.25)',
+                                color: off ? 'text.disabled' : 'success.light',
+                            }}
+                        >
+                            <PowerIcon fontSize='small' />
+                        </IconButton>
+                    </Tooltip>
+                )}
 
                 <Box sx={{ flexGrow: 1, minWidth: 0 }}>
                     {editing ? (
@@ -218,11 +255,11 @@ function SenseiCard({
                     ) : (
                         <Typography
                             noWrap
-                            onClick={sensei.guest ? () => setEditing(true) : undefined}
-                            title={sensei.guest ? 'Click to rename' : undefined}
+                            onClick={sensei.guest && canManage ? () => setEditing(true) : undefined}
+                            title={sensei.guest && canManage ? 'Click to rename' : undefined}
                             sx={{
                                 fontWeight: 700,
-                                cursor: sensei.guest ? 'text' : 'default',
+                                cursor: sensei.guest && canManage ? 'text' : 'default',
                                 opacity: off ? 0.5 : 1,
                             }}
                         >
@@ -284,16 +321,19 @@ function SenseiCard({
                     </Typography>
                 </Tooltip>
 
-                <Tooltip title='Color'>
-                    <IconButton
-                        size='small'
-                        aria-label={`Change ${sensei.name}'s color`}
-                        onClick={(e) => setColorAnchor(e.currentTarget)}
-                    >
-                        <PaletteIcon fontSize='small' />
-                    </IconButton>
-                </Tooltip>
-                {sensei.guest && (
+                {guestLinks && <GuestLinkButton guest={sensei} links={guestLinks} />}
+                {canManage && (
+                    <Tooltip title='Color'>
+                        <IconButton
+                            size='small'
+                            aria-label={`Change ${sensei.name}'s color`}
+                            onClick={(e) => setColorAnchor(e.currentTarget)}
+                        >
+                            <PaletteIcon fontSize='small' />
+                        </IconButton>
+                    </Tooltip>
+                )}
+                {canManage && sensei.guest && (
                     <Tooltip title='Remove guest'>
                         <IconButton
                             size='small'
@@ -305,6 +345,35 @@ function SenseiCard({
                     </Tooltip>
                 )}
             </Stack>
+
+            {/* Your own card: one tap to the usual chess symbols */}
+            {canScore && mine && (
+                <Box
+                    data-testid='sensei-presets'
+                    sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 0.5, mt: 1 }}
+                >
+                    {WC_EVAL_PRESETS.map((p) => (
+                        <Tooltip key={p.symbol} title={`${p.meaning} (${formatEval(p.value)})`}>
+                            <Button
+                                size='small'
+                                aria-label={`${p.meaning}, ${formatEval(p.value)}`}
+                                onClick={() => change(p.value)}
+                                sx={{
+                                    minWidth: 0,
+                                    py: 0.25,
+                                    fontFamily: 'monospace',
+                                    fontWeight: 700,
+                                    textTransform: 'none',
+                                    color: 'text.primary',
+                                    bgcolor: value === p.value ? 'action.selected' : 'action.hover',
+                                }}
+                            >
+                                {p.symbol}
+                            </Button>
+                        </Tooltip>
+                    ))}
+                </Box>
+            )}
 
             <Popover
                 open={!!colorAnchor}
@@ -322,6 +391,111 @@ function SenseiCard({
                 />
             </Popover>
         </Box>
+    );
+}
+
+/**
+ * For senseis, on a guest's card: copy the guest's link, or make a new one
+ * that turns the old one off.
+ */
+function GuestLinkButton({ guest, links }: { guest: WcSensei; links: GuestLinks }) {
+    const [anchor, setAnchor] = useState<HTMLElement | null>(null);
+    const [message, setMessage] = useState('');
+    /** Shown to copy by hand when the browser refuses the clipboard. */
+    const [manual, setManual] = useState<string>();
+    /**
+     * The current link, fetched as the menu opens so "Copy" writes it at once:
+     * browsers only allow the clipboard right after a click.
+     */
+    const [current, setCurrent] = useState<Promise<string>>();
+
+    const open = (el: HTMLElement) => {
+        setAnchor(el);
+        const fetching = links.get(guest.id);
+        fetching.catch(() => undefined);
+        setCurrent(fetching);
+    };
+
+    const copy = async (make: () => Promise<string>, done: string) => {
+        setAnchor(null);
+        let link: string;
+        try {
+            link = await make();
+        } catch {
+            setMessage('Could not get the link. Try again.');
+            return;
+        }
+        try {
+            await navigator.clipboard.writeText(link);
+            setMessage(done);
+        } catch {
+            setManual(link);
+        }
+    };
+
+    return (
+        <>
+            <Dialog open={!!manual} onClose={() => setManual(undefined)} fullWidth maxWidth='sm'>
+                <DialogTitle>{guest.name}&apos;s guest link</DialogTitle>
+                <DialogContent>
+                    <Typography variant='body2' color='text.secondary' sx={{ mb: 1.5 }}>
+                        Copy this link and send it to {guest.name}. Anyone with it can set{' '}
+                        {guest.name}&apos;s eval and use the analysis board.
+                    </Typography>
+                    <TextField
+                        fullWidth
+                        size='small'
+                        value={manual ?? ''}
+                        autoFocus
+                        onFocus={(e) => e.target.select()}
+                        slotProps={{ htmlInput: { readOnly: true, 'aria-label': 'Guest link' } }}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setManual(undefined)}>Done</Button>
+                </DialogActions>
+            </Dialog>
+            <Snackbar
+                open={!!message}
+                message={message}
+                autoHideDuration={3000}
+                onClose={() => setMessage('')}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                data-testid='guest-link-copied'
+            />
+            <Tooltip title={`${guest.name}'s guest link`}>
+                <IconButton
+                    size='small'
+                    aria-label={`${guest.name}'s guest link`}
+                    onClick={(e) => open(e.currentTarget)}
+                >
+                    <LinkIcon fontSize='small' />
+                </IconButton>
+            </Tooltip>
+            <Menu anchorEl={anchor} open={!!anchor} onClose={() => setAnchor(null)}>
+                <MenuItem
+                    onClick={() => void copy(() => current ?? links.get(guest.id), 'Link copied')}
+                >
+                    <ListItemText
+                        primary='Copy guest link'
+                        secondary={`Opens the page as ${guest.name}: their eval and the analysis board`}
+                    />
+                </MenuItem>
+                <MenuItem
+                    onClick={() =>
+                        void copy(
+                            () => links.renew(guest.id),
+                            'New link copied. The old one no longer works.',
+                        )
+                    }
+                >
+                    <ListItemText
+                        primary='Make a new link'
+                        secondary='The old link stops working'
+                    />
+                </MenuItem>
+            </Menu>
+        </>
     );
 }
 
