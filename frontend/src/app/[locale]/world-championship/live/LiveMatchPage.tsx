@@ -85,7 +85,7 @@ import { Notation } from './Notation';
 import { PlayerPhoto } from './PlayerPhoto';
 import { EVAL_BAR_WIDTH, EvalBar, SenseiStrip } from './SenseiEval';
 import { GuestLinks, SenseiPanel } from './SenseiPanel';
-import { TwitchEmbed } from './TwitchEmbed';
+import { StreamEmbed } from './StreamEmbed';
 import {
     addCustomGame,
     getLeaderboard,
@@ -1063,7 +1063,7 @@ export function LiveMatchPage() {
                 </Stack>
 
                 <Box sx={{ minWidth: 0, gridArea: 'twitch' }}>
-                    <TwitchEmbed />
+                    <StreamEmbed />
                 </Box>
             </Box>
             <AddGameDialog open={addingGame} onClose={() => setAddingGame(false)} onAdd={addGame} />
