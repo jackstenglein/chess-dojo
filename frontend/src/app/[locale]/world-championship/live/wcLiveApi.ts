@@ -10,6 +10,11 @@ import {
     WcSensei,
 } from '@jackstenglein/chess-dojo-common/src/wcLive/api';
 import { WcCustomGame } from '@jackstenglein/chess-dojo-common/src/wcLive/customGames';
+import {
+    WcGuestEvalRequest,
+    WcGuestMe,
+    WcInvites,
+} from '@jackstenglein/chess-dojo-common/src/wcLive/guests';
 import { localRequestConfig } from './localTesting';
 
 /** The roster and every sensei eval in the game. */
@@ -123,6 +128,46 @@ export interface GuessStats {
 export async function getGuessStats(roundId: string): Promise<GuessStats> {
     const resp = await axiosService.get<GuessStats>(`/wc-live/rounds/${roundId}/stats`, {
         functionName: 'wcLiveGuessStats',
+        ...localRequestConfig(),
+    });
+    return resp.data;
+}
+
+// ---- Guest links ---------------------------------------------------------
+
+/** For senseis: each guest's link token, by guest id. Guests without one get one. */
+export async function listInvites(): Promise<Record<string, string>> {
+    const resp = await axiosService.get<WcInvites>('/wc-live/invites', {
+        functionName: 'wcLiveListInvites',
+        ...localRequestConfig(),
+    });
+    return resp.data.invites;
+}
+
+/** For senseis: a new link for a guest. The old one stops working. */
+export async function resetInvite(id: string): Promise<string> {
+    const resp = await axiosService.put<{ id: string; token: string }>(
+        '/wc-live/invites',
+        { id },
+        { functionName: 'wcLiveResetInvite', ...localRequestConfig() },
+    );
+    return resp.data.token;
+}
+
+/** The guest a link belongs to. Fails with a 403 once the link is turned off. */
+export async function guestMe(token: string): Promise<WcGuestMe> {
+    const resp = await axiosService.post<WcGuestMe>(
+        '/public/wc-live/guest/me',
+        { token },
+        { functionName: 'wcLiveGuestMe', ...localRequestConfig() },
+    );
+    return resp.data;
+}
+
+/** A guest's own eval of a position. */
+export async function guestPutEval(request: WcGuestEvalRequest): Promise<WcEval> {
+    const resp = await axiosService.put<WcEval>('/public/wc-live/guest/eval', request, {
+        functionName: 'wcLiveGuestEval',
         ...localRequestConfig(),
     });
     return resp.data;

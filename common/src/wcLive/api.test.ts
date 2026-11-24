@@ -74,10 +74,16 @@ describe('buildRoster', () => {
         });
         const roster = buildRoster([
             guest('guest-2', 'Second', 't2'),
-            { id: 'dpruess', name: 'x', color: '#8e24aa', active: false, guest: false },
+            {
+                id: 'google_105393645715208125191',
+                name: 'x',
+                color: '#8e24aa',
+                active: false,
+                guest: false,
+            },
             guest('guest-1', 'First', 't1'),
         ]);
-        expect(roster.find((s) => s.id === 'dpruess')).toMatchObject({
+        expect(roster.find((s) => s.id === 'google_105393645715208125191')).toMatchObject({
             name: 'David',
             color: '#8e24aa',
             active: false,
@@ -88,24 +94,37 @@ describe('buildRoster', () => {
 
 describe('barState', () => {
     const roster: WcSensei[] = buildRoster([
-        { id: 'dpruess', name: 'David', color: '#43a047', active: false, guest: false },
+        {
+            id: 'google_105393645715208125191',
+            name: 'David',
+            color: '#43a047',
+            active: false,
+            guest: false,
+        },
     ]);
 
     it('averages the active senseis only', () => {
         const state = barState(
             roster,
-            [e('jessekraai', 0, 1), e('dpruess', 0, 5), e('hellokostya', 0, 2)],
+            [
+                e('google_108763076343237273295', 0, 1),
+                e('google_105393645715208125191', 0, 5),
+                e('google_111679691028507818183', 0, 2),
+            ],
             3,
         );
-        expect(state.pins.map((p) => p.sensei.id)).toEqual(['jessekraai', 'hellokostya']);
+        expect(state.pins.map((p) => p.sensei.id)).toEqual([
+            'google_108763076343237273295',
+            'google_111679691028507818183',
+        ]);
         expect(state.average).toBe(1.5);
     });
 
     it('counts an active sensei with no eval yet as 0.0', () => {
-        const state = barState(roster, [e('jessekraai', 0, 3)], 3);
+        const state = barState(roster, [e('google_108763076343237273295', 0, 3)], 3);
         expect(state.pins.map((p) => [p.sensei.id, p.value])).toEqual([
-            ['jessekraai', 3],
-            ['hellokostya', 0],
+            ['google_108763076343237273295', 3],
+            ['google_111679691028507818183', 0],
         ]);
         expect(state.average).toBe(1.5);
     });

@@ -20,6 +20,7 @@ import ResultsTab from '@/components/profile/results/ResultsTab';
 import StatsTab from '@/components/profile/stats/StatsTab';
 import { TrainingPlanTab } from '@/components/profile/trainingPlan/TrainingPlanTab';
 import { PuzzleStatsTab } from '@/components/puzzles/stats/PuzzleStatsTab';
+import { getConfig } from '@/config';
 import {
     getRatingUsername,
     hasCreatedProfile,
@@ -100,7 +101,9 @@ function AuthProfilePage({ currentUser, username }: { currentUser: User; usernam
 
     const user = currentUserProfile ? currentUser : request.data;
     // Puzzle stats are private: only the member, coaches and admins can see them.
-    const canSeePuzzleStats = currentUserProfile || currentUser.isAdmin || currentUser.isCoach;
+    // Beta site only for now.
+    const canSeePuzzleStats =
+        getConfig().isBeta && (currentUserProfile || currentUser.isAdmin || currentUser.isCoach);
 
     if (currentUserProfile && !hasCreatedProfile(currentUser)) {
         return <ProfileCreatorPage />;
