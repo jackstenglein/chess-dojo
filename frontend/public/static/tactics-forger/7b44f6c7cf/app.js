@@ -355,9 +355,9 @@ const RANKS = [
   [1000, 'apprentice', 'Apprentice', 'Learning the craft', 1000],
   [1300, 'squire', 'Squire', 'Getting better', 2000],
   [1600, 'ninja', 'Ninja', 'Strikes from the shadows', 3000],
-  [1850, 'warrior', 'Warrior', 'Battle-tested', 5000],
-  [2100, 'beast', 'Beast', 'Ready to pounce', 7500],
-  [2300, 'wizard', 'Wizard', 'Tactical master', 10000],
+  [1900, 'warrior', 'Warrior', 'Battle-tested', 5000],
+  [2200, 'beast', 'Beast', 'Ready to pounce', 7500],
+  [2500, 'wizard', 'Wizard', 'Tactical master', 10000],
 ];
 const tabPuzzles = (tr) => sum((indexes[tr]?.themes || []).map((t) => t.puzzles));
 const RANK_SCALE = { tactics: 1, openings: 0.6, endgames: 0.6 };
