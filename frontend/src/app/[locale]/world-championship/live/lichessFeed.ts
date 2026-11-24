@@ -1,5 +1,6 @@
 'use client';
 
+import { logger } from '@/logging/logger';
 import { Chess } from '@jackstenglein/chess';
 import { clockToSeconds } from '@jackstenglein/chess-dojo-common/src/pgn/clock';
 import { WC_LICHESS_TOUR_ID } from '@jackstenglein/chess-dojo-common/src/wcLive/api';
@@ -220,6 +221,18 @@ export function parseGamePgn(pgn: string) {
 
 /** Added games are read this often. Lichess delays ongoing games a little anyway. */
 const CUSTOM_POLL_MS = 3000;
+const CLOCK_RETRY_DELAY_MS = 1000;
+const CLOCK_MAX_RETRIES = 2;
+
+/** Canonicalizes a full broadcast FEN while retaining its move counters. */
+function clockFen(fen: string): string {
+    if (fen.trim().split(/\s+/).length !== 6) {
+        throw new Error('Expected a full broadcast FEN');
+    }
+    const chess = new Chess({ fen });
+    chess.seek(null);
+    return chess.chessjs.fen();
+}
 
 /** A broadcast PGN ends with its result. Until then the stream is mid-game. */
 const COMPLETE_PGN = /(\*|1-0|0-1|1\/2-1\/2)\s*$/;
@@ -303,43 +316,89 @@ export function useRoundFeed(roundId: string | undefined, pgnUrl?: string): Roun
         let cancelled = false;
         const controller = new AbortController();
         let lastPgn = '';
+        let clockRequest = 0;
+        let clockRetryTimer: ReturnType<typeof setTimeout> | undefined;
         setFeed({ status: 'loading', moves: [], result: '*' });
 
-        const loadClocks = async () => {
+        const loadClocks = async (expectedMove: LiveMove, request: number, attempt = 0) => {
+            if (cancelled || request !== clockRequest) {
+                return;
+            }
+            const retry = () => {
+                if (cancelled || request !== clockRequest) {
+                    return;
+                }
+                if (attempt >= CLOCK_MAX_RETRIES) {
+                    logger.warn(
+                        `Could not synchronize broadcast clocks for ${roundId}; using PGN clocks.`,
+                    );
+                    return;
+                }
+                clockRetryTimer = setTimeout(
+                    () => {
+                        void loadClocks(expectedMove, request, attempt + 1);
+                    },
+                    CLOCK_RETRY_DELAY_MS * (attempt + 1),
+                );
+            };
             try {
                 const resp = await fetch(`${LICHESS}/api/broadcast/-/-/${roundId}`, {
                     signal: controller.signal,
                 });
+                if (cancelled || request !== clockRequest) {
+                    return;
+                }
+                if (!resp.ok) {
+                    // Do not retry a rate-limited request sooner than Lichess allows.
+                    if (resp.status === 429) {
+                        logger.warn(
+                            `Broadcast clocks for ${roundId} were rate limited; using PGN clocks.`,
+                        );
+                        return;
+                    }
+                    throw new Error(`Lichess answered ${resp.status}`);
+                }
                 const data = (await resp.json()) as {
                     games?: {
+                        fen?: string;
                         players?: { clock?: number }[];
                         thinkTime?: number;
-                        lastMove?: string;
                         status?: string;
                     }[];
                 };
+                const receivedAt = Date.now();
                 const game = data.games?.[0];
-                if (cancelled || !game) {
+                if (cancelled || request !== clockRequest) {
+                    return;
+                }
+                // Match positions rather than move encodings, which differ for castling.
+                if (!game?.fen || clockFen(game.fen) !== expectedMove.fen) {
+                    retry();
                     return;
                 }
                 const [white, black] = game.players ?? [];
-                setFeed((f) => ({
-                    ...f,
-                    liveClocks:
-                        white?.clock !== undefined && black?.clock !== undefined
-                            ? {
-                                  white: white.clock / 100,
-                                  black: black.clock / 100,
-                                  lastMove: game.lastMove,
-                              }
-                            : f.liveClocks,
-                    thinkingSince:
-                        game.thinkTime !== undefined && game.status === '*'
-                            ? Date.now() - game.thinkTime * 1000
-                            : f.thinkingSince,
-                }));
+                setFeed((f) => {
+                    if (cancelled || request !== clockRequest) {
+                        return f;
+                    }
+                    return {
+                        ...f,
+                        liveClocks:
+                            white?.clock !== undefined && black?.clock !== undefined
+                                ? {
+                                      white: white.clock / 100,
+                                      black: black.clock / 100,
+                                      lastMove: expectedMove.uci,
+                                  }
+                                : f.liveClocks,
+                        thinkingSince:
+                            game.thinkTime !== undefined && game.status === '*'
+                                ? receivedAt - game.thinkTime * 1000
+                                : f.thinkingSince,
+                    };
+                });
             } catch {
-                // The PGN clocks are enough without it.
+                retry();
             }
         };
 
@@ -350,6 +409,9 @@ export function useRoundFeed(roundId: string | undefined, pgnUrl?: string): Roun
             lastPgn = pgn;
             try {
                 const parsed = parseGamePgn(pgn);
+                const receivedAt = Date.now();
+                const request = ++clockRequest;
+                clearTimeout(clockRetryTimer);
                 setFeed((f) => {
                     // On the first load this starts the clock now. The round JSON
                     // then corrects it with the real think time.
@@ -362,12 +424,12 @@ export function useRoundFeed(roundId: string | undefined, pgnUrl?: string): Roun
                             parsed.result !== '*' || parsed.moves.length === 0
                                 ? undefined
                                 : newMove
-                                  ? Date.now()
+                                  ? receivedAt
                                   : f.thinkingSince,
                     };
                 });
                 if (parsed.result === '*' && parsed.moves.length > 0) {
-                    void loadClocks();
+                    void loadClocks(parsed.moves[parsed.moves.length - 1], request);
                 }
             } catch {
                 // A half-written PGN. The next update replaces it.
@@ -426,6 +488,7 @@ export function useRoundFeed(roundId: string | undefined, pgnUrl?: string): Roun
         void run();
         return () => {
             cancelled = true;
+            clearTimeout(clockRetryTimer);
             controller.abort();
         };
     }, [roundId, pgnUrl]);
