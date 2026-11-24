@@ -1,4 +1,4 @@
-import { Course } from 'src/database/course';
+import { Course } from '@/database/course';
 
 /**
  * Gets the adjacent module by chapter and module index.

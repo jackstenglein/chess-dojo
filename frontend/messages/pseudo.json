@@ -130,6 +130,8 @@
         },
         "trainingPlan": {
             "common": {
+                "pinned": "[T] Pinned",
+                "close": "[T] Close",
                 "cancel": "[T] Cancel",
                 "save": "[T] Save",
                 "update": "[T] Update",
@@ -137,11 +139,12 @@
                 "show": "[T] Show",
                 "taskDetails": "[T] Task Details",
                 "showHistory": "[T] Show History",
-                "updateProgress": "[T] Update Progress",
+                "logTraining": "[T] Log Training",
                 "viewTaskDetails": "[T] View task details",
                 "skipForWeek": "[T] Skip for the rest of the week",
                 "pinToDaily": "[T] Pin to Daily Tasks",
                 "unpinFromDaily": "[T] Unpin from Daily Tasks",
+                "editPin": "[T] Edit pin",
                 "hours": "[T] Hours",
                 "minutes": "[T] Minutes",
                 "date": "[T] Date",
@@ -149,17 +152,43 @@
                 "commentsPlaceholder": "[T] Optional comments about your progress or the task itself. Visible to others on the newsfeed.",
                 "mustBeNumeric": "[T] Only numeric characters are accepted",
                 "mustBeInteger": "[T] This field must be an integer",
-                "fieldRequired": "[T] This field is required"
+                "fieldRequired": "[T] This field is required",
+                "moreActions": "[T] More actions"
             },
             "inputSlider": {
                 "decrement": "[T] Decrement",
                 "increment": "[T] Increment",
-                "progressCount": "[T] Progress count",
+                "progressCount": "[T] Progress",
                 "count": "[T] Count"
+            },
+            "verbs": {
+                "read": "[T] Read",
+                "watch": "[T] Watch",
+                "solve": "[T] Solve",
+                "study": "[T] Study",
+                "play": "[T] Play",
+                "spar": "[T] Spar",
+                "annotate": "[T] Annotate",
+                "review": "[T] Review",
+                "guide": "[T] Read guide"
+            },
+            "quickLog": {
+                "logTraining": "[T] Log training",
+                "logTooltip": "[T] Log progress and time for this task",
+                "undo": "[T] Undo"
             },
             "daily": {
                 "today": "[T] Today",
-                "progressCompleted": "[T] {current} / {total} {suffix} completed"
+                "summary": "[T] {done} of {total} tasks done · {worked} of {goal}",
+                "allDone": "[T] Done for today · {worked} logged",
+                "goalMet": "[T] Time goal met",
+                "skippedHeading": "[T] Skipped this week ({count})",
+                "restore": "[T] Restore {name}",
+                "skippedToast": "[T] Skipped {name} for the rest of the week",
+                "swapTooltip": "[T] Swap for another {category} task",
+                "swapNone": "[T] No other {category} tasks to swap in",
+                "swapHeading": "[T] Swap for another {category} task",
+                "swapped": "[T] Swapped {from} for {to}"
             },
             "weekly": {
                 "thisWeek": "[T] This Week",
@@ -171,7 +200,15 @@
                 "Fri": "[T] Fri",
                 "Sat": "[T] Sat",
                 "activeOnlyTooltip": "[T] Only show tasks you have updated this week",
-                "activeOnlyLabel": "[T] Active Only"
+                "activeOnlyLabel": "[T] Active Only",
+                "empty": "[T] Nothing planned this week.",
+                "cellPlanned": "[T] Planned: {goal}",
+                "cellPartial": "[T] {worked} of {goal} so far",
+                "cellDone": "[T] Done: {worked} of {goal}",
+                "cellMissed": "[T] Missed: {worked} of {goal}",
+                "cellExtra": "[T] Extra: {worked} logged, not planned",
+                "restDay": "[T] Rest day",
+                "partialTime": "[T] {worked} / {goal}"
             },
             "full": {
                 "heading": "[T] Full Training Plan",
@@ -186,16 +223,12 @@
                 "addCustomTask": "[T] Add Custom Task",
                 "unlockTasks": "[T] {count, plural, =1 {Unlock # more task by upgrading to a full account} other {Unlock # more tasks by upgrading to a full account}}",
                 "viewPrices": "[T] View Prices",
-                "nextGraduation": "[T] Next graduation: from {cohort} to {nextCohort}",
-                "reachRatingToUnlock": "[T] Reach the required rating for your cohort to unlock graduation",
                 "renewTooltip": "[T] It's time for you to renew this task!",
                 "renewLabel": "[T] Renew",
                 "minimumReachedTooltip": "[T] You've reached the minimum, keep going!",
                 "minimumReachedLabel": "[T] Minimum Reached",
                 "checkboxAriaLabel": "[T] Checkbox {name}",
-                "updateAriaLabel": "[T] Update {name}",
-                "graduateName": "[T] Graduate from {cohort}",
-                "graduateDescription": "[T] Move to the next cohort and get featured in the graduation show."
+                "updateAriaLabel": "[T] Update {name}"
             },
             "graduation": {
                 "title": "[T] Graduate from {cohort}?",
@@ -203,6 +236,117 @@
                 "commentsLabel": "[T] Optionally add comments on what was most helpful about the program, what could be improved, etc. This will be visible to all other members of the Dojo.",
                 "graduate": "[T] Graduate",
                 "success": "[T] Congratulations! You have successfully graduated!"
+            },
+            "starter": {
+                "title": "[T] Tutorial",
+                "planName": "[T] Dojo Training Plan",
+                "subtitle": "[T] Three short stages to learn how training works here. Everything you complete carries over to your full training plan, which unlocks when you finish.",
+                "progress": "[T] {done} of {total} tasks done",
+                "stepNumber": "[T] Step {number}",
+                "stepProgress": "[T] {done} of {total} done",
+                "steps": {
+                    "welcome": {
+                        "title": "[T] Complete the Welcome to the Dojo tasks",
+                        "description": "[T] Short intro tasks that show you around the Dojo."
+                    },
+                    "classicalGame": {
+                        "title": "[T] Play 1 classical game",
+                        "description": "[T] Play a slow game, online or over the board. Classical games are the heart of the Dojo training program.",
+                        "timeControl": "[T] Suggested time control: {timeControl} or longer"
+                    },
+                    "annotateGame": {
+                        "title": "[T] Annotate 1 game",
+                        "description": "[T] Import one of your games and go through it before using an engine. Note what you were thinking, your key decisions and your mistakes."
+                    },
+                    "dojoRush": {
+                        "title": "[T] Try the Dojo Rush trainer",
+                        "description": "[T] Solve as many puzzles as you can against the clock. This step ticks off by itself after your first run."
+                    },
+                    "masterGame": {
+                        "title": "[T] Study 1 master game",
+                        "description": "[T] Go through one classical game from your cohort's master games study. Look for the plans and ideas behind the moves."
+                    },
+                    "endgameAlgorithm": {
+                        "title": "[T] Play 1 endgame algorithm position",
+                        "description": "[T] Play the first position of your cohort's first endgame algorithm until you can win it. The time you spend carries over to the full algorithm."
+                    }
+                },
+                "actions": {
+                    "details": "[T] Details",
+                    "markDone": "[T] Mark completed",
+                    "undo": "[T] Undo",
+                    "minutesSpent": "[T] {minutes} min",
+                    "importGame": "[T] Import a game",
+                    "viewTournaments": "[T] View tournaments",
+                    "startRush": "[T] Start Dojo Rush",
+                    "firstPosition": "[T] {name}, position 1",
+                    "completed": "[T] Completed",
+                    "playBot": "[T] Play bot"
+                },
+                "markDone": {
+                    "title": "[T] Mark task completed",
+                    "minutesLabel": "[T] Minutes spent",
+                    "minutesHelper": "[T] Roughly how long it took. It's added to your training time when you finish the starter plan.",
+                    "minutesInvalid": "[T] Enter a whole number of minutes.",
+                    "save": "[T] Mark completed",
+                    "cancel": "[T] Cancel"
+                },
+                "complete": {
+                    "title": "[T] Starter plan complete!",
+                    "description": "[T] Nice work. When you continue, everything you did here is checked off in your full training plan."
+                },
+                "continue": "[T] Continue to the full training plan",
+                "locked": {
+                    "title": "[T] Full training plan locked",
+                    "description": "[T] Finish the starter plan to unlock your full training plan. Everything you mark done here will be checked off for you."
+                },
+                "skip": "[T] Already know the Dojo? Skip to the full training plan",
+                "welcomeKinds": {
+                    "guide": {
+                        "label": "[T] Guide",
+                        "action": "[T] Read the guide"
+                    },
+                    "video": {
+                        "label": "[T] Video",
+                        "action": "[T] Watch"
+                    },
+                    "community": {
+                        "label": "[T] Community",
+                        "action": "[T] Join"
+                    },
+                    "task": {
+                        "label": "[T] Task",
+                        "action": "[T] Open"
+                    }
+                },
+                "botGame": {
+                    "completed": "[T] Starter plan step completed!",
+                    "backToPlan": "[T] Back to plan"
+                },
+                "sensei": {
+                    "name": "[T] Sensei Jesse",
+                    "greeting": "[T] Welcome to the Dojo! I'm Sensei Jesse. Before you start your full training plan, let's make sure you know your way around. Finish these three stages and I'll see you on the other side."
+                },
+                "stages": {
+                    "welcome": {
+                        "title": "[T] Welcome",
+                        "description": "[T] Get to know the Dojo and the community."
+                    },
+                    "training": {
+                        "title": "[T] Train",
+                        "description": "[T] Try the kinds of training you will do every week."
+                    },
+                    "games": {
+                        "title": "[T] Games & Analysis",
+                        "description": "[T] Play a slow game, then learn from it."
+                    }
+                },
+                "stageNumber": "[T] Stage {number}",
+                "suggestion": {
+                    "title": "[T] New to Dojo? Start here",
+                    "description": "[T] A short tutorial that shows you how training works here. Anything you have already done stays completed.",
+                    "start": "[T] Start here"
+                }
             },
             "graduationTask": {
                 "title": "[T] Graduate from {cohort}",
@@ -289,8 +433,14 @@
                 "deleteAriaLabel": "[T] delete"
             },
             "progressUpdater": {
+                "totalTimeChange": "[T] Total {before} → {after}",
+                "timeSpent": "[T] Time spent",
+                "removeTime": "[T] Remove 5 minutes",
+                "minutesShort": "[T] min",
+                "lastCompleted": "[T] Last {unit} completed",
+                "doneOf": "[T] {done} of {total} done",
+                "addTime": "[T] Add 5 minutes",
                 "markComplete": "[T] Mark as Completed?",
-                "totalTime": "[T] Total Time: {hours}h {minutes}m",
                 "largeTimeWarning": "[T] You're adding a lot of time! Please double-check your input before saving."
             },
             "scheduleGame": {
@@ -312,12 +462,11 @@
                 "countRequired": "[T] This field is required",
                 "countNumeric": "[T] Only numeric characters are accepted",
                 "countMinOne": "[T] At least one game is required",
-                "deleteEntry": "[T] Delete"
+                "deleteEntry": "[T] Delete",
+                "scheduleAction": "[T] Schedule"
             },
             "taskDialog": {
-                "historyTitle": "[T] {name} History",
-                "addTimeTitle": "[T] Add time to {name}?",
-                "updateTitle": "[T] Update {name}?",
+                "historyCaption": "[T] History",
                 "locked": "[T] Locked",
                 "completed": "[T] Completed",
                 "editTask": "[T] Edit Task",
@@ -348,7 +497,7 @@
                 "taskLockedUntil": "[T] This task is locked until you complete {category} - {name}."
             },
             "miniScoreboard": {
-                "heading": "[T] Mini Scoreboard",
+                "heading": "[T] Scoreboard",
                 "type": "[T] Type",
                 "dojoScore": "[T] Dojo Score",
                 "trainingTime": "[T] Training Time",
@@ -356,6 +505,18 @@
                 "viewFullScoreboard": "[T] View Full Scoreboard",
                 "loadError": "[T] Failed to load leaderboard data.",
                 "empty": "[T] No users currently in this cohort."
+            },
+            "pin": {
+                "description": "[T] Choose the days you'll work on this task and for how long. Suggested tasks only fill the time left in your day.",
+                "days": "[T] Days",
+                "timePerDay": "[T] Time each day",
+                "perDay": "[T] Set per day",
+                "overbooked": "[T] Your pinned tasks go over your planned time on {days}.",
+                "unpin": "[T] Unpin",
+                "pin": "[T] Pin",
+                "overbookedDay": "[T] {day} is overbooked: pinned tasks take {allocated}, but you planned {goal}.",
+                "raiseGoal": "[T] Plan {time} for {day}",
+                "trimTasks": "[T] Trim tasks to {time}"
             }
         },
         "activity": {
@@ -407,15 +568,16 @@
             "goal": "[T] Goal",
             "goalPoints": "[T] {value} {value, plural, =1 {point} other {points}}",
             "goalHours": "[T] {value} {value, plural, =1 {hour} other {hours}}",
-            "popOutView": "[T] Pop out view",
             "classicalGames": "[T] Classical Games (Past Year)",
             "nextGraduation": "[T] Next graduation: from {cohort} to {nextCohort}",
             "allTasks": "[T] All Tasks",
+            "progressTitle": "[T] Progress",
             "metrics": "[T] Metrics",
             "tacticsRating": "[T] Tactics Rating",
             "tacticsRatingTooltip": "[T] For U1700, this is a combination of progress in Polgar Mates, Puzzle Rush 5 min and Puzzle Rush Survival. For 1700-2100, this is a combination of Polgar Mates, Puzzle Rush Survival and the Dojo Tactics Test. For 2100+, this is based solely on the Dojo Tactics Test.",
             "close": "[T] close",
             "pastYear": "[T] in the past year",
+            "timeManagement": "[T] Time Management",
             "chip": {
                 "coach": "[T] Coach",
                 "coachTooltip": "[T] This member is a Dojo coach",
@@ -462,6 +624,19 @@
                 "noActivity": "[T] No recent activity from your follows or cohort."
             },
             "heatmap": {
+                "yearlyTotals": "[T] Yearly totals",
+                "year": "[T] Year",
+                "total": "[T] Total",
+                "loadingHistory": "[T] Loading your training history…",
+                "historyError": "[T] Couldn't load your training history.",
+                "noTimeLogged": "[T] No time logged yet.",
+                "lastTwelveMonths": "[T] Last 12 Months: {total}",
+                "legend": "[T] What the colors mean",
+                "settings": "[T] Heatmap settings",
+                "title": "[T] Heatmap",
+                "dailyGoal": "[T] Daily goal {time}",
+                "nothingLogged": "[T] Nothing logged this day",
+                "dayTotal": "[T] Total {time}",
                 "weekdaySun": "[T] Sun",
                 "weekdayMon": "[T] Mon",
                 "weekdayTue": "[T] Tue",
@@ -600,6 +775,7 @@
             "whenPlayWhite": "[T] When You Play White",
             "whenPlayBlack": "[T] When You Play Black",
             "normalizedRatingTooltip": "[T] The rating normalized to the Dojo system",
+            "timeManagementTooltip": "[T] Calculated from games in this folder that include clock times.",
             "performanceByCohort": "[T] Performance by Opponent Cohort",
             "colOpponentCohort": "[T] Opponent Cohort",
             "colPerformance": "[T] Performance",
@@ -3221,6 +3397,90 @@
             "shortcut": "[T] Shortcut: {keys}",
             "nextPuzzle": "[T] Next Puzzle"
         },
+        "rush": {
+            "title": "[T] Dojo Rush",
+            "introTime": "[T] {minutes} minutes",
+            "introStrikes": "[T] {strikes} strikes",
+            "startButton": "[T] Start",
+            "viewHistory": "[T] View Past Runs",
+            "whiteToMove": "[T] White to move",
+            "blackToMove": "[T] Black to move",
+            "correctLabel": "[T] correct",
+            "streakRow": "[T] {streak} in a row!",
+            "endRunButton": "[T] End Run",
+            "runComplete": "[T] Run Complete!",
+            "playAgain": "[T] Play Again",
+            "reviewPuzzles": "[T] Review Puzzles",
+            "retrySave": "[T] Retry Save",
+            "saving": "[T] Saving...",
+            "attemptsHeading": "[T] Puzzles",
+            "attemptsHintSaved": "[T] Click a puzzle to retry it with no time pressure.",
+            "attemptsHintUnsaved": "[T] Once the run is saved, you can click a puzzle to retry it with no time pressure.",
+            "statCorrect": "[T] Correct",
+            "statPercentage": "[T] Accuracy",
+            "statHighestSolved": "[T] Highest Puzzle Solved",
+            "bestAllTime": "[T] All-time best",
+            "bestThisWeek": "[T] This week's best",
+            "bestToday": "[T] Today's best",
+            "indexAllTime": "[T] All time",
+            "indexThisWeek": "[T] This week",
+            "indexToday": "[T] Today",
+            "scoreIndex": "[T] #{index}",
+            "newBestAllTime": "[T] New all-time best",
+            "newBestThisWeek": "[T] New best this week",
+            "newBestToday": "[T] New best today",
+            "totalTime": "[T] Time: {time}",
+            "endReason": {
+                "time": "[T] Time ran out",
+                "strikes": "[T] Out of strikes",
+                "aborted": "[T] Ended early"
+            },
+            "columnPuzzle": "[T] Puzzle",
+            "columnPuzzleRating": "[T] Puzzle Rating",
+            "columnSearchRating": "[T] Level",
+            "columnTime": "[T] Time",
+            "columnResult": "[T] Result",
+            "columnDate": "[T] Date",
+            "columnEndReason": "[T] Ended",
+            "resultCorrect": "[T] Correct",
+            "resultWrong": "[T] Wrong",
+            "reviewTitle": "[T] Dojo Rush Review",
+            "newRun": "[T] New Run",
+            "previous": "[T] Previous",
+            "next": "[T] Next",
+            "puzzleIndex": "[T] Puzzle {index} of {total}",
+            "retryHint": "[T] No timer, no strikes. Take your time and find the mate.",
+            "puzzleId": "[T] Puzzle ID",
+            "originalTime": "[T] Time in Run",
+            "originalResult": "[T] Result in Run",
+            "retryResult": "[T] Retry",
+            "retrySolvedClean": "[T] Solved",
+            "retrySolvedWithMistakes": "[T] Solved after {count, plural, =1 {# mistake} other {# mistakes}}",
+            "originalMoves": "[T] Your moves during the run",
+            "backToRun": "[T] Back to Run",
+            "solved": "[T] Solved!",
+            "nextPuzzle": "[T] Next Puzzle",
+            "historyTitle": "[T] Dojo Rush History",
+            "historyEmpty": "[T] You haven't completed any Dojo Rush runs yet.",
+            "loadMore": "[T] Load More",
+            "incorrectMoveComment": "[T] Incorrect guess",
+            "incorrectMoveCommentDuringRun": "[T] Incorrect guess during the run",
+            "tooltipSettings": "[T] Settings",
+            "prevWrong": "[T] Previous Wrong Puzzle",
+            "nextWrong": "[T] Next Wrong Puzzle",
+            "leaderboardTitle": "[T] Leaderboard",
+            "leaderboardAllTime": "[T] All-time",
+            "leaderboardMonth": "[T] This month",
+            "leaderboardOverall": "[T] Overall",
+            "leaderboardCohort": "[T] Cohort",
+            "leaderboardMonthCaption": "[T] {month} (UTC)",
+            "columnRank": "[T] Rank",
+            "columnPlayer": "[T] Player",
+            "columnScore": "[T] Score",
+            "columnRuns": "[T] Runs",
+            "leaderboardEmpty": "[T] No completed runs yet.",
+            "leaderboardPartial": "[T] Earlier runs are still being added."
+        },
         "squareColors": {
             "title": "[T] Square Color Drill",
             "intro": "[T] You'll see a square name (like \"g7\") and choose whether it's a white or black square.",
@@ -3303,9 +3563,13 @@
         "landing": {
             "tacticsTests": "[T] Tactics Tests",
             "checkmatePuzzles": "[T] Checkmate Puzzles",
+            "puzzleRush": "[T] Dojo Rush",
             "endgameTests": "[T] Endgame Tests",
             "squareColorDrill": "[T] Square Color Drill",
-            "allRatings": "[T] All Ratings"
+            "tacticsForger": "[T] Dojo Tactics Forger",
+            "tacticsForgerDescription": "[T] Tactics, openings and endgames, 400–2000",
+            "allRatings": "[T] All Ratings",
+            "beta": "[T] Beta"
         },
         "tactics": {
             "heading": "[T] Tactics Tests"
@@ -3914,7 +4178,18 @@
                 "keyEscape": "[T] Escape",
                 "keyTab": "[T] Tab",
                 "keyBackspace": "[T] Backspace",
-                "fieldRequired": "[T] This field is required"
+                "fieldRequired": "[T] This field is required",
+                "solitaire": {
+                    "correctSoundLabel": "[T] Play sound on correct move",
+                    "incorrectSoundLabel": "[T] Play sound on incorrect move",
+                    "none": "[T] None",
+                    "bell": "[T] Bell",
+                    "rising5th": "[T] Rising 5th",
+                    "rising6th": "[T] Rising 6th",
+                    "warmChord": "[T] Warm Chord",
+                    "boss": "[T] Bauss",
+                    "buzz": "[T] Buzz"
+                }
             },
             "comments": {
                 "showCommentsLabel": "[T] Show Comments From",
@@ -4094,6 +4369,17 @@
                 "moveTooltip": "[T] Move {value}"
             },
             "tools": {
+                "solitaire": {
+                    "correctSoundLabel": "[T] Play sound on correct move",
+                    "incorrectSoundLabel": "[T] Play sound on incorrect move",
+                    "none": "[T] None",
+                    "bell": "[T] Bell",
+                    "rising5th": "[T] Rising 5th",
+                    "rising6th": "[T] Rising 6th",
+                    "warmChord": "[T] Warm Chord",
+                    "boss": "[T] Bauss",
+                    "buzz": "[T] Buzz"
+                },
                 "solitaireChessTitle": "[T] Solitaire Chess (Guess the Move)",
                 "solitaireChessDescription": "[T] Test your understanding (or memory) of this game by guessing the moves. Starting this mode will hide the PGN text until you correctly pick the next move.",
                 "playAsLabel": "[T] Play As",

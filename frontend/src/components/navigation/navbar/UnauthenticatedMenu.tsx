@@ -34,6 +34,7 @@ import {
 import { useTranslations } from 'next-intl';
 import React, { useState, type JSX } from 'react';
 import { Logo, NavMenuItem, NavbarItem, StartItem } from './NavbarMenu';
+import { WCC_EXTRA, wccNavItem } from './wccNavItem';
 
 const UnauthenticatedMenu = () => {
     const largeMenu = useMediaQuery('(min-width:450px)');
@@ -50,6 +51,7 @@ function unauthenticatedStartItems(
     t: ReturnType<typeof useTranslations>,
 ): NavbarItem[] {
     return [
+        wccNavItem(),
         {
             id: 'live-classes',
             name: (
@@ -107,7 +109,8 @@ function useNavbarItems(handleClose: () => void) {
     const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
     const t = useTranslations('navbar');
 
-    const showAll = useMediaQuery('(min-width:1012px)');
+    // 150px more than before for the 2026 WCC item; lower it again with the item.
+    const showAll = useMediaQuery('(min-width:1162px)');
     const hide2 = useMediaQuery('(min-width:840px)');
     const hide3 = useMediaQuery('(min-width:676px)');
 
@@ -116,16 +119,19 @@ function useNavbarItems(handleClose: () => void) {
         t,
     );
 
+    // The 2026 WCC item is extra, so one more item folds into the menu at each
+    // width than before. Drop WCC_EXTRA (and the showAll change) with the item.
     let startItemCount = 0;
     if (showAll) {
         startItemCount = startItems.length;
     } else if (hide2) {
-        startItemCount = startItems.length - 2;
+        startItemCount = startItems.length - 2 - WCC_EXTRA;
     } else if (hide3) {
-        startItemCount = startItems.length - 3;
+        startItemCount = startItems.length - 3 - WCC_EXTRA;
     } else {
-        startItemCount = startItems.length - 4;
+        startItemCount = startItems.length - 4 - WCC_EXTRA;
     }
+    startItemCount = Math.max(0, startItemCount);
 
     const shownStartItems: JSX.Element[] = startItems
         .slice(0, startItemCount)

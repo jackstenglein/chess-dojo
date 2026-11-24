@@ -1,7 +1,8 @@
 import { ExamCard } from '@/components/exams/ExamCard';
+import { PuzzleBaseCard } from '@/components/puzzles/base/PuzzleBaseCard';
 import { KingIcon, QueenIcon, RookIcon } from '@/style/ChessIcons';
-import { EmojiEvents, Visibility } from '@mui/icons-material';
-import { Container, Grid } from '@mui/material';
+import { Bolt, EmojiEvents, Hardware, Visibility } from '@mui/icons-material';
+import { Chip, Container, Grid } from '@mui/material';
 import { useTranslations } from 'next-intl';
 
 /**
@@ -14,10 +15,19 @@ export default function ExamLandingPage() {
         <Container maxWidth='lg' sx={{ py: 5 }}>
             <Grid container rowSpacing={2} columnSpacing={2}>
                 <ExamCard
-                    name={t('tacticsTests')}
+                    name={t('puzzleRush')}
                     description={t('allRatings')}
-                    href='/tests/tactics'
-                    icon={QueenIcon}
+                    href='/puzzles/rush'
+                    icon={Bolt}
+                    badge={<Chip label={t('beta')} color='success' />}
+                />
+
+                <ExamCard
+                    name={t('tacticsForger')}
+                    description={t('tacticsForgerDescription')}
+                    href='/tactics-forger'
+                    icon={Hardware}
+                    badge={<Chip label={t('beta')} color='success' />}
                 />
 
                 <ExamCard
@@ -25,6 +35,13 @@ export default function ExamLandingPage() {
                     description={t('allRatings')}
                     href='/puzzles/checkmate'
                     icon={KingIcon}
+                />
+
+                <ExamCard
+                    name={t('tacticsTests')}
+                    description={t('allRatings')}
+                    href='/tests/tactics'
+                    icon={QueenIcon}
                 />
 
                 <ExamCard
@@ -47,6 +64,8 @@ export default function ExamLandingPage() {
                     href='/puzzles/mate-in-one'
                     icon={EmojiEvents}
                 />
+
+                <PuzzleBaseCard />
             </Grid>
         </Container>
     );

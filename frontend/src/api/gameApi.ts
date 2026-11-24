@@ -715,6 +715,14 @@ export const isLichessGameURL = (url: string) =>
     }) ||
     urlMatches(url, {
         hostname: 'lichess.org',
+        pathParts: [/^game$/, matchLichessId, /^(black|white)$/],
+    }) ||
+    urlMatches(url, {
+        hostname: 'lichess.org',
+        pathParts: [/^game$/, matchLichessId],
+    }) ||
+    urlMatches(url, {
+        hostname: 'lichess.org',
         pathParts: [matchLichessId],
     });
 

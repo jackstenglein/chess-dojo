@@ -292,6 +292,31 @@ func (repo *dynamoRepository) ScanCourses(startKey string, publishedOnly bool) (
 	return courses, lastKey, nil
 }
 
+// ScanAllCourses reads every course from the base table, including drafts.
+// SummaryIndex omits videoUrl and chapters, which callers need in order to
+// tell which modules embed a video.
+func (repo *dynamoRepository) ScanAllCourses() ([]Course, error) {
+	var courses []Course
+	var startKey string
+	for {
+		input := &dynamodb.ScanInput{
+			TableName:                new(courseTable),
+			ProjectionExpression:     new("#type, id, videoUrl, chapters"),
+			ExpressionAttributeNames: map[string]*string{"#type": new("type")},
+		}
+		var page []Course
+		nextKey, err := repo.scan(input, startKey, &page)
+		if err != nil {
+			return nil, err
+		}
+		courses = append(courses, page...)
+		if nextKey == "" || nextKey == startKey {
+			return courses, nil
+		}
+		startKey = nextKey
+	}
+}
+
 // CourseSetter provides an interface for setting Courses.
 type CourseSetter interface {
 	// Required to fetch the user's coach permissions.

@@ -596,13 +596,18 @@ export const OnlineGameForm = ({ loading, onSubmit, onClose }: ImportDialogProps
                 importPgn(url)
                     .then(({ data: pgnText, error }) => {
                         if (error) {
-                            logger.error?.(error.privateMessage);
+                            logger.error(error);
                             request.onFailure(error.publicMessage);
                             return;
                         }
                         onSubmit({ pgnText: pgnText ?? '', type: 'manual' });
                     })
-                    .catch(() => request.onFailure(t('errorUnexpectedServer')));
+                    .catch((error: unknown) =>
+                        request.onFailure(
+                            (error as { publicMessage: string })?.publicMessage ??
+                                t('errorUnexpectedServer'),
+                        ),
+                    );
             }
 
             return;

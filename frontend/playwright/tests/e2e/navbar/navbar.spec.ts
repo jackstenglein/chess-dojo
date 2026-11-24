@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 const navbarStartItems = [
+    '2026 WCC',
     'Training Plan',
     'Games',
     'Calendar',
@@ -19,19 +20,22 @@ const navbarEndItems = [
     { testId: 'navbar-profile-button', name: '' },
 ];
 
+// The 2026 WCC item adds one more start item, so it shows all of them only from
+// 1650px and one more folds into the menu at each width below that.
 const viewPortWidths = [
-    { width: 1501, hidden: 0, endHidden: 0 },
-    { width: 1499, hidden: 2, endHidden: 0 },
-    { width: 1340, hidden: 3, endHidden: 0 },
-    { width: 1216, hidden: 4, endHidden: 0 },
-    { width: 999, hidden: 5, endHidden: 0 },
-    { width: 809, hidden: 6, endHidden: 0 },
-    { width: 679, hidden: 6, endHidden: 1 },
-    { width: 639, hidden: 6, endHidden: 2 },
-    { width: 583, hidden: 6, endHidden: 3 },
-    { width: 566, hidden: 6, endHidden: 4 },
-    { width: 541, hidden: 6, endHidden: 5 },
-    { width: 449, hidden: 8, endHidden: 5 },
+    { width: 1651, hidden: 0, endHidden: 0 },
+    { width: 1501, hidden: 3, endHidden: 0 },
+    { width: 1499, hidden: 3, endHidden: 0 },
+    { width: 1340, hidden: 4, endHidden: 0 },
+    { width: 1216, hidden: 5, endHidden: 0 },
+    { width: 999, hidden: 6, endHidden: 0 },
+    { width: 809, hidden: 7, endHidden: 0 },
+    { width: 679, hidden: 7, endHidden: 1 },
+    { width: 639, hidden: 7, endHidden: 2 },
+    { width: 583, hidden: 7, endHidden: 3 },
+    { width: 566, hidden: 7, endHidden: 4 },
+    { width: 541, hidden: 7, endHidden: 5 },
+    { width: 449, hidden: 9, endHidden: 5 },
 ];
 
 test.describe('Navbar (unauthenticated)', () => {

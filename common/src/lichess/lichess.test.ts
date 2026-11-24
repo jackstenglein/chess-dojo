@@ -1,6 +1,6 @@
 import { AxiosError, AxiosHeaders } from 'axios';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { LichessFetcher } from './lichess';
+import { getLichessGameId, LichessFetcher } from './lichess';
 
 const axiosGetMock = vi.hoisted(() => vi.fn());
 
@@ -29,6 +29,56 @@ beforeEach(() => {
     axiosGetMock.mockReset();
 });
 
+describe('getLichessGameId', () => {
+    it('returns the game id from supported Lichess game URLs', () => {
+        const cases: [string, string][] = [
+            ['https://lichess.org/mN1qj7pP/black', 'mN1qj7pP'],
+            ['https://lichess.org/mN1qj7pP/', 'mN1qj7pP'],
+            ['https://lichess.org/mN1qj7pP', 'mN1qj7pP'],
+            ['https://lichess.org/mN1qj7pP/white', 'mN1qj7pP'],
+            ['https://lichess.org/game/mN1qj7pP/black', 'mN1qj7pP'],
+            ['https://lichess.org/game/mN1qj7pP/', 'mN1qj7pP'],
+            ['https://lichess.org/game/mN1qj7pP', 'mN1qj7pP'],
+            ['https://lichess.org/game/mN1qj7pP/white', 'mN1qj7pP'],
+            ['  https://lichess.org/game/mN1qj7pP/black  ', 'mN1qj7pP'],
+            ['https://lichess.org/abcdefghWXYZ', 'abcdefghWXYZ'],
+            ['https://lichess.org/game/abcdefghWXYZ/white', 'abcdefghWXYZ'],
+            ['https://lichess.org/mN1qj7pP?color=white', 'mN1qj7pP'],
+            ['https://lichess.org/game/mN1qj7pP#1', 'mN1qj7pP'],
+        ];
+
+        for (const [url, id] of cases) {
+            expect(getLichessGameId(url), url).toStrictEqual({ data: id });
+        }
+    });
+
+    it('requires a URL', () => {
+        const error = { error: { statusCode: 400, publicMessage: 'URL is required' } };
+        expect(getLichessGameId()).toStrictEqual(error);
+        expect(getLichessGameId('')).toStrictEqual(error);
+    });
+
+    it('rejects URLs that are not Lichess games', () => {
+        const error = {
+            error: {
+                statusCode: 400,
+                publicMessage: 'URL does not match expected Lichess game format',
+            },
+        };
+
+        for (const url of [
+            'not a url',
+            'https://www.chess.com/game/live/107855985867',
+            'https://lichess.org/study/JIPuIPVG',
+            'https://lichess.org/study/y14Z6s3N/fqJZzUm8',
+            'https://lichess.org/game/export/mN1qj7pP',
+            'https://example.com/mN1qj7pP',
+        ]) {
+            expect(getLichessGameId(url), url).toStrictEqual(error);
+        }
+    });
+});
+
 describe('getLichessGame', () => {
     it('sends the Lichess API token and does not follow redirects', async () => {
         const fetcher = new LichessFetcher('lip_token');
@@ -48,6 +98,39 @@ describe('getLichessGame', () => {
                 maxRedirects: 0,
             },
         );
+    });
+
+    it('exports the first eight characters of a /game/ URL', async () => {
+        const fetcher = new LichessFetcher();
+        axiosGetMock.mockResolvedValue({ data: '[Event "Test"]' });
+
+        await expect(
+            fetcher.getLichessGame('https://lichess.org/game/abcdefghWXYZ/black'),
+        ).resolves.toStrictEqual({
+            data: '[Event "Test"]',
+        });
+
+        expect(axiosGetMock).toHaveBeenCalledWith(
+            'https://lichess.org/game/export/abcdefgh?evals=0&clocks=1',
+            {
+                headers: { Accept: 'application/x-chess-pgn' },
+                maxRedirects: 0,
+            },
+        );
+    });
+
+    it('returns a format error without calling Lichess', async () => {
+        const fetcher = new LichessFetcher();
+
+        await expect(
+            fetcher.getLichessGame('https://lichess.org/study/W67VW7nM'),
+        ).resolves.toStrictEqual({
+            error: {
+                statusCode: 400,
+                publicMessage: 'URL does not match expected Lichess game format',
+            },
+        });
+        expect(axiosGetMock).not.toHaveBeenCalled();
     });
 
     it('exports anonymously when the token is not available', async () => {
@@ -86,7 +169,7 @@ describe('getLichessChapter', () => {
         await fetcher.getLichessChapter('https://lichess.org/study/W67VW7nM/3wugVXBW');
 
         expect(axiosGetMock).toHaveBeenCalledWith(
-            'https://lichess.org/api/study/W67VW7nM/3wugVXBW.pgn?source=true',
+            'https://lichess.org/api/study/W67VW7nM/3wugVXBW.pgn',
             { headers: {}, maxRedirects: 0 },
         );
     });
@@ -99,9 +182,9 @@ describe('getLichessStudy', () => {
 
         await fetcher.getLichessStudy('https://lichess.org/study/W67VW7nM');
 
-        expect(axiosGetMock).toHaveBeenCalledWith(
-            'https://lichess.org/api/study/W67VW7nM.pgn?source=true',
-            { headers: {}, maxRedirects: 0 },
-        );
+        expect(axiosGetMock).toHaveBeenCalledWith('https://lichess.org/api/study/W67VW7nM.pgn', {
+            headers: {},
+            maxRedirects: 0,
+        });
     });
 });

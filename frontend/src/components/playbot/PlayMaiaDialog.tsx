@@ -18,6 +18,7 @@ import {
 } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
+import { STARTER_TASK_PARAM } from '../profile/trainingPlan/starter/StarterBotGameTracker';
 import { MAIA_RATINGS, MaiaRating } from './maiaengine';
 import { RATING_DESCRIPTIONS } from './playbot';
 
@@ -30,6 +31,8 @@ interface PlayMaiaDialogProps {
     positionTitle?: string;
     /** Which side to play — derived from whose turn it is in the FEN */
     playerColor: 'white' | 'black';
+    /** The starter plan task this game is for; it is marked completed when the game ends. */
+    starterTaskId?: string;
 }
 
 export function PlayMaiaDialog({
@@ -40,6 +43,7 @@ export function PlayMaiaDialog({
     incrementSeconds,
     positionTitle,
     playerColor,
+    starterTaskId,
 }: PlayMaiaDialogProps) {
     const router = useRouter();
     const [maiaRating, setMaiaRating] = useState<MaiaRating>(1500);
@@ -61,6 +65,9 @@ export function PlayMaiaDialog({
             color: selectedColor,
             rating: String(maiaRating),
         });
+        if (starterTaskId) {
+            params.set(STARTER_TASK_PARAM, starterTaskId);
+        }
         router.push(`/play-bot?${params.toString()}`);
     };
 

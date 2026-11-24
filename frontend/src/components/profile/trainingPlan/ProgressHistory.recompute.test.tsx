@@ -22,7 +22,7 @@ const messages = {
                 cancel: 'Cancel',
                 save: 'Save',
                 taskDetails: 'Task Details',
-                updateProgress: 'Update Progress',
+                logTraining: 'Log Training',
                 date: 'Date',
                 hours: 'Hours',
                 minutes: 'Minutes',

@@ -172,6 +172,11 @@ functions:
           - - !GetAtt ExplorerTable.Arn
             - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/prod-masters-explorer
           - !GetAtt ExplorerTable.Arn
+      - Effect: Allow
+        Action:
+          - secretsmanager:GetSecretValue
+        Resource:
+          - arn:aws:secretsmanager:${aws:region}:${aws:accountId}:secret:chess-dojo-${sls:stage}-lichessApiToken-*
 
   listGamesByPosition:
     handler: explorer/listGames.handler

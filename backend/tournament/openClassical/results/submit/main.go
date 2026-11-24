@@ -5,9 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
+	"sync"
 
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/secretsmanager"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/errors"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/log"
@@ -16,6 +20,23 @@ import (
 
 var repository openClassicalRepository = database.DynamoDB
 var mediaStore database.MediaStore = database.S3
+
+// lichessHTTPClient does not follow redirects. Lichess redirects game downloads it
+// refuses to its sign-up page, and that page is not a game.
+var lichessHTTPClient = &http.Client{
+	CheckRedirect: func(req *http.Request, via []*http.Request) error {
+		return http.ErrUseLastResponse
+	},
+}
+
+// lichessAPIToken returns ChessDojo's Lichess API token. Without it, Lichess only
+// returns games that are recent or between players rated 2200+ on average.
+var lichessAPIToken = fetchLichessAPIToken
+
+var (
+	cachedLichessAPIToken string
+	lichessTokenOnce      sync.Once
+)
 
 type openClassicalRepository interface {
 	GetOpenClassical(startsAt string) (*database.OpenClassical, error)
@@ -222,11 +243,12 @@ func getLichessGame(request *SubmitResultsRequest) error {
 	}
 
 	log.Debugf("Fetching Lichess game with ID %q\n", gameId)
-	resp, err := http.Get(fmt.Sprintf("https://lichess.org/api/game/%s", gameId))
+	resp, err := fetchLichessGame(gameId)
 	if err != nil {
 		log.Errorf("Failed to get Lichess game: %v", err)
 		return nil
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
 		log.Errorf("Lichess game returned status %d", resp.StatusCode)
 		return nil
@@ -247,17 +269,18 @@ func getLichessGame(request *SubmitResultsRequest) error {
 
 	request.White = game.Players.White.Username
 	request.Black = game.Players.Black.Username
-	if game.Winner == "white" {
+	switch game.Winner {
+	case "white":
 		if request.Result != "" && request.Result != "1-0" {
 			return errors.New(400, fmt.Sprintf("Invalid request: provided game has result %q but form specified result %q", "1-0", request.Result), "")
 		}
 		request.Result = "1-0"
-	} else if game.Winner == "black" {
+	case "black":
 		if request.Result != "" && request.Result != "0-1" {
 			return errors.New(400, fmt.Sprintf("Invalid request: provided game has result %q but form specified result %q", "0-1", request.Result), "")
 		}
 		request.Result = "0-1"
-	} else {
+	default:
 		if request.Result != "" && request.Result != "1/2-1/2" {
 			return errors.New(400, fmt.Sprintf("Invalid request: provided game has result %q but form specified result %q", "1/2-1/2", request.Result), "")
 		}
@@ -280,6 +303,7 @@ func getChesscomGame(request *SubmitResultsRequest) error {
 		log.Errorf("Failed to get Chesscom game: %v", err)
 		return nil
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
 		log.Errorf("Chesscom game returned status %d", resp.StatusCode)
 		return nil
@@ -298,4 +322,36 @@ func getChesscomGame(request *SubmitResultsRequest) error {
 	request.Result = game.Game.PgnHeaders.Result
 	request.Verified = true
 	return nil
+}
+
+// fetchLichessGame requests one game from the Lichess API, sending ChessDojo's API
+// token when one is configured.
+func fetchLichessGame(gameId string) (*http.Response, error) {
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, fmt.Sprintf("https://lichess.org/api/game/%s", gameId), nil)
+	if err != nil {
+		return nil, err
+	}
+	if token := lichessAPIToken(); token != "" {
+		req.Header.Set("Authorization", "Bearer "+token)
+	}
+	return lichessHTTPClient.Do(req)
+}
+
+// fetchLichessAPIToken loads ChessDojo's Lichess API token from Secrets Manager and
+// caches it for the life of the process. A missing token is not fatal: the request
+// continues anonymously.
+func fetchLichessAPIToken() string {
+	lichessTokenOnce.Do(func() {
+		secretID := fmt.Sprintf("chess-dojo-%s-lichessApiToken", os.Getenv("stage"))
+		client := secretsmanager.New(session.Must(session.NewSession()))
+		result, err := client.GetSecretValue(&secretsmanager.GetSecretValueInput{
+			SecretId: new(secretID),
+		})
+		if err != nil || result.SecretString == nil || *result.SecretString == "" {
+			log.Errorf("Failed to get the Lichess API token: %v", err)
+			return
+		}
+		cachedLichessAPIToken = *result.SecretString
+	})
+	return cachedLichessAPIToken
 }

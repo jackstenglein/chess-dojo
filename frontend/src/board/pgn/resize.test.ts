@@ -134,3 +134,46 @@ describe('board fitting with hidden bars', () => {
         expect(resized.board.width).toBeGreaterThan(revealed.board.width);
     });
 });
+
+describe('large board layout', () => {
+    beforeEach(() => {
+        Object.defineProperty(window, 'innerHeight', {
+            configurable: true,
+            writable: true,
+            value: 1000,
+        });
+    });
+
+    it('gives the board as much room as the window height allows', () => {
+        const normal = getSizes(1400, true, true, { showPgn: true });
+        const large = getSizes(1400, true, true, { showPgn: true, largeBoard: true });
+        expect(large.board.width).toBeGreaterThan(normal.board.width);
+        // The height is what stops it growing further.
+        expect(large.board.width).toBeLessThanOrEqual(window.innerHeight);
+    });
+
+    it('is limited by the width on a small window, leaving the panels their minimum', () => {
+        const large = getSizes(1000, true, true, { showPgn: true, largeBoard: true });
+        expect(large.pgn.width).toBeGreaterThanOrEqual(199);
+        expect(large.underboard.width).toBeGreaterThanOrEqual(199);
+        expect(large.board.width + large.pgn.width + large.underboard.width).toBeLessThanOrEqual(
+            large.availableWidth + 0.001,
+        );
+    });
+
+    it('never makes the board smaller than before', () => {
+        for (const width of [900, 1000, 1200, 1400, 1800]) {
+            for (const left of [false, true]) {
+                const normal = getSizes(width, left, true, { showPgn: true });
+                const large = getSizes(width, left, true, { showPgn: true, largeBoard: true });
+                expect(large.board.width).toBeGreaterThanOrEqual(normal.board.width - 0.001);
+            }
+        }
+    });
+
+    it('changes nothing on a phone-sized window', () => {
+        expect(getSizes(500, true, true, { showPgn: true, largeBoard: true })).toEqual(
+            getSizes(500, true, true, { showPgn: true }),
+        );
+    });
+});

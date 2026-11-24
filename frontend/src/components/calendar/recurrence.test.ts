@@ -1,5 +1,5 @@
 import { Event, EventStatus, EventType, getEventDurationMs } from '@/database/event';
-import { RRuleSet, rrulestr } from 'rrule';
+import { RRule, RRuleSet, rrulestr } from 'rrule';
 import { describe, expect, it, vi } from 'vitest';
 import {
     getProcessedRecurrence,
@@ -8,6 +8,7 @@ import {
     isRecurringEvent,
     moveAllOccurrences,
     moveSingleOccurrence,
+    parseStoredRRule,
 } from './recurrence';
 
 vi.mock('./displayDate', () => ({
@@ -54,6 +55,19 @@ describe('recurrence helpers', () => {
     it('isRecurringEvent requires an RRULE line', () => {
         expect(isRecurringEvent(baseEvent())).toBe(true);
         expect(isRecurringEvent(baseEvent({ rrule: 'DTSTART:20260801T150000Z' }))).toBe(false);
+    });
+
+    it('parseStoredRRule accepts RDATE lines that RRule.fromString rejects', () => {
+        const rrule = 'RDATE:20261109T130000Z,20261116T130000Z,20261123T130000Z';
+        expect(() => RRule.fromString(rrule)).toThrow(/Unsupported RFC prop RDATE/);
+
+        const parsed = parseStoredRRule(rrule);
+        expect(parsed).toBeInstanceOf(RRuleSet);
+        expect(parsed.rdates().map((date) => date.toISOString())).toEqual([
+            '2026-11-09T13:00:00.000Z',
+            '2026-11-16T13:00:00.000Z',
+            '2026-11-23T13:00:00.000Z',
+        ]);
     });
 
     it('moveSingleOccurrence excludes the original day and adds the new time', () => {

@@ -124,6 +124,14 @@ function ChangeStat({ label, value }: { label: string; value: number }) {
     );
 }
 
+export function getHoursSpent(progress: Graduation['progress']): number {
+    return (
+        Object.values(progress)
+            .flatMap((reqProg) => Object.values(reqProg.minutesSpent ?? {}))
+            .reduce((a, b) => a + b, 0) / 60
+    );
+}
+
 interface GraduationCardProps {
     graduation: Graduation;
 }
@@ -141,10 +149,7 @@ export default function GraduationCard({ graduation }: GraduationCardProps) {
         displayName,
     } = graduation;
 
-    const hours =
-        Object.values(progress)
-            .flatMap((reqProg) => Object.values(reqProg.minutesSpent))
-            .reduce((a, b) => a + b, 0) / 60;
+    const hours = getHoursSpent(progress);
 
     const historyData = useMemo(() => getChartData(graduation), [graduation]);
 

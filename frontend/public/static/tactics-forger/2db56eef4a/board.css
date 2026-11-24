@@ -1,0 +1,88 @@
+/* Board styling adapted from ChessDojo (chess-dojo/frontend/src/board/board.css). */
+.cg-wrap coords {
+    font-size: var(--coordinate-font-size, 9px);
+    font-weight: var(--coordinate-font-weight, 600);
+    opacity: var(--coordinate-opacity, 0.8);
+}
+
+.cg-wrap coords.ranks {
+    right: 0 !important;
+    top: 1px !important;
+    left: unset !important;
+    width: 0.8em !important;
+}
+
+.cg-wrap coords.ranks coord {
+    transform: unset !important;
+}
+
+.cg-wrap coords.ranks coord:nth-child(2n + 1),
+.cg-wrap coords.files coord:nth-child(2n),
+.cg-wrap.orientation-black coords.ranks coord:nth-child(2n),
+.cg-wrap.orientation-black coords.files coord:nth-child(2n + 1),
+.cg-wrap coords.squares:nth-child(2n) coord:nth-child(2n + 1),
+.cg-wrap coords.squares:nth-child(2n + 1) coord:nth-child(2n) {
+    color: var(--light-square-coord-color) !important;
+    font-weight: var(--coordinate-font-weight, 600);
+}
+
+.cg-wrap coords.ranks coord:nth-child(2n),
+.cg-wrap.orientation-black coords.ranks coord:nth-child(2n + 1),
+.cg-wrap coords.files coord:nth-child(2n + 1),
+.cg-wrap.orientation-black coords.files coord:nth-child(2n),
+.cg-wrap coords.squares:nth-child(2n) coord:nth-child(2n),
+.cg-wrap coords.squares:nth-child(2n + 1) coord:nth-child(2n + 1) {
+    color: var(--dark-square-coord-color) !important;
+    font-weight: var(--coordinate-font-weight, 600);
+}
+
+.cg-wrap coords.files {
+    bottom: 1px !important;
+    left: 2px !important;
+    height: 1.2em !important;
+    text-transform: lowercase !important;
+    text-align: left !important;
+}
+
+cg-board {
+    background-image: var(--board-background) !important;
+}
+
+.cg-wrap piece.pawn.white {
+    background-image: var(--white-pawn) !important;
+}
+.cg-wrap piece.bishop.white {
+    background-image: var(--white-bishop) !important;
+}
+.cg-wrap piece.knight.white {
+    background-image: var(--white-knight) !important;
+}
+.cg-wrap piece.rook.white {
+    background-image: var(--white-rook) !important;
+}
+.cg-wrap piece.queen.white {
+    background-image: var(--white-queen) !important;
+}
+.cg-wrap piece.king.white {
+    background-image: var(--white-king) !important;
+}
+.cg-wrap piece.pawn.black {
+    background-image: var(--black-pawn) !important;
+}
+.cg-wrap piece.bishop.black {
+    background-image: var(--black-bishop) !important;
+}
+.cg-wrap piece.knight.black {
+    background-image: var(--black-knight) !important;
+}
+.cg-wrap piece.rook.black {
+    background-image: var(--black-rook) !important;
+}
+.cg-wrap piece.queen.black {
+    background-image: var(--black-queen) !important;
+}
+.cg-wrap piece.king.black {
+    background-image: var(--black-king) !important;
+}
+
+.dojo-board { --coordinate-font-size: 10px; border-radius: 4px; overflow: hidden; box-shadow: 0 6px 24px rgba(0,0,0,.45); }

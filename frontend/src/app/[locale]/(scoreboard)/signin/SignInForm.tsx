@@ -169,7 +169,11 @@ export const SignInForm = () => {
                         variant='text'
                         sx={{ textTransform: 'none' }}
                         component={Link}
-                        href='/signup'
+                        href={
+                            redirectUri
+                                ? `/signup?redirectUri=${encodeURIComponent(redirectUri)}`
+                                : '/signup'
+                        }
                     >
                         {t('signin.signUp')}
                     </Button>

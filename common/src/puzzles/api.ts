@@ -56,6 +56,11 @@ export interface Puzzle {
     successfulPlays: number;
     /** The themes of the puzzle. */
     themes: string[];
+    /**
+     * Uniform random key in [0, 1) used for efficient random selection.
+     * Present on puzzles uploaded for Dojo Rush (non-mate corpus).
+     */
+    random?: number;
 }
 
 /** The response to get the next puzzle. */

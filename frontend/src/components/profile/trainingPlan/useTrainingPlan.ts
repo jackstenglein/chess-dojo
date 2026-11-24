@@ -5,9 +5,13 @@ import { useAuth } from '@/auth/Auth';
 import { CustomTask, Requirement } from '@/database/requirement';
 import { TimelineEntry } from '@/database/timeline';
 import { ALL_COHORTS, User, WeeklyPlan, WorkGoalSettings } from '@/database/user';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTimelineContext } from '../activity/useTimeline';
+import { pinnedMinutesMatch } from './pinSchedule';
+import { clearUpcomingDays, toggleSkippedIds } from './skippedTasks';
 import { SuggestedTask, TaskSuggestionAlgorithm } from './suggestedTasks';
+import { swapInPlan } from './swapTask';
+import { DEFAULT_WORK_GOAL } from './workGoal';
 
 export interface UseTrainingPlanResponse {
     /** The request for fetching requirements. */
@@ -20,14 +24,49 @@ export interface UseTrainingPlanResponse {
     pinnedTasks: (Requirement | CustomTask)[];
     /** A callback function to toggle whether a task is pinned. */
     togglePin: (task: Requirement | CustomTask) => void;
+    /**
+     * Pins the task (if it is not already) with the given minutes for each day of
+     * the week. Sunday is index 0; Saturday is index 6.
+     */
+    savePin: (task: Requirement | CustomTask, minutesPerDay: number[]) => void;
+    /** Replaces the minutes set aside for the pinned tasks. */
+    savePinnedTaskMinutes: (pinnedTaskMinutes: Record<string, number[]>) => void;
+    /** Sets the user's planned minutes for one day of the week. */
+    saveDayGoal: (dayIndex: number, minutes: number) => void;
+    /** The task whose pin is being edited, if any. */
+    pinEditorTask?: Requirement | CustomTask;
+    /** Opens the editor for the task's pin, to pin it or change its days and minutes. */
+    openPinEditor: (task: Requirement | CustomTask) => void;
+    /** Closes the pin editor. */
+    closePinEditor: () => void;
     /** The user passed as a parameter, unchanged. */
     user: User;
     /** Whether the provided user is the current logged in user. */
     isCurrentUser: boolean;
     /** The ids of tasks the user has skipped for the current week. */
     skippedTaskIds?: string[];
-    /** A callback function to toggle whether a task is skipped. */
+    /**
+     * Toggles whether the given ids are skipped for the week. If all of them are
+     * already skipped they are restored; otherwise they are skipped.
+     */
     toggleSkip: (...ids: string[]) => void;
+    /** The ids skipped most recently, while an undo is still on offer. */
+    lastSkipped?: string[];
+    /** Undoes the most recent skip, putting the week back exactly as it was. */
+    undoSkip: () => void;
+    /** Dismisses the undo for the most recent skip. */
+    clearLastSkipped: () => void;
+    /**
+     * Replaces a task on today's plan with another, keeping its time. Returns false
+     * when the task is not on today's saved plan, so there was nothing to swap.
+     */
+    swapTask: (fromId: string, toId: string) => boolean;
+    /** The most recent swap, while an undo is still on offer. */
+    lastSwap?: { fromId: string; toId: string };
+    /** Undoes the most recent swap, putting today back exactly as it was. */
+    undoSwap: () => void;
+    /** Dismisses the undo for the most recent swap. */
+    clearLastSwap: () => void;
 }
 
 /**
@@ -59,18 +98,103 @@ export function useTrainingPlan(user: User, cohort?: string): UseTrainingPlanRes
             : [...pinnedTasks, task];
         const newIds = newPinnedTasks.map((t) => t.id);
 
-        updateUser({ pinnedTasks: newIds });
-        void api.updateUser({ pinnedTasks: newIds });
+        // Unpinning also forgets the task's days and minutes.
+        const pinnedTaskMinutes =
+            isPinned && user.pinnedTaskMinutes
+                ? Object.fromEntries(
+                      Object.entries(user.pinnedTaskMinutes).filter(([id]) => id !== task.id),
+                  )
+                : user.pinnedTaskMinutes;
+
+        updateUser({ pinnedTasks: newIds, pinnedTaskMinutes });
+        void api.updateUser({ pinnedTasks: newIds, pinnedTaskMinutes });
+    };
+
+    const savePin = (task: Requirement | CustomTask, minutesPerDay: number[]) => {
+        const pinnedTaskIds = pinnedTasks.some((t) => t.id === task.id)
+            ? pinnedTasks.map((t) => t.id)
+            : [...pinnedTasks.map((t) => t.id), task.id];
+        const pinnedTaskMinutes = { ...user.pinnedTaskMinutes, [task.id]: minutesPerDay };
+
+        updateUser({ pinnedTasks: pinnedTaskIds, pinnedTaskMinutes });
+        void api.updateUser({ pinnedTasks: pinnedTaskIds, pinnedTaskMinutes });
+    };
+
+    const savePinnedTaskMinutes = (pinnedTaskMinutes: Record<string, number[]>) => {
+        updateUser({ pinnedTaskMinutes });
+        void api.updateUser({ pinnedTaskMinutes });
+    };
+
+    const saveDayGoal = (dayIndex: number, minutes: number) => {
+        const minutesPerDay = [...(user.workGoal || DEFAULT_WORK_GOAL).minutesPerDay];
+        minutesPerDay[dayIndex] = minutes;
+        const workGoal = { minutesPerDay };
+        const workGoalHistory = (user.workGoalHistory ?? []).concat({
+            date: new Date().toISOString(),
+            workGoal,
+        });
+
+        updateUser({ workGoal, workGoalHistory });
+        void api.updateUser({ workGoal, workGoalHistory });
+    };
+
+    const [pinEditorTask, setPinEditorTask] = useState<Requirement | CustomTask>();
+
+    const [lastSkip, setLastSkip] = useState<{ ids: string[]; previousPlan: WeeklyPlan }>();
+
+    const savePlan = (weeklyPlan: WeeklyPlan) => {
+        updateUser({ weeklyPlan });
+        void api.updateUser({ weeklyPlan });
     };
 
     const toggleSkip = (...ids: string[]) => {
-        if (!user.weeklyPlan) {
+        const plan = user.weeklyPlan;
+        if (!plan) {
             return;
         }
-        const skippedTasks = [...(user.weeklyPlan.skippedTasks ?? []), ...ids];
-        const newPlan = { ...user.weeklyPlan, skippedTasks };
-        updateUser({ weeklyPlan: newPlan });
-        void api.updateUser({ weeklyPlan: newPlan });
+        const current = plan.skippedTasks ?? [];
+        const skippedTasks = toggleSkippedIds(current, ids);
+        const isSkipping = skippedTasks.length > current.length;
+
+        // A restore also clears the rest of the week so it gets rebuilt; otherwise
+        // whatever replaced the task when it was skipped would stay in its place.
+        savePlan(
+            isSkipping
+                ? { ...plan, skippedTasks }
+                : { ...plan, skippedTasks, tasks: clearUpcomingDays(plan) },
+        );
+        setLastSkip(isSkipping ? { ids, previousPlan: plan } : undefined);
+    };
+
+    const [lastSwap, setLastSwap] = useState<{
+        fromId: string;
+        toId: string;
+        previousPlan: WeeklyPlan;
+    }>();
+
+    const swapTask = (fromId: string, toId: string) => {
+        const plan = user.weeklyPlan;
+        const dayIndex = new Date().getDay();
+        if (!plan?.tasks[dayIndex]?.some((t) => t.id === fromId)) {
+            return false;
+        }
+        savePlan(swapInPlan(plan, dayIndex, fromId, toId));
+        setLastSwap({ fromId, toId, previousPlan: plan });
+        return true;
+    };
+
+    const undoSwap = () => {
+        if (lastSwap) {
+            savePlan(lastSwap.previousPlan);
+            setLastSwap(undefined);
+        }
+    };
+
+    const undoSkip = () => {
+        if (lastSkip) {
+            savePlan(lastSkip.previousPlan);
+            setLastSkip(undefined);
+        }
     };
 
     return {
@@ -80,9 +204,22 @@ export function useTrainingPlan(user: User, cohort?: string): UseTrainingPlanRes
         allRequirements,
         pinnedTasks,
         togglePin,
+        savePin,
+        savePinnedTaskMinutes,
+        saveDayGoal,
+        pinEditorTask,
+        openPinEditor: setPinEditorTask,
+        closePinEditor: () => setPinEditorTask(undefined),
         isCurrentUser: currentUser?.username === user.username,
         skippedTaskIds: user.weeklyPlan?.skippedTasks,
         toggleSkip,
+        lastSkipped: lastSkip?.ids,
+        undoSkip,
+        clearLastSkipped: () => setLastSkip(undefined),
+        swapTask,
+        lastSwap: lastSwap && { fromId: lastSwap.fromId, toId: lastSwap.toId },
+        undoSwap,
+        clearLastSwap: () => setLastSwap(undefined),
     };
 }
 
@@ -141,6 +278,7 @@ export function useWeeklyTrainingPlan(user: User): UseWeeklyTrainingPlanResponse
                 endDate,
                 progressUpdatedAt,
                 pinnedTasks: pinnedTasks.map((t) => t.id),
+                pinnedTaskMinutes: user.pinnedTaskMinutes,
                 nextGame,
             }) ||
             isEmpty(suggestionsByDay) ||
@@ -159,6 +297,10 @@ export function useWeeklyTrainingPlan(user: User): UseWeeklyTrainingPlanResponse
             ),
             progressUpdatedAt,
             pinnedTasks: pinnedTasks.map((t) => t.id),
+            pinnedTaskMinutes: pickPinnedMinutes(
+                pinnedTasks.map((t) => t.id),
+                user.pinnedTaskMinutes,
+            ),
             nextGame,
             skippedTasks:
                 (savedPlan?.endDate ?? '') >= endDate ? savedPlan?.skippedTasks : undefined,
@@ -174,6 +316,7 @@ export function useWeeklyTrainingPlan(user: User): UseWeeklyTrainingPlanResponse
         endDate,
         progressUpdatedAt,
         pinnedTasks,
+        user.pinnedTaskMinutes,
         nextGame,
         api,
         isLoading,
@@ -214,6 +357,7 @@ function equalPlans(
         endDate: string;
         progressUpdatedAt: string;
         pinnedTasks: string[];
+        pinnedTaskMinutes?: Record<string, number[]>;
         nextGame: string;
     },
 ) {
@@ -227,6 +371,15 @@ function equalPlans(
         return false;
     }
     if (savedPlan.nextGame !== newPlan.nextGame) {
+        return false;
+    }
+    if (
+        !pinnedMinutesMatch(
+            newPlan.pinnedTasks,
+            savedPlan.pinnedTaskMinutes,
+            newPlan.pinnedTaskMinutes,
+        )
+    ) {
         return false;
     }
     for (let i = 0; i < newPlan.pinnedTasks.length; i++) {
@@ -250,6 +403,20 @@ function equalPlans(
         }
     }
     return true;
+}
+
+/** Returns only the minutes of tasks that are still pinned, or undefined if there are none. */
+function pickPinnedMinutes(
+    pinnedTaskIds: string[],
+    pinnedTaskMinutes?: Record<string, number[]>,
+): Record<string, number[]> | undefined {
+    const result: Record<string, number[]> = {};
+    for (const id of pinnedTaskIds) {
+        if (pinnedTaskMinutes?.[id]) {
+            result[id] = pinnedTaskMinutes[id];
+        }
+    }
+    return Object.keys(result).length > 0 ? result : undefined;
 }
 
 function isEmpty(suggestionsByDay: SuggestedTask[][]) {

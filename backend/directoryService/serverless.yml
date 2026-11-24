@@ -76,6 +76,10 @@ functions:
         Action:
           - dynamodb:GetItem
         Resource: ${param:UsersTableArn}
+      - Effect: Allow
+        Action:
+          - dynamodb:BatchGetItem
+        Resource: ${param:GamesTableArn}
 
   listBreadcrumbs:
     handler: listBreadcrumbs.handler

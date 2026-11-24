@@ -1,0 +1,25 @@
+Your class is ready
+
+Hi there,
+
+Thanks for signing up. Here's your class: {{className}}.
+
+Watch the class: https://www.chessdojo.club/class?watch={{classId}}&utm_medium=email&utm_source=class-leads&utm_campaign=free-class&utm_content=n1
+
+One tip before you press play. When the sensei stops at a position, pause the video and pick your move first. Then let him show the answer.
+
+That one habit turns watching into training, because you see exactly where your own thinking went off.
+
+One question for you: what's your rating, and what keeps costing you games? Just reply to this email. We read every reply, and it helps us send you classes at the right level.
+
+Enjoy the class,
+
+Jesse Kraai
+Grandmaster and ChessDojo sensei
+
+P.S. The class runs about an hour. Splitting it over two evenings works fine.
+
+--
+You're getting this because you asked for a free class at chessdojo.club.
+Unsubscribe: https://www.chessdojo.club/dojodigest/unsubscribe
+(c) 2026 ChessDojo
