@@ -193,6 +193,8 @@ functions:
       - Effect: Allow
         Action:
           - dynamodb:UpdateItem
+          # The guess log entry for the admin stats.
+          - dynamodb:PutItem
           - dynamodb:Query
           - dynamodb:GetItem
         Resource: !GetAtt WcLiveTable.Arn
