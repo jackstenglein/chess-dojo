@@ -35,6 +35,13 @@ services:
     params:
       httpApiId: ${chess-dojo-scheduler.HttpApiId}
 
+  wcLiveService:
+    path: wcLiveService
+    params:
+      httpApiId: ${chess-dojo-scheduler.HttpApiId}
+      apiAuthorizer: ${chess-dojo-scheduler.serviceAuthorizer}
+      UsersTableArn: ${chess-dojo-scheduler.UsersTableArn}
+
   discordAuthService:
     path: discordAuthService
     params:
