@@ -79,10 +79,11 @@ import {
     useRoundFeed,
 } from './lichessFeed';
 import { LiveBoard } from './LiveBoard';
-import { resolveLayout } from './liveLayout';
+import { resolveLayout, WcLayout } from './liveLayout';
 import { useActAs } from './localTesting';
 import { useMoveSounds } from './moveSounds';
 import { Notation } from './Notation';
+import { PLAYER_COLUMN_WIDTH, PlayerColumn } from './PlayerColumn';
 import { PlayerPhoto } from './PlayerPhoto';
 import { EVAL_BAR_WIDTH, EvalBar, SenseiStrip } from './SenseiEval';
 import { GuestLinks, SenseiPanel } from './SenseiPanel';
@@ -366,12 +367,13 @@ export function LiveMatchPage() {
     // the sensei evals under it; the analysis view keeps the evals by the notation
     // and the stream below. Viewers always have the stream view. Senseis start on
     // the analysis view, and the browser remembers the view they pick with the switch.
-    const [savedLayout, setSavedLayout] = useLocalStorage<'stream' | 'analysis' | null>(
-        'wcLive.layout',
-        null,
-    );
+    // Analysis view 2 is analysis view 1 with the players and clocks in a column
+    // left of the board, the way chess.com shows a broadcast. A phone has no room
+    // for the column, so there it falls back to the player bars.
+    const [savedLayout, setSavedLayout] = useLocalStorage<WcLayout | null>('wcLive.layout', null);
     const layout = resolveLayout(savedLayout, canAnalyze);
     const streamView = layout === 'stream';
+    const playerColumn = layout === 'analysis2';
 
     // The Admin tab. The page always opens on a game, never here.
     const canAdmin = !!user?.isAdmin || (!!actAs && isSensei);
@@ -812,9 +814,7 @@ export function LiveMatchPage() {
                             size='small'
                             exclusive
                             value={layout}
-                            onChange={(_, v: 'stream' | 'analysis' | null) =>
-                                v && setSavedLayout(v)
-                            }
+                            onChange={(_, v: WcLayout | null) => v && setSavedLayout(v)}
                             aria-label='Page layout'
                             sx={{ flexShrink: 0, ml: 1, display: { xs: 'none', sm: 'flex' } }}
                         >
@@ -823,6 +823,12 @@ export function LiveMatchPage() {
                             </ToggleButton>
                             <ToggleButton value='analysis' sx={{ textTransform: 'none', py: 0.25 }}>
                                 Analysis view
+                            </ToggleButton>
+                            <ToggleButton
+                                value='analysis2'
+                                sx={{ textTransform: 'none', py: 0.25 }}
+                            >
+                                Analysis view 2
                             </ToggleButton>
                         </ToggleButtonGroup>
                     )}
@@ -853,38 +859,98 @@ export function LiveMatchPage() {
                     // beside the board. In the analysis view it is under all three. The
                     // top player bar has a row of its own, so everything beside the board
                     // starts on the same line. On a phone everything stacks.
-                    gridTemplateColumns: {
-                        xs: '1fr',
-                        md: 'minmax(0, 1fr) 340px',
-                        // The leaderboard needs no more than this; wider only spreads it out.
-                        lg: 'minmax(0, 620px) 340px minmax(280px, 360px)',
-                    },
+                    gridTemplateColumns: playerColumn
+                        ? {
+                              xs: '1fr',
+                              md: `${PLAYER_COLUMN_WIDTH}px minmax(0, 1fr)`,
+                              // The player column takes the leaderboard's column, so the
+                              // leaderboard goes under the notation.
+                              lg: `${PLAYER_COLUMN_WIDTH}px minmax(0, 680px) 340px`,
+                          }
+                        : {
+                              xs: '1fr',
+                              md: 'minmax(0, 1fr) 340px',
+                              // The leaderboard needs no more than this; wider only spreads it out.
+                              lg: 'minmax(0, 620px) 340px minmax(280px, 360px)',
+                          },
                     gridTemplateAreas: streamView
                         ? {
                               xs: '"top" "board" "twitch" "moves" "leaders"',
                               md: '"top ." "board moves" "twitch twitch" "leaders leaders"',
                               lg: '"top . ." "board twitch twitch" "board moves leaders"',
                           }
-                        : {
-                              xs: '"top" "board" "moves" "leaders" "twitch"',
-                              md: '"top ." "board moves" "leaders leaders" "twitch twitch"',
-                              lg: '"top . ." "board moves leaders" "twitch twitch twitch"',
-                          },
+                        : playerColumn
+                          ? {
+                                xs: '"top" "board" "moves" "leaders" "twitch"',
+                                md: '"players board" "moves moves" "leaders leaders" "twitch twitch"',
+                                lg: '"players board moves" "players board leaders" "twitch twitch twitch"',
+                            }
+                          : {
+                                xs: '"top" "board" "moves" "leaders" "twitch"',
+                                md: '"top ." "board moves" "leaders leaders" "twitch twitch"',
+                                lg: '"top . ." "board moves leaders" "twitch twitch twitch"',
+                            },
                     // In the stream view the board spans the stream row and the notation row.
-                    gridTemplateRows: streamView ? { lg: 'auto auto 1fr' } : undefined,
+                    // In analysis view 2 it spans the notation row and the leaderboard row.
+                    gridTemplateRows: streamView
+                        ? { lg: 'auto auto 1fr' }
+                        : playerColumn
+                          ? { lg: 'auto 1fr auto' }
+                          : undefined,
                 }}
             >
-                <Box sx={{ minWidth: 0, gridArea: 'top' }}>
+                <Box
+                    sx={{
+                        minWidth: 0,
+                        gridArea: 'top',
+                        // In analysis view 2 the player column replaces the bars, except on a phone.
+                        display: playerColumn ? { xs: 'block', md: 'none' } : 'block',
+                    }}
+                >
                     <PlayerBar
                         player={player(topColor)}
                         seconds={clocks[topColor]}
                         running={clocks.running === topColor}
                     />
                 </Box>
+                {playerColumn && (
+                    <Box
+                        sx={{
+                            minWidth: 0,
+                            gridArea: 'players',
+                            display: { xs: 'none', md: 'block' },
+                        }}
+                    >
+                        <PlayerColumn
+                            top={{
+                                player: player(topColor),
+                                seconds: clocks[topColor],
+                                running: clocks.running === topColor,
+                            }}
+                            bottom={{
+                                player: player(bottomColor),
+                                seconds: clocks[bottomColor],
+                                running: clocks.running === bottomColor,
+                            }}
+                            crosstable={crosstable}
+                        />
+                    </Box>
+                )}
                 <Stack spacing={1} sx={{ minWidth: 0, gridArea: 'board' }}>
                     <Stack direction='row' spacing={1}>
                         <EvalBar average={bar.average} pins={bar.pins} orientation={orientation} />
-                        <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                        <Box
+                            sx={{
+                                flexGrow: 1,
+                                minWidth: 0,
+                                // In analysis view 2 the board fits the window's height, so
+                                // the bottom player card and the move buttons stay in view.
+                                // 230px is the header, the tabs and the move buttons.
+                                maxWidth: playerColumn
+                                    ? { md: 'max(360px, calc(100dvh - 230px))' }
+                                    : undefined,
+                            }}
+                        >
                             <LiveBoard
                                 fen={fen}
                                 lastMove={node.ply > 0 ? [node.from, node.to] : undefined}
@@ -911,11 +977,13 @@ export function LiveMatchPage() {
                             />
                         </Box>
                     </Stack>
-                    <PlayerBar
-                        player={player(bottomColor)}
-                        seconds={clocks[bottomColor]}
-                        running={clocks.running === bottomColor}
-                    />
+                    <Box sx={{ display: playerColumn ? { xs: 'block', md: 'none' } : 'block' }}>
+                        <PlayerBar
+                            player={player(bottomColor)}
+                            seconds={clocks[bottomColor]}
+                            running={clocks.running === bottomColor}
+                        />
+                    </Box>
                     <Stack direction='row' spacing={0.5} sx={{ alignItems: 'center' }}>
                         <Tooltip title='Start'>
                             <span>
