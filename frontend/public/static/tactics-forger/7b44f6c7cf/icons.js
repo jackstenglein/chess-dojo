@@ -70,6 +70,22 @@ const ICONS = {
     <g fill="#0f4656" opacity=".75"><rect x="22" y="55" width="3" height="3"/><rect x="25" y="58" width="3" height="3"/><rect x="28" y="55" width="3" height="3"/><rect x="31" y="58" width="3" height="3"/><rect x="34" y="55" width="3" height="3"/><rect x="37" y="58" width="3" height="3"/><rect x="40" y="55" width="3" height="3"/></g>`),
 
   // Squire: a young squire in a chainmail hood, polishing a knight's shield until it gleams.
+  // Rogue: a hooded thief — deep green hood, face in shadow, sharp gleaming eyes, a sly grin and a dagger.
+  rogue: badge('rogue', '#3f9a6e', '#0f3324', `
+    <path d="M12 64 Q12 48 24 45 L40 45 Q52 48 52 64Z" fill="#24543f" ${line}/>
+    <path d="M32 7 Q50 10 51 32 Q51 46 44 52 L20 52 Q13 46 13 32 Q14 10 32 7Z" fill="#2f6b4f" ${line}/>
+    <path d="M32 10 Q24 14 22 24" fill="none" stroke="#4d9474" stroke-width="2.2" stroke-linecap="round"/>
+    <path d="M19 34 Q19 21 32 21 Q45 21 45 34 Q45 47 32 49 Q19 47 19 34Z" fill="#1a2620" ${line}/>
+    <path d="M21 31 Q32 26 43 31 L43 34 Q32 30 21 34Z" fill="#0d1410"/>
+    <path d="M23.5 34.5 L29.5 36 L28.6 38.2 L24 37Z" fill="#c8f27a"/>
+    <path d="M40.5 34.5 L34.5 36 L35.4 38.2 L40 37Z" fill="#c8f27a"/>
+    <circle cx="27.4" cy="36.6" r=".8" fill="${O}"/><circle cx="36.6" cy="36.6" r=".8" fill="${O}"/>
+    <path d="M27 43 Q31 45.5 37 42" fill="none" stroke="#c8f27a" stroke-width="1.8" stroke-linecap="round" opacity=".85"/>
+    <path d="M44 62 L51 44 L54 45.5 L48 63Z" fill="#d7dde6" ${line}/>
+    <path d="M47.5 47 L56 50.5" stroke="#c99a2e" stroke-width="3.4" stroke-linecap="round"/>
+    <path d="M50.5 50 L46 61" stroke="#fff" stroke-width="1.2" stroke-linecap="round" opacity=".7"/>
+    ${sparkle(55, 40, 0.8, '#ffffff')}`),
+
   squire: badge('squire', '#7f8ea6', '#2b3445', `
     <path d="M10 64 Q10 50 24 48 Q36 48 38 64Z" fill="#8a5a33" ${line}/>
     <path d="M12 33 Q11 15 25 14 Q39 15 38 33 L38 46 Q25 52 12 46Z" fill="#aeb8c6" ${line}/>
@@ -87,6 +103,25 @@ const ICONS = {
     <path d="M47.5 38 Q50 41 48.5 44 M50 36.5 Q53 41 51 46" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round" opacity=".8"/>
     ${sparkle(50, 32, 1.1, '#fff6c2')}`),
 
+  // Monk: calm and disciplined — shaved head, eyes closed in focus, prayer beads, saffron robe.
+  monk: badge('monk', '#5fb7c9', '#164b5c', `
+    <path d="M10 64 Q11 47 26 45 L38 45 Q53 47 54 64Z" fill="#f08a24" ${line}/>
+    <path d="M24 45 Q30 54 38 64 L46 64 Q40 52 38 45Z" fill="#b8571a" ${line}/>
+    <circle cx="32" cy="31" r="15" fill="${SKIN}" ${line}/>
+    <ellipse cx="16.6" cy="32" rx="2.6" ry="3.6" fill="${SKIN}" ${line}/>
+    <ellipse cx="47.4" cy="32" rx="2.6" ry="3.6" fill="${SKIN}" ${line}/>
+    <path d="M22 22 Q27 17 33 17" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".55"/>
+    <path d="M23.5 32 Q26.5 34.6 29.5 32" fill="none" ${line}/>
+    <path d="M34.5 32 Q37.5 34.6 40.5 32" fill="none" ${line}/>
+    <path d="M23.5 28 Q26.5 26.6 29.5 27.6 M34.5 27.6 Q37.5 26.6 40.5 28" fill="none" stroke="#8a5a33" stroke-width="1.8" stroke-linecap="round"/>
+    <path d="M32 33 L31 37.5 L33 38" fill="none" stroke="#c98a62" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M28.5 41 Q32 43 35.5 41" fill="none" ${line}/>
+    <g fill="#7a3f1d" stroke="${O}" stroke-width="1.2">
+      <circle cx="21" cy="47" r="2.2"/><circle cx="25" cy="50" r="2.2"/><circle cx="29.3" cy="51.8" r="2.2"/><circle cx="34.7" cy="51.8" r="2.2"/><circle cx="39" cy="50" r="2.2"/><circle cx="43" cy="47" r="2.2"/>
+    </g>
+    <circle cx="32" cy="56" r="3" fill="#f5c542" ${line}/>
+    ${sparkle(13, 18, 0.8, '#fff6c2')}${sparkle(51, 15, 0.7, '#fff6c2')}`),
+
   ninja: badge('ninja', '#3a3f4e', '#101218', `
     <path d="M47 23 Q57 18 60 11 Q58 20 52 25 Q60 26 61 33 Q55 28 47 28Z" fill="#e5484d" ${line}/>
     <circle cx="32" cy="35" r="18" fill="#262a35" ${line}/>
@@ -97,6 +132,23 @@ const ICONS = {
     <path d="M44 35 L35 37 L36 39.5 L43.5 38Z" fill="${O}"/>
     <circle cx="26.5" cy="37.6" r=".9" fill="#fff"/><circle cx="37.5" cy="37.6" r=".9" fill="#fff"/>
     <path d="M24 48 Q32 50 40 48" fill="none" stroke="#3d4252" stroke-width="2" stroke-linecap="round"/>`),
+
+  // Mage: a young spellcaster — deep blue hood with gold trim, glowing eyes, a crackling orb held up.
+  mage: badge('mage', '#d0457f', '#4a0d2e', `
+    <path d="M10 64 Q11 48 24 45 L40 45 Q53 48 54 64Z" fill="#23307a" ${line}/>
+    <path d="M27 45 L32 58 L37 45" fill="none" stroke="#f5c542" stroke-width="2.4" stroke-linejoin="round"/>
+    <path d="M32 8 Q48 11 48 30 Q48 44 42 49 L22 49 Q16 44 16 30 Q16 11 32 8Z" fill="#2f40a3" ${line}/>
+    <path d="M22 49 Q16 44 16 30 Q16 11 32 8 Q48 11 48 30 Q48 44 42 49" fill="none" stroke="#f5c542" stroke-width="1.6" opacity=".9"/>
+    <path d="M21 33 Q21 21 32 21 Q43 21 43 33 Q43 45 32 47 Q21 45 21 33Z" fill="${SKIN}" ${line}/>
+    <path d="M21.5 28 Q27 22 32 24 Q37 22 42.5 28 Q38 25.5 32 27 Q26 25.5 21.5 28Z" fill="#3a2a5e" ${line}/>
+    <circle cx="27.4" cy="34" r="2.4" fill="#7ff7ff" ${line}/><circle cx="36.6" cy="34" r="2.4" fill="#7ff7ff" ${line}/>
+    <path d="M32 35 L31 39 L33 39.4" fill="none" stroke="#c98a62" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M28.5 42.5 Q32 44.5 36 42" fill="none" ${line}/>
+    <circle cx="52" cy="22" r="8" fill="#7ff7ff" opacity=".35"/>
+    <circle cx="52" cy="22" r="5.4" fill="#b9fbff" ${line}/>
+    <path d="M49.5 20 L52 23 L50.5 24.5 L54 27" fill="none" stroke="#2f40a3" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M47 33 Q50 30 52 28" fill="none" stroke="${SKIN}" stroke-width="4" stroke-linecap="round"/>
+    ${sparkle(44, 13, 0.8, '#fff6c2')}${sparkle(58, 33, 0.7, '#fff6c2')}`),
 
   warrior: badge('warrior', '#e0574f', '#7a1f1f', `
     <path d="M30 20 Q16 18 12 3 Q20 10 31 14Z" fill="#f5c542" ${line}/>

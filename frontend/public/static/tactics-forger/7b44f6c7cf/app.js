@@ -351,13 +351,16 @@ const today = () => new Date().toISOString().slice(0, 10);
 // 1500-1600 player starts. Ranks at or below your starting rating are yours from the start.
 const RANKS = [
   [0, 'grasshopper', 'Grasshopper', 'Starting out', 0],
-  [700, 'jester', 'Jester', 'Knows some tricks', 500],
-  [1000, 'apprentice', 'Apprentice', 'Learning the craft', 1000],
-  [1300, 'squire', 'Squire', 'Getting better', 2000],
+  [600, 'jester', 'Jester', 'Knows some tricks', 250],
+  [800, 'apprentice', 'Apprentice', 'Learning the craft', 500],
+  [1000, 'rogue', 'Rogue', 'Sneaky and quick', 1000],
+  [1200, 'squire', 'Squire', 'Getting better', 1500],
+  [1400, 'monk', 'Monk', 'Calm and focused', 2000],
   [1600, 'ninja', 'Ninja', 'Strikes from the shadows', 3000],
-  [1900, 'warrior', 'Warrior', 'Battle-tested', 5000],
+  [1800, 'mage', 'Mage', 'Sees hidden patterns', 4000],
+  [2000, 'warrior', 'Warrior', 'Battle-tested', 5500],
   [2200, 'beast', 'Beast', 'Ready to pounce', 7500],
-  [2500, 'wizard', 'Wizard', 'Tactical master', 10000],
+  [2400, 'wizard', 'Wizard', 'Tactical master', 10000],
 ];
 const tabPuzzles = (tr) => sum((indexes[tr]?.themes || []).map((t) => t.puzzles));
 const RANK_SCALE = { tactics: 1, openings: 0.6, endgames: 0.6 };
