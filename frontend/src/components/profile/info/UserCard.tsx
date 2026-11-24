@@ -219,7 +219,7 @@ export function UserCard({
                         }}
                     >
                         <CoachChip user={user} />
-                        <PuzzleContributorChip username={user.username} />
+                        {getConfig().isBeta && <PuzzleContributorChip username={user.username} />}
                         <InactiveChip user={user} />
                         <DiscordChip username={user.discordUsername} id={user.discordId} />
                         <TimezoneChip timezone={user.timezoneOverride} />
