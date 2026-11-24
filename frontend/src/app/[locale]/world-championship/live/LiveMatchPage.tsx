@@ -1,5 +1,6 @@
 'use client';
 
+import { useApi } from '@/api/Api';
 import { AuthStatus, useAuth } from '@/auth/Auth';
 import { Chess } from '@/board/Board';
 import type { Square } from '@jackstenglein/chess';
@@ -81,7 +82,7 @@ import {
     useRoundFeed,
 } from './lichessFeed';
 import { LiveBoard } from './LiveBoard';
-import { resolveLayout, WcLayout } from './liveLayout';
+import { parseLayout, resolveLayout, WcLayout } from './liveLayout';
 import { useActAs } from './localTesting';
 import { useMoveSounds } from './moveSounds';
 import { Notation } from './Notation';
@@ -133,6 +134,7 @@ const CUSTOM_NUMBER_BASE = 1000;
 
 export function LiveMatchPage() {
     const { user, status: authStatus } = useAuth();
+    const api = useApi();
     // On a local test run, ?as=<username> acts as that user. Never on the real site.
     const actAs = useActAs();
     const username = actAs ?? user?.username;
@@ -372,8 +374,20 @@ export function LiveMatchPage() {
     // Analysis view 2 is analysis view 1 with the players and clocks in a column
     // left of the board, the way chess.com shows a broadcast. A phone has no room
     // for the column, so there it falls back to the player bars.
+    //
+    // The view someone picks is saved in this browser and on their account, so it
+    // follows them to other devices. The account's choice wins. A local test run
+    // acting as someone else (?as=) leaves the signed-in account alone.
     const [savedLayout, setSavedLayout] = useLocalStorage<WcLayout | null>('wcLive.layout', null);
-    const layout = resolveLayout(savedLayout, canAnalyze);
+    const accountLayout = actAs ? null : parseLayout(user?.wcLiveLayout);
+    const layout = resolveLayout(accountLayout ?? parseLayout(savedLayout), canAnalyze);
+    const chooseLayout = (next: WcLayout) => {
+        setSavedLayout(next);
+        if (!actAs && user && user.wcLiveLayout !== next) {
+            // The browser keeps the choice even if saving it to the account fails.
+            api.updateUser({ wcLiveLayout: next }).catch(() => undefined);
+        }
+    };
     const streamView = layout === 'stream';
     const playerColumn = layout === 'analysis2';
 
@@ -833,7 +847,7 @@ export function LiveMatchPage() {
                             size='small'
                             exclusive
                             value={layout}
-                            onChange={(_, v: WcLayout | null) => v && setSavedLayout(v)}
+                            onChange={(_, v: WcLayout | null) => v && chooseLayout(v)}
                             aria-label='Page layout'
                             sx={{ flexShrink: 0, ml: 1, display: { xs: 'none', sm: 'flex' } }}
                         >
