@@ -46,8 +46,10 @@ export interface AnalysisApi {
  * The senseis' shared analysis of a game. Only senseis call this: for anyone
  * else it does nothing and the page shows the live position.
  *
- * Changes show at once on this sensei's board, and poll results are ignored
- * while a change is being saved, so the board does not jump back.
+ * Changes show at once on this sensei's board. Every local change gets a
+ * number, and an answer from the API (a save or a poll) is only shown if no
+ * newer change was made here after its request went out. Otherwise a slow
+ * answer would put the board back a move and then forward again.
  */
 export function useAnalysis(
     roundId: string | undefined,
@@ -57,8 +59,13 @@ export function useAnalysis(
 ): AnalysisApi {
     const [analysis, setAnalysis] = useState<WcAnalysis>();
     const [error, setError] = useState<string>();
+    /** Saves on their way, including a select still waiting to be sent. */
     const pending = useRef(0);
+    /** Bumped by every local change. */
+    const generation = useRef(0);
     const selectTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+    /** Whether selectTimer holds a select not sent yet (counted in pending). */
+    const selectWaiting = useRef(false);
 
     useEffect(() => {
         setAnalysis(undefined);
@@ -66,28 +73,39 @@ export function useAnalysis(
             return;
         }
         let cancelled = false;
-        const load = () =>
+        const load = () => {
+            const sentAt = generation.current;
             getAnalysis(roundId)
                 .then((a) => {
-                    if (!cancelled && pending.current === 0) {
+                    if (!cancelled && pending.current === 0 && generation.current === sentAt) {
                         setAnalysis(a);
                     }
                 })
                 .catch(() => undefined);
-        void load();
-        const timer = setInterval(() => void load(), POLL_MS);
+        };
+        load();
+        const timer = setInterval(load, POLL_MS);
         return () => {
             cancelled = true;
             clearInterval(timer);
             clearTimeout(selectTimer.current);
+            if (selectWaiting.current) {
+                selectWaiting.current = false;
+                pending.current--;
+            }
         };
     }, [roundId, enabled]);
 
-    const send = useCallback((request: WcAnalysisRequest) => {
+    const send = useCallback((request: WcAnalysisRequest, sentAt: number) => {
         pending.current++;
         setError(undefined);
         putAnalysis(request)
-            .then((saved) => setAnalysis(saved))
+            .then((saved) => {
+                // A newer change made here since shows already; its own save follows.
+                if (generation.current === sentAt) {
+                    setAnalysis(saved);
+                }
+            })
             .catch(() => setError('The analysis was not saved. Try again.'))
             .finally(() => {
                 pending.current--;
@@ -100,15 +118,23 @@ export function useAnalysis(
             setAnalysis((current) =>
                 apply(current ?? { roundId: request.roundId, lines: [], version: 0 }, request),
             );
+            const sentAt = ++generation.current;
+            // A select still waiting is replaced by this change.
             clearTimeout(selectTimer.current);
+            if (selectWaiting.current) {
+                selectWaiting.current = false;
+                pending.current--;
+            }
             if (delay) {
                 pending.current++;
+                selectWaiting.current = true;
                 selectTimer.current = setTimeout(() => {
+                    selectWaiting.current = false;
                     pending.current--;
-                    send(request);
+                    send(request, sentAt);
                 }, delay);
             } else {
-                send(request);
+                send(request, sentAt);
             }
         },
         [apply, send],

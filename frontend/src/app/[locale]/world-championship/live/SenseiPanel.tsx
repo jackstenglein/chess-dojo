@@ -4,6 +4,7 @@ import {
     formatEval,
     WC_EVAL_MAX,
     WC_EVAL_MIN,
+    WC_EVAL_PRESETS,
     WC_SENSEI_COLORS,
     WcRosterRequest,
     WcSensei,
@@ -44,6 +45,8 @@ interface SenseiPanelProps {
     values: Record<string, number | undefined>;
     /** The move the shown position comes after, for the heading. */
     positionLabel: string;
+    /** The signed-in sensei. Their own card also gets the chess symbol buttons. */
+    me?: string;
     onScore: (senseiId: string, value: number) => Promise<void>;
     onRoster: (request: WcRosterRequest) => Promise<void>;
 }
@@ -57,6 +60,7 @@ export function SenseiPanel({
     roster,
     values,
     positionLabel,
+    me,
     onScore,
     onRoster,
 }: SenseiPanelProps) {
@@ -87,6 +91,7 @@ export function SenseiPanel({
                         key={s.id}
                         sensei={s}
                         canScore
+                        mine={s.id === me}
                         saved={values[s.id]}
                         positionLabel={positionLabel}
                         onScore={onScore}
@@ -107,6 +112,8 @@ export function SenseiPanel({
 interface SenseiCardProps {
     sensei: WcSensei;
     canScore: boolean;
+    /** The signed-in sensei's own card, which also gets the symbol buttons. */
+    mine?: boolean;
     saved?: number;
     positionLabel: string;
     onScore: (senseiId: string, value: number) => Promise<void>;
@@ -116,6 +123,7 @@ interface SenseiCardProps {
 function SenseiCard({
     sensei,
     canScore,
+    mine,
     saved,
     positionLabel,
     onScore,
@@ -305,6 +313,35 @@ function SenseiCard({
                     </Tooltip>
                 )}
             </Stack>
+
+            {/* Your own card: one tap to the usual chess symbols */}
+            {canScore && mine && (
+                <Box
+                    data-testid='sensei-presets'
+                    sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 0.5, mt: 1 }}
+                >
+                    {WC_EVAL_PRESETS.map((p) => (
+                        <Tooltip key={p.symbol} title={`${p.meaning} (${formatEval(p.value)})`}>
+                            <Button
+                                size='small'
+                                aria-label={`${p.meaning}, ${formatEval(p.value)}`}
+                                onClick={() => change(p.value)}
+                                sx={{
+                                    minWidth: 0,
+                                    py: 0.25,
+                                    fontFamily: 'monospace',
+                                    fontWeight: 700,
+                                    textTransform: 'none',
+                                    color: 'text.primary',
+                                    bgcolor: value === p.value ? 'action.selected' : 'action.hover',
+                                }}
+                            >
+                                {p.symbol}
+                            </Button>
+                        </Tooltip>
+                    ))}
+                </Box>
+            )}
 
             <Popover
                 open={!!colorAnchor}
