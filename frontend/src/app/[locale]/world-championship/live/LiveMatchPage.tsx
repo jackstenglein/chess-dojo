@@ -843,11 +843,11 @@ export function LiveMatchPage() {
                     columnGap: 3,
                     rowGap: 1,
                     alignItems: 'start',
-                    // Board, then the notation, then the leaderboard, with the stream
-                    // under the notation and leaderboard so it plays beside the board.
-                    // The top player bar has a row of its own, so the board, the
-                    // notation and the leaderboard all start on the same line. On a
-                    // phone everything stacks, with the stream under the board.
+                    // Board, then the notation, then the leaderboard. In the stream view
+                    // on a wide screen the stream sits above the notation and leaderboard,
+                    // beside the board. In the analysis view it is under all three. The
+                    // top player bar has a row of its own, so everything beside the board
+                    // starts on the same line. On a phone everything stacks.
                     gridTemplateColumns: {
                         xs: '1fr',
                         md: 'minmax(0, 1fr) 340px',
@@ -858,14 +858,14 @@ export function LiveMatchPage() {
                         ? {
                               xs: '"top" "board" "twitch" "moves" "leaders"',
                               md: '"top ." "board moves" "twitch twitch" "leaders leaders"',
-                              lg: '"top . ." "board moves leaders" "board twitch twitch"',
+                              lg: '"top . ." "board twitch twitch" "board moves leaders"',
                           }
                         : {
                               xs: '"top" "board" "moves" "leaders" "twitch"',
                               md: '"top ." "board moves" "leaders leaders" "twitch twitch"',
                               lg: '"top . ." "board moves leaders" "twitch twitch twitch"',
                           },
-                    // In the stream view the board spans the notation row and the stream row.
+                    // In the stream view the board spans the stream row and the notation row.
                     gridTemplateRows: streamView ? { lg: 'auto auto 1fr' } : undefined,
                 }}
             >
