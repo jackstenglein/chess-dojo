@@ -63,6 +63,7 @@ import { useLocalStorage } from 'usehooks-ts';
 import { AddGameDialog } from './AddGameDialog';
 import { AdminView } from './AdminView';
 import { useAnalysis } from './analysisClient';
+import { BoardThemeButton } from './BoardThemeButton';
 import { useCrosstable } from './crosstable';
 import { CrosstableView } from './CrosstableView';
 import { GuessPanel, GuessState, Leaderboard } from './GuessTheMove';
@@ -1094,6 +1095,7 @@ export function LiveMatchPage() {
                                 <SwapVertIcon />
                             </IconButton>
                         </Tooltip>
+                        <BoardThemeButton />
                     </Stack>
                     {canAnalyze && analysisApi.error && (
                         <Typography variant='caption' color='error'>
