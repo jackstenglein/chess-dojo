@@ -1,0 +1,97 @@
+'use client';
+
+import {
+    Box,
+    Link,
+    Paper,
+    Stack,
+    ToggleButton,
+    ToggleButtonGroup,
+    Typography,
+} from '@mui/material';
+import { useEffect, useState } from 'react';
+import { useLocalStorage } from 'usehooks-ts';
+
+export const TWITCH_CHANNEL = 'chessdojo';
+
+/** ChessDojo's YouTube channel. Its embed plays the channel's current live stream. */
+export const YOUTUBE_CHANNEL_ID = 'UC4liTXRJ-XknH6OtKz-tOuw';
+
+type Platform = 'twitch' | 'youtube';
+
+/**
+ * The ChessDojo stream on Twitch or YouTube. The viewer picks one and the
+ * browser remembers it. Twitch only plays inside pages whose host it is told
+ * about, so the player is added once the host is known in the browser.
+ */
+export function StreamEmbed() {
+    const [host, setHost] = useState<string>();
+    useEffect(() => setHost(window.location.hostname), []);
+    const [platform, setPlatform] = useLocalStorage<Platform>('wcLive.streamPlatform', 'twitch');
+
+    const src =
+        platform === 'youtube'
+            ? `https://www.youtube.com/embed/live_stream?channel=${YOUTUBE_CHANNEL_ID}&mute=1`
+            : host &&
+              `https://player.twitch.tv/?channel=${TWITCH_CHANNEL}&parent=${encodeURIComponent(host)}&muted=true`;
+    const openHref =
+        platform === 'youtube'
+            ? `https://www.youtube.com/channel/${YOUTUBE_CHANNEL_ID}/live`
+            : `https://www.twitch.tv/${TWITCH_CHANNEL}`;
+
+    return (
+        <Paper variant='outlined' sx={{ p: 1.5 }} data-testid='stream-embed'>
+            <Stack direction='row' spacing={1.5} sx={{ alignItems: 'center', mb: 1 }}>
+                <Typography variant='subtitle1' sx={{ fontWeight: 800 }}>
+                    Watch ChessDojo live
+                </Typography>
+                <ToggleButtonGroup
+                    size='small'
+                    exclusive
+                    value={platform}
+                    onChange={(_, v: Platform | null) => v && setPlatform(v)}
+                    aria-label='Stream platform'
+                >
+                    <ToggleButton value='twitch' sx={{ textTransform: 'none', py: 0.25 }}>
+                        Twitch
+                    </ToggleButton>
+                    <ToggleButton value='youtube' sx={{ textTransform: 'none', py: 0.25 }}>
+                        YouTube
+                    </ToggleButton>
+                </ToggleButtonGroup>
+                <Box sx={{ flexGrow: 1 }} />
+                <Link href={openHref} target='_blank' rel='noopener noreferrer' variant='body2'>
+                    Open on {platform === 'youtube' ? 'YouTube' : 'Twitch'}
+                </Link>
+            </Stack>
+            <Box
+                sx={{
+                    position: 'relative',
+                    width: 1,
+
+                    aspectRatio: '16 / 9',
+                    bgcolor: 'black',
+                    borderRadius: 1,
+                    overflow: 'hidden',
+                }}
+            >
+                {src && (
+                    <iframe
+                        key={platform}
+                        title={`ChessDojo on ${platform === 'youtube' ? 'YouTube' : 'Twitch'}`}
+                        src={src}
+                        allow='autoplay; encrypted-media; picture-in-picture; fullscreen'
+                        allowFullScreen
+                        style={{
+                            position: 'absolute',
+                            inset: 0,
+                            width: '100%',
+                            height: '100%',
+                            border: 0,
+                        }}
+                    />
+                )}
+            </Box>
+        </Paper>
+    );
+}
