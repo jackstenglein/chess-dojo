@@ -87,6 +87,9 @@ func Handler(ctx context.Context, event api.Request) (api.Response, error) {
 			return api.Failure(errors.New(400, "Invalid request: dojoCohort cannot be empty", "")), nil
 		}
 	}
+	if update.WcLiveLayout != nil && !validWcLiveLayouts[*update.WcLiveLayout] {
+		return api.Failure(errors.New(400, "Invalid request: wcLiveLayout must be stream, analysis or analysis2", "")), nil
+	}
 	// Validates that the bio does not contain profanity
 	if update.Bio != nil {
 		if profanityDetector.IsProfane(*update.Bio) {
@@ -134,6 +137,9 @@ func Handler(ctx context.Context, event api.Request) (api.Response, error) {
 
 	return api.Success(newUser), nil
 }
+
+// validWcLiveLayouts are the layouts of the World Championship live page.
+var validWcLiveLayouts = map[string]bool{"stream": true, "analysis": true, "analysis2": true}
 
 // validateMainClubId returns an error if the update sets mainClubId to a club
 // the user is not a member of. An empty string is allowed and clears the designation.

@@ -221,6 +221,33 @@ func TestUpdateUser(t *testing.T) {
 				DojoCohort:   "2400+",
 			},
 		},
+		{
+			name:     "WcLiveLayout",
+			username: testUsername,
+			update: &database.UserUpdate{
+				WcLiveLayout: new("analysis2"),
+			},
+			wantCode: 200,
+			wantUser: &database.User{
+				Username:     testUsername,
+				Email:        testEmail,
+				Name:         testName,
+				DisplayName:  "testDisplayName",
+				Bio:          "I enjoy classroom assessment and passage analysis.",
+				RatingSystem: database.Fide,
+				DojoCohort:   "2400+",
+				WcLiveLayout: "analysis2",
+			},
+		},
+		{
+			name:     "InvalidWcLiveLayout",
+			username: testUsername,
+			update: &database.UserUpdate{
+				WcLiveLayout: new("sideways"),
+			},
+			wantCode: 400,
+			wantErr:  true,
+		},
 	}
 
 	for _, tc := range table {
