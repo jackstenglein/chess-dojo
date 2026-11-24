@@ -34,6 +34,7 @@ import {
 import { useTranslations } from 'next-intl';
 import React, { useState, type JSX } from 'react';
 import { Logo, NavMenuItem, NavbarItem, StartItem } from './NavbarMenu';
+import { wccNavItem } from './wccNavItem';
 
 const UnauthenticatedMenu = () => {
     const largeMenu = useMediaQuery('(min-width:450px)');
@@ -50,6 +51,7 @@ function unauthenticatedStartItems(
     t: ReturnType<typeof useTranslations>,
 ): NavbarItem[] {
     return [
+        wccNavItem(),
         {
             id: 'live-classes',
             name: (

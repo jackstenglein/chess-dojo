@@ -71,6 +71,7 @@ import { TimerButton, TimerMenuItem } from '../../timer/TimerButton';
 import DarkModeToggle from './DarkModeToggle';
 import ProfileButton from './ProfileButton';
 import UnauthenticatedMenu from './UnauthenticatedMenu';
+import { wccNavItem } from './wccNavItem';
 
 function searchNavbarItem(t: ReturnType<typeof useTranslations>): NavbarItem {
     return {
@@ -128,6 +129,7 @@ function allStartItems(
     t: ReturnType<typeof useTranslations>,
 ): NavbarItem[] {
     return [
+        wccNavItem(),
         {
             id: 'training-plan',
             name: t('trainingPlan'),
