@@ -79,6 +79,7 @@ import {
     useRoundFeed,
 } from './lichessFeed';
 import { LiveBoard } from './LiveBoard';
+import { resolveLayout } from './liveLayout';
 import { useActAs } from './localTesting';
 import { useMoveSounds } from './moveSounds';
 import { Notation } from './Notation';
@@ -363,13 +364,13 @@ export function LiveMatchPage() {
 
     // Two layouts. The stream view puts the ChessDojo stream beside the board and
     // the sensei evals under it; the analysis view keeps the evals by the notation
-    // and the stream below. Viewers start on the stream view, senseis on the
-    // analysis view, and a choice made with the switch is remembered.
+    // and the stream below. Viewers always have the stream view. Senseis start on
+    // the analysis view, and the browser remembers the view they pick with the switch.
     const [savedLayout, setSavedLayout] = useLocalStorage<'stream' | 'analysis' | null>(
         'wcLive.layout',
         null,
     );
-    const layout = savedLayout ?? (canAnalyze ? 'analysis' : 'stream');
+    const layout = resolveLayout(savedLayout, canAnalyze);
     const streamView = layout === 'stream';
 
     // The Admin tab. The page always opens on a game, never here.
@@ -806,21 +807,25 @@ export function LiveMatchPage() {
                             />
                         ))}
                     </Tabs>
-                    <ToggleButtonGroup
-                        size='small'
-                        exclusive
-                        value={layout}
-                        onChange={(_, v: 'stream' | 'analysis' | null) => v && setSavedLayout(v)}
-                        aria-label='Page layout'
-                        sx={{ flexShrink: 0, ml: 1, display: { xs: 'none', sm: 'flex' } }}
-                    >
-                        <ToggleButton value='stream' sx={{ textTransform: 'none', py: 0.25 }}>
-                            Stream view
-                        </ToggleButton>
-                        <ToggleButton value='analysis' sx={{ textTransform: 'none', py: 0.25 }}>
-                            Analysis view
-                        </ToggleButton>
-                    </ToggleButtonGroup>
+                    {canAnalyze && (
+                        <ToggleButtonGroup
+                            size='small'
+                            exclusive
+                            value={layout}
+                            onChange={(_, v: 'stream' | 'analysis' | null) =>
+                                v && setSavedLayout(v)
+                            }
+                            aria-label='Page layout'
+                            sx={{ flexShrink: 0, ml: 1, display: { xs: 'none', sm: 'flex' } }}
+                        >
+                            <ToggleButton value='stream' sx={{ textTransform: 'none', py: 0.25 }}>
+                                Stream view
+                            </ToggleButton>
+                            <ToggleButton value='analysis' sx={{ textTransform: 'none', py: 0.25 }}>
+                                Analysis view
+                            </ToggleButton>
+                        </ToggleButtonGroup>
+                    )}
                     {isSensei && (
                         <Button
                             size='small'
