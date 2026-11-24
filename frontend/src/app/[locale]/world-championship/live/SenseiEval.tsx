@@ -125,6 +125,10 @@ export function EvalBar({ average, pins, orientation }: EvalBarProps) {
 
     return (
         <Box
+            // The key remounts the bar when the board flips. Without it the fill,
+            // line and pins slide to the other end, the way they do when an eval
+            // changes.
+            key={orientation}
             data-testid='sensei-eval-bar'
             sx={{
                 position: 'relative',
