@@ -67,7 +67,9 @@ main { max-width: 1180px; margin: 0 auto; padding: 20px 16px 60px; min-width: 0;
 /* Ladder */
 .back { color: var(--muted); font-size: 14px; }
 .back:hover { color: var(--text); }
-.ladder-head { position: sticky; top: 49px; z-index: 5; background: var(--bg); padding: 4px 0 12px; }
+.ladder-head { padding: 4px 0 0; }
+/* Only the slim action row stays pinned while the ladder scrolls under it; --topbar-h is set from app.js. */
+.ladder-actions { position: sticky; top: var(--topbar-h, 0px); z-index: 5; background: var(--bg); padding: 8px 0 10px; margin-bottom: 4px; }
 .ladder-head h1 { margin: 6px 0 10px; }
 .ladder-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
 .jump { color: var(--muted); font-size: 14px; display: flex; align-items: center; gap: 6px; }
@@ -1023,4 +1025,23 @@ html.embed .nav { margin-left: 0; }
   .play-side .puzzle-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; font-size: 13px; }
   .play-side .puzzle-meta > div { display: contents; }
   .play-side .rule { font-size: 12px; margin: 0; color: var(--muted); }
+}
+
+/* Phones: rank first on home; a compact ladder summary and one-row rungs on the ladder page. */
+@media (max-width: 700px) {
+  .home .rank-road { order: -2; }
+  .ladder-head h1 { font-size: 26px; margin: 4px 0 8px; }
+  .ladder-summary { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-bottom: 4px; }
+  .sum-rank { grid-column: 1 / -1; padding: 8px 12px; }
+  .sum-rank .rank-svg { width: 40px; height: 40px; }
+  .sum-tile { padding: 7px 10px; }
+  .sum-tile b { font-size: 16px; }
+  .sum-tile small, .sum-tile span { font-size: 11px; }
+  .sum-bar { display: none; }
+  .ladder-actions { gap: 8px; flex-wrap: nowrap; }
+  .ladder-actions .btn.primary { flex: 1; }
+  .rung { grid-template-columns: 48px 1fr 36px; gap: 8px; padding: 8px; }
+  .rung-label b { font-size: 16px; }
+  .rung-count small, .rung-count span { display: none; }
+  .rung-count b { font-size: 13px; }
 }

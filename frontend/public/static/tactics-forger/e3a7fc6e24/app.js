@@ -2419,7 +2419,8 @@ async function showLadder(key) {
       ${track === 'openings' && !specialtyKeys().includes(key) ? `<div class="try-banner">🧪 Trying out an opening outside your specialty. Progress here is kept.
         <button type="button" class="btn small" id="makeSpec">Make it my specialty pick</button></div>` : ''}
       <div class="ladder-summary"></div>
-      <div class="ladder-actions">
+    </div>
+    <div class="ladder-actions">
         <button class="btn primary" id="cont">${tp.frontier >= theme.sets.length ? 'Ladder complete 🏆' : 'Continue climbing'}</button>
         <label class="jump">Jump to
           <select id="jump">${theme.bands.map((b, i) => {
@@ -2427,7 +2428,6 @@ async function showLadder(key) {
             return `<option value="${flat}">${b.min}</option>`;
           }).join('')}</select>
         </label>
-      </div>
     </div>
     <div class="ladder"></div>
   </div>`);
@@ -3318,6 +3318,11 @@ function setupOffline() {
   renderStats();
   route();
   setupOffline();
+  // Pinned rows (the ladder's Continue bar) sit just under the top bar, whose height changes as it wraps.
+  const topbar = document.querySelector('.topbar');
+  if (topbar && 'ResizeObserver' in window) {
+    new ResizeObserver(() => document.documentElement.style.setProperty('--topbar-h', `${topbar.offsetHeight}px`)).observe(topbar);
+  }
   // On chessdojo.club: bring in the progress saved to the account, then redraw with it. If that
   // fails (offline), keep playing on this device and try again once the connection is back.
   const connect = async () => {
