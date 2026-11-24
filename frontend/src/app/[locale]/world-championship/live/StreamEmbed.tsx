@@ -1,12 +1,16 @@
 'use client';
 
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
     Box,
+    IconButton,
     Link,
     Paper,
     Stack,
     ToggleButton,
     ToggleButtonGroup,
+    Tooltip,
     Typography,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
@@ -24,8 +28,14 @@ type Platform = 'twitch' | 'youtube';
  * browser remembers it. Twitch only plays inside pages whose host it is told
  * about, so the player is added once the host is known in the browser.
  */
-export function StreamEmbed() {
+export function StreamEmbed({ minimizable }: { minimizable?: boolean } = {}) {
     const [host, setHost] = useState<string>();
+    // A minimized stream keeps only its header. The player is taken out of the
+    // page, so the stream also stops playing.
+    const [savedMinimized, setMinimized] = useLocalStorage('wcLive.streamMinimized', false, {
+        initializeWithValue: false,
+    });
+    const minimized = !!minimizable && savedMinimized;
     useEffect(() => setHost(window.location.hostname), []);
     // The server cannot see the saved choice, so the first render is always
     // Twitch and the saved choice is read after that. Reading it straight away
@@ -46,7 +56,11 @@ export function StreamEmbed() {
 
     return (
         <Paper variant='outlined' sx={{ p: 1.5 }} data-testid='stream-embed'>
-            <Stack direction='row' spacing={1.5} sx={{ alignItems: 'center', mb: 1 }}>
+            <Stack
+                direction='row'
+                spacing={1.5}
+                sx={{ alignItems: 'center', mb: minimized ? 0 : 1 }}
+            >
                 <Typography variant='subtitle1' sx={{ fontWeight: 800 }}>
                     Watch ChessDojo live
                 </Typography>
@@ -68,8 +82,21 @@ export function StreamEmbed() {
                 <Link href={openHref} target='_blank' rel='noopener noreferrer' variant='body2'>
                     Open on {platform === 'youtube' ? 'YouTube' : 'Twitch'}
                 </Link>
+                {minimizable && (
+                    <Tooltip title={minimized ? 'Show the stream' : 'Minimize the stream'}>
+                        <IconButton
+                            size='small'
+                            aria-label={minimized ? 'Show the stream' : 'Minimize the stream'}
+                            aria-expanded={!minimized}
+                            onClick={() => setMinimized(!minimized)}
+                        >
+                            {minimized ? <ExpandMoreIcon /> : <ExpandLessIcon />}
+                        </IconButton>
+                    </Tooltip>
+                )}
             </Stack>
             <Box
+                hidden={minimized}
                 sx={{
                     position: 'relative',
                     width: 1,
@@ -80,7 +107,7 @@ export function StreamEmbed() {
                     overflow: 'hidden',
                 }}
             >
-                {src && (
+                {src && !minimized && (
                     <iframe
                         key={platform}
                         title={`ChessDojo on ${platform === 'youtube' ? 'YouTube' : 'Twitch'}`}
