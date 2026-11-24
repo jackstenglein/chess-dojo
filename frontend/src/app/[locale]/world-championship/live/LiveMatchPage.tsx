@@ -232,6 +232,8 @@ export function LiveMatchPage() {
     const mainSans = useMemo(() => moves.map((m) => m.san), [moves]);
     // A sensei's moves go on the analysis board. Holding Alt makes a move a guess instead.
     const altHeld = useRef(false);
+    // The board writes its drawn size here, so the player bars end where it ends.
+    const layoutRef = useRef<HTMLDivElement>(null);
     useEffect(() => {
         const onKey = (e: KeyboardEvent) => {
             if (e.key === 'Alt') {
@@ -831,6 +833,7 @@ export function LiveMatchPage() {
             {adminOpen && canAdmin && <AdminView rounds={rounds} initialRoundId={roundId} />}
 
             <Box
+                ref={layoutRef}
                 sx={{
                     display: adminOpen && canAdmin ? 'none' : 'grid',
                     columnGap: 3,
@@ -895,6 +898,7 @@ export function LiveMatchPage() {
                                           : undefined
                                 }
                                 guessUci={canGuess ? myGuesses[nextPly] : undefined}
+                                sizeVarsTo={layoutRef}
                             />
                         </Box>
                     </Stack>
@@ -1084,6 +1088,10 @@ function PlayerBar({
                     justifyContent: 'space-between',
                     flexGrow: 1,
                     minWidth: 0,
+                    // Chessground rounds each square down to whole device pixels, which can
+                    // leave the board up to 8 device pixels narrower than its box. This cap
+                    // ends the clock at the board's edge, not the box's.
+                    maxWidth: 'var(---cg-width)',
                 }}
             >
                 <Stack direction='row' spacing={1} sx={{ alignItems: 'center', minWidth: 0 }}>
