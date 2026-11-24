@@ -185,7 +185,7 @@ export function Leaderboard({ gameName, leaderboard, username, compact }: Leader
                     }}
                 >
                     <Link href={`/profile/${e.username}`} sx={{ color: 'text.primary' }}>
-                        {e.username}
+                        {e.displayName || e.username}
                     </Link>
                 </Typography>
                 <Box
