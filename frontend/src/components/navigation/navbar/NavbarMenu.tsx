@@ -71,7 +71,7 @@ import { TimerButton, TimerMenuItem } from '../../timer/TimerButton';
 import DarkModeToggle from './DarkModeToggle';
 import ProfileButton from './ProfileButton';
 import UnauthenticatedMenu from './UnauthenticatedMenu';
-import { wccNavItem } from './wccNavItem';
+import { WCC_EXTRA, wccNavItem } from './wccNavItem';
 
 function searchNavbarItem(t: ReturnType<typeof useTranslations>): NavbarItem {
     return {
@@ -568,7 +568,8 @@ function useNavbarItems(meetingCount: number, handleClose: () => void) {
     const auth = useAuth();
     const t = useTranslations('navbar');
 
-    const showAll = useMediaQuery('(min-width:1500px)');
+    // 150px more than before for the 2026 WCC item; lower it again with the item.
+    const showAll = useMediaQuery('(min-width:1650px)');
     const hide2 = useMediaQuery('(min-width:1341px)');
     const hide3 = useMediaQuery('(min-width:1217px)');
     const hide4 = useMediaQuery('(min-width:1000px)');
@@ -586,20 +587,23 @@ function useNavbarItems(meetingCount: number, handleClose: () => void) {
         t,
     );
 
+    // The 2026 WCC item is extra, so one more item folds into the menu at each
+    // width than before. Drop WCC_EXTRA (and the showAll change) with the item.
     let startItemCount = 0;
     if (showAll) {
         startItemCount = startItems.length;
     } else if (hide2) {
-        startItemCount = startItems.length - 2;
+        startItemCount = startItems.length - 2 - WCC_EXTRA;
     } else if (hide3) {
-        startItemCount = startItems.length - 3;
+        startItemCount = startItems.length - 3 - WCC_EXTRA;
     } else if (hide4) {
-        startItemCount = startItems.length - 4;
+        startItemCount = startItems.length - 4 - WCC_EXTRA;
     } else if (hide5) {
-        startItemCount = startItems.length - 5;
+        startItemCount = startItems.length - 5 - WCC_EXTRA;
     } else if (hide6) {
-        startItemCount = startItems.length - 6;
+        startItemCount = startItems.length - 6 - WCC_EXTRA;
     }
+    startItemCount = Math.max(0, startItemCount);
 
     const onClose = () => {
         setOpenItems({});

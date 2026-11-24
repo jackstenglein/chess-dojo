@@ -50,11 +50,14 @@ import {
     Stack,
     Tab,
     Tabs,
+    ToggleButton,
+    ToggleButtonGroup,
     Tooltip,
     Typography,
 } from '@mui/material';
 import { isAxiosError } from 'axios';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useLocalStorage } from 'usehooks-ts';
 import { AddGameDialog } from './AddGameDialog';
 import { AdminView } from './AdminView';
 import { useAnalysis } from './analysisClient';
@@ -340,6 +343,17 @@ export function LiveMatchPage() {
     // Read again when the game on the page finishes, so its result shows at once.
     const crosstable = useCrosstable(`${roundId ?? ''}:${feed.result}`);
 
+    // Two layouts. The stream view puts the ChessDojo stream beside the board and
+    // the sensei evals under it; the analysis view keeps the evals by the notation
+    // and the stream below. Viewers start on the stream view, senseis on the
+    // analysis view, and a choice made with the switch is remembered.
+    const [savedLayout, setSavedLayout] = useLocalStorage<'stream' | 'analysis' | null>(
+        'wcLive.layout',
+        null,
+    );
+    const layout = savedLayout ?? (isSensei ? 'analysis' : 'stream');
+    const streamView = layout === 'stream';
+
     // The Admin tab. The page always opens on a game, never here.
     const canAdmin = !!user?.isAdmin || (!!actAs && isSensei);
     const [adminOpen, setAdminOpen] = useState(false);
@@ -612,6 +626,20 @@ export function LiveMatchPage() {
     }, [roundId]);
     const shownLeaderboard = leaderboard?.roundId === roundId ? leaderboard : undefined;
 
+    // The sensei evals: cards for senseis, the read-only list for everyone else.
+    const senseiEvals =
+        isSensei && username ? (
+            <SenseiPanel
+                roster={roster}
+                values={valuesAtPly}
+                positionLabel={ply === 0 ? 'the start' : moveLabel(ply, moves[ply - 1]?.san)}
+                onScore={scoreSensei}
+                onRoster={changeRoster}
+            />
+        ) : (
+            <SenseiStrip roster={roster} pins={bar.pins} />
+        );
+
     // ---- Layout ----------------------------------------------------------
     const topColor = orientation === 'white' ? 'black' : 'white';
     const bottomColor = orientation;
@@ -694,6 +722,21 @@ export function LiveMatchPage() {
                             />
                         ))}
                     </Tabs>
+                    <ToggleButtonGroup
+                        size='small'
+                        exclusive
+                        value={layout}
+                        onChange={(_, v: 'stream' | 'analysis' | null) => v && setSavedLayout(v)}
+                        aria-label='Page layout'
+                        sx={{ flexShrink: 0, ml: 1, display: { xs: 'none', sm: 'flex' } }}
+                    >
+                        <ToggleButton value='stream' sx={{ textTransform: 'none', py: 0.25 }}>
+                            Stream view
+                        </ToggleButton>
+                        <ToggleButton value='analysis' sx={{ textTransform: 'none', py: 0.25 }}>
+                            Analysis view
+                        </ToggleButton>
+                    </ToggleButtonGroup>
                     {isSensei && (
                         <Button
                             size='small'
@@ -715,20 +758,30 @@ export function LiveMatchPage() {
                     columnGap: 3,
                     rowGap: 1,
                     alignItems: 'start',
-                    // Board, then the notation, then the leaderboard. The top player
-                    // bar has a row of its own, so the board, the notation and the
-                    // leaderboard all start on the same line. On a phone they stack.
+                    // Board, then the notation, then the leaderboard, with the stream
+                    // under the notation and leaderboard so it plays beside the board.
+                    // The top player bar has a row of its own, so the board, the
+                    // notation and the leaderboard all start on the same line. On a
+                    // phone everything stacks, with the stream under the board.
                     gridTemplateColumns: {
                         xs: '1fr',
                         md: 'minmax(0, 1fr) 340px',
                         // The leaderboard needs no more than this; wider only spreads it out.
                         lg: 'minmax(0, 620px) 340px minmax(280px, 360px)',
                     },
-                    gridTemplateAreas: {
-                        xs: '"top" "board" "moves" "leaders"',
-                        md: '"top ." "board moves" "leaders leaders"',
-                        lg: '"top . ." "board moves leaders"',
-                    },
+                    gridTemplateAreas: streamView
+                        ? {
+                              xs: '"top" "board" "twitch" "moves" "leaders"',
+                              md: '"top ." "board moves" "twitch twitch" "leaders leaders"',
+                              lg: '"top . ." "board moves leaders" "board twitch twitch"',
+                          }
+                        : {
+                              xs: '"top" "board" "moves" "leaders" "twitch"',
+                              md: '"top ." "board moves" "leaders leaders" "twitch twitch"',
+                              lg: '"top . ." "board moves leaders" "twitch twitch twitch"',
+                          },
+                    // In the stream view the board spans the notation row and the stream row.
+                    gridTemplateRows: streamView ? { lg: 'auto auto 1fr' } : undefined,
                 }}
             >
                 <Box sx={{ minWidth: 0, gridArea: 'top' }}>
@@ -874,6 +927,7 @@ export function LiveMatchPage() {
                             {analysisApi.error}
                         </Typography>
                     )}
+                    {streamView && senseiEvals}
                     <CrosstableView
                         table={crosstable}
                         currentNumber={round?.number}
@@ -906,32 +960,22 @@ export function LiveMatchPage() {
                         onPromote={isSensei ? (n) => analysisApi.promote(n.path) : undefined}
                         onDelete={isSensei ? (n) => analysisApi.remove(n.path) : undefined}
                     />
-                    {isSensei && username ? (
-                        <SenseiPanel
-                            roster={roster}
-                            values={valuesAtPly}
-                            positionLabel={
-                                ply === 0 ? 'the start' : moveLabel(ply, moves[ply - 1]?.san)
-                            }
-                            onScore={scoreSensei}
-                            onRoster={changeRoster}
-                        />
-                    ) : (
-                        <SenseiStrip roster={roster} pins={bar.pins} />
-                    )}
+                    {!streamView && senseiEvals}
                 </Stack>
 
                 <Stack spacing={2} sx={{ minWidth: 0, gridArea: 'leaders' }}>
+                    <GuessPanel state={guessState} onGoLive={() => goTo(null)} score={myScore} />
                     <Leaderboard
                         gameName={round?.name ?? 'This game'}
                         leaderboard={shownLeaderboard}
                         username={username}
                     />
-                    <GuessPanel state={guessState} onGoLive={() => goTo(null)} score={myScore} />
                 </Stack>
-            </Box>
 
-            <TwitchEmbed />
+                <Box sx={{ minWidth: 0, gridArea: 'twitch' }}>
+                    <TwitchEmbed />
+                </Box>
+            </Box>
             <AddGameDialog open={addingGame} onClose={() => setAddingGame(false)} onAdd={addGame} />
         </Container>
     );

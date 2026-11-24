@@ -15,12 +15,12 @@ export function TwitchEmbed() {
     useEffect(() => setHost(window.location.hostname), []);
 
     return (
-        <Paper variant='outlined' sx={{ p: 2, mt: 3 }} data-testid='twitch-embed'>
+        <Paper variant='outlined' sx={{ p: 1.5 }} data-testid='twitch-embed'>
             <Stack
                 direction='row'
-                sx={{ justifyContent: 'space-between', alignItems: 'baseline', mb: 1.5 }}
+                sx={{ justifyContent: 'space-between', alignItems: 'baseline', mb: 1 }}
             >
-                <Typography variant='h6' sx={{ fontWeight: 800 }}>
+                <Typography variant='subtitle1' sx={{ fontWeight: 800 }}>
                     Watch ChessDojo live
                 </Typography>
                 <Link
@@ -36,8 +36,7 @@ export function TwitchEmbed() {
                 sx={{
                     position: 'relative',
                     width: 1,
-                    maxWidth: 1100,
-                    mx: 'auto',
+
                     aspectRatio: '16 / 9',
                     bgcolor: 'black',
                     borderRadius: 1,

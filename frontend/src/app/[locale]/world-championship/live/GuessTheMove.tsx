@@ -34,7 +34,11 @@ export function GuessPanel({ state, onGoLive, score }: GuessPanelProps) {
     // Once hidden, the instructions stay hidden; the ⓘ by the leaderboard has them all.
     const [hideHowTo, setHideHowTo] = useLocalStorage('wcLive.hideHowTo', false);
     return (
-        <Paper variant='outlined' sx={{ p: 2 }} data-testid='guess-panel'>
+        <Paper
+            elevation={8}
+            data-testid='guess-panel'
+            sx={{ p: 2, border: 2, borderColor: 'primary.main', borderRadius: 2 }}
+        >
             <Typography variant='subtitle1' sx={{ fontWeight: 700 }}>
                 Guess the move
             </Typography>
@@ -220,7 +224,10 @@ export function Leaderboard({ gameName, leaderboard, username }: LeaderboardProp
                     No right guesses yet. Guess the next move to get on the board.
                 </Typography>
             ) : (
-                <Stack spacing={0.25} sx={{ maxHeight: 420, overflowY: 'auto', mt: 1.5, mx: -1 }}>
+                <Stack
+                    spacing={0.25}
+                    sx={{ maxHeight: { xs: 420, lg: 260 }, overflowY: 'auto', mt: 1.5, mx: -1 }}
+                >
                     {shown.map((_, i) => row(i))}
                     {myIndex >= TOP && (
                         <>

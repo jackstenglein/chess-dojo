@@ -286,7 +286,7 @@ export function Notation({
                         display: 'grid',
                         gridTemplateColumns: '36px 1fr 1fr',
                         rowGap: 0.25,
-                        maxHeight: { xs: 240, md: 460 },
+                        maxHeight: { xs: 240, md: 460, lg: 320 },
                         overflowY: 'auto',
                         fontVariantNumeric: 'tabular-nums',
                     }}
