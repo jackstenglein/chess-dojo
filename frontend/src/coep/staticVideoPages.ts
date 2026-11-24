@@ -17,6 +17,8 @@ export const STATIC_VIDEO_PAGE_SOURCES = [
     '/learn/sparring',
     '/live-classes',
     '/class',
+    // The ChessDojo Twitch stream under the live board.
+    '/world-championship/live',
     '/admin/courses/:path*',
     '/blog/:path*',
     '/admin/blog/:path*',

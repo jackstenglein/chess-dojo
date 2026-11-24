@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en" class="embed">
+<head>
+  <meta charset="utf-8" />
+  <meta name="asset-base" content="/static/board" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dojo Tactics Forger</title>
+  <link rel="stylesheet" href="vendor/chessground/chessground.base.css" />
+  <link rel="stylesheet" href="vendor/chessground/chessground.brown.css" />
+  <link rel="stylesheet" href="vendor/chessground/chessground.cburnett.css" />
+  <link rel="stylesheet" href="board.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" crossorigin="anonymous" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <button class="brand" id="homeBtn" type="button">
+      <span class="brand-mark">▲</span> Dojo Tactics Forger
+    </button>
+    <div class="stats" id="stats"></div>
+  </header>
+  <div class="layout">
+    <aside class="side-nav">
+      <nav class="nav">
+        <a href="#" data-nav="tactics">Tactics</a>
+        <a href="#/o" data-nav="openings">Openings</a>
+        <a href="#/e" data-nav="endgames">Endgames</a>
+        <a href="#/custom" data-nav="custom">Custom</a>
+        <a href="#/review" data-nav="review">Review <span class="nav-badge" id="reviewBadge" hidden></span></a>
+        <a href="#/stats" data-nav="stats">Stats</a>
+        <a href="#/sessions" data-nav="sessions">Sessions</a>
+        <a href="#/leaderboard" data-nav="leaderboard">Leaderboard</a>
+      </nav>
+      <a class="side-brand" href="#" aria-label="Dojo Tactics Forger home">
+        <span class="side-logo"></span>
+        <span class="side-name"><span>Dojo Tactics</span><b>Forger</b></span>
+      </a>
+    </aside>
+    <main id="app"></main>
+    <aside id="todayPanel" class="today-panel" aria-label="Your ranks and today's progress">
+      <div id="sideStats" class="side-stats"></div>
+      <div id="todayBox"></div>
+    </aside>
+  </div>
+  <div id="toast" class="toast" hidden></div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
