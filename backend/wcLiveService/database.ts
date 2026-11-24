@@ -51,7 +51,7 @@ const dynamoStore: Store = {
         await dynamo.send(
             new PutItemCommand({
                 TableName: WC_LIVE_TABLE,
-                Item: marshall({ ...item, hash, range }),
+                Item: marshall({ ...item, hash, range }, { removeUndefinedValues: true }),
             }),
         );
     },
