@@ -56,10 +56,24 @@ export function LiveBoard({ fen, lastMove, orientation, onGuess, guessUci }: Liv
         if (!ref.current) {
             return;
         }
-        const api = Chessground(ref.current, { coordinates: true });
-        api.set({ addDimensionsCssVarsTo: ref.current });
+        const el = ref.current;
+        const api = Chessground(el, { coordinates: true });
+        api.set({ addDimensionsCssVarsTo: el });
         setBoard(api);
-        return () => api.destroy();
+
+        // Chessground remembers where the board is and only measures again on
+        // a resize or a scroll. When something above the board grows after it
+        // loads, the board moves down and every click lands a square low (d2
+        // picks d1). Measuring again as each click or touch starts, before
+        // chessground handles it, keeps the squares right.
+        const remeasure = () => api.state.dom.bounds.clear();
+        el.addEventListener('mousedown', remeasure, { capture: true });
+        el.addEventListener('touchstart', remeasure, { capture: true, passive: true });
+        return () => {
+            el.removeEventListener('mousedown', remeasure, { capture: true });
+            el.removeEventListener('touchstart', remeasure, { capture: true });
+            api.destroy();
+        };
     }, []);
 
     const chess = useMemo(() => new Chess({ fen }), [fen]);

@@ -633,6 +633,7 @@ export function LiveMatchPage() {
                 roster={roster}
                 values={valuesAtPly}
                 positionLabel={ply === 0 ? 'the start' : moveLabel(ply, moves[ply - 1]?.san)}
+                me={username}
                 onScore={scoreSensei}
                 onRoster={changeRoster}
             />
