@@ -7,7 +7,7 @@
  * The page sends its normal Cognito token. This server reads the username from
  * it WITHOUT checking the signature, so it must never run anywhere but
  * localhost. Open ?game=0 to test with the replayed Game 0, and add
- * &as=<username> to act as that user, for example as=hellokostya for a sensei
+ * &as=<username> to act as that user, for example as=google_111679691028507818183 (Kostya) for a sensei
  * or as=fan1 for a fan. The dev site cannot sign in with production accounts,
  * so this is how senseis are tested locally.
  */
@@ -31,6 +31,8 @@ async function loadRoutes() {
     const analysis = await import('./analysis');
     const games = await import('./customGames');
     const stats = await import('./stats');
+    const invites = await import('./invites');
+    const guest = await import('./guestAccess');
     const routes: { method: string; pattern: RegExp; handler: Handler }[] = [
         {
             method: 'GET',
@@ -91,6 +93,36 @@ async function loadRoutes() {
             method: 'PUT',
             pattern: /^\/wc-live\/roster$/,
             handler: roster.handler as unknown as Handler,
+        },
+        {
+            method: 'GET',
+            pattern: /^\/wc-live\/invites$/,
+            handler: invites.list as unknown as Handler,
+        },
+        {
+            method: 'PUT',
+            pattern: /^\/wc-live\/invites$/,
+            handler: invites.reset as unknown as Handler,
+        },
+        {
+            method: 'POST',
+            pattern: /^\/public\/wc-live\/guest\/me$/,
+            handler: guest.me as unknown as Handler,
+        },
+        {
+            method: 'PUT',
+            pattern: /^\/public\/wc-live\/guest\/eval$/,
+            handler: guest.putEval as unknown as Handler,
+        },
+        {
+            method: 'POST',
+            pattern: /^\/public\/wc-live\/guest\/analysis\/read$/,
+            handler: guest.getAnalysisForGuest as unknown as Handler,
+        },
+        {
+            method: 'PUT',
+            pattern: /^\/public\/wc-live\/guest\/analysis$/,
+            handler: guest.putAnalysis as unknown as Handler,
         },
     ];
     return routes;

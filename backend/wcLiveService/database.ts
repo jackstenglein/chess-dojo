@@ -51,7 +51,7 @@ const dynamoStore: Store = {
         await dynamo.send(
             new PutItemCommand({
                 TableName: WC_LIVE_TABLE,
-                Item: marshall({ ...item, hash, range }),
+                Item: marshall({ ...item, hash, range }, { removeUndefinedValues: true }),
             }),
         );
     },
@@ -255,6 +255,33 @@ export async function listRoster(): Promise<SavedSensei[]> {
 
 export async function saveSensei(sensei: SavedSensei): Promise<void> {
     await store.put(ROSTER, sensei.id, { ...sensei });
+}
+
+/**
+ * Guest links, kept apart from the roster entries (which are rewritten in
+ * full on every change). INVITE maps a token to its guest, and INVITE_OF
+ * holds each guest's current token. A token only counts while it is the
+ * current one, so a new link turns the old one off.
+ */
+const INVITE = 'INVITE';
+const INVITE_OF = 'INVITEOF';
+
+export async function getInviteToken(guestId: string): Promise<string | undefined> {
+    return (await store.get(INVITE_OF, guestId))?.token as string | undefined;
+}
+
+export async function setInviteToken(guestId: string, token: string): Promise<void> {
+    await store.put(INVITE, token, { id: guestId });
+    await store.put(INVITE_OF, guestId, { id: guestId, token });
+}
+
+/** The guest a token belongs to, if it is still that guest's current token. */
+export async function guestIdForToken(token: string): Promise<string | undefined> {
+    const id = (await store.get(INVITE, token))?.id as string | undefined;
+    if (!id) {
+        return undefined;
+    }
+    return (await getInviteToken(id)) === token ? id : undefined;
 }
 
 export async function putGuess(
