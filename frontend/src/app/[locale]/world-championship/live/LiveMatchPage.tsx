@@ -26,6 +26,7 @@ import {
     customGamePgnUrl,
     WcCustomGame,
 } from '@jackstenglein/chess-dojo-common/src/wcLive/customGames';
+import { guestLink } from '@jackstenglein/chess-dojo-common/src/wcLive/guests';
 import {
     currentTestRoundId,
     isTestRoundId,
@@ -64,6 +65,7 @@ import { useAnalysis } from './analysisClient';
 import { useCrosstable } from './crosstable';
 import { CrosstableView } from './CrosstableView';
 import { GuessPanel, GuessState, Leaderboard } from './GuessTheMove';
+import { useGuestAccess } from './guestAccess';
 import {
     clocksAt,
     formatClock,
@@ -81,18 +83,21 @@ import { useMoveSounds } from './moveSounds';
 import { Notation } from './Notation';
 import { PlayerPhoto } from './PlayerPhoto';
 import { EVAL_BAR_WIDTH, EvalBar, SenseiStrip } from './SenseiEval';
-import { SenseiPanel } from './SenseiPanel';
+import { GuestLinks, SenseiPanel } from './SenseiPanel';
 import { TwitchEmbed } from './TwitchEmbed';
 import {
     addCustomGame,
     getLeaderboard,
     getMyGuesses,
+    guestPutEval,
     listCustomGames,
     listEvals,
+    listInvites,
     putEval,
     putGuess,
     putRoster,
     removeCustomGame,
+    resetInvite,
 } from './wcLiveApi';
 
 const EVALS_POLL_MS = 5000;
@@ -128,6 +133,16 @@ export function LiveMatchPage() {
     const username = actAs ?? user?.username;
     const signedIn = !!actAs || authStatus === AuthStatus.Authenticated;
     const isSensei = isWcSensei(username);
+
+    // A guest link (?guest=...) makes this browser a guest sensei: their own
+    // eval and the analysis board, without an account. A real sensei ignores it.
+    const guestAccess = useGuestAccess();
+    const guest = isSensei ? undefined : guestAccess.guest;
+    const guestToken = isSensei ? undefined : guestAccess.token;
+    /** Senseis and guest senseis share the analysis board. */
+    const canAnalyze = isSensei || !!guest;
+    /** Who the analysis records as moving. */
+    const analyst = isSensei ? username : guest?.id;
 
     const { rounds: matchRounds, error: roundsError } = useMatchRounds();
     const [roundId, setRoundId] = useState<string>();
@@ -248,28 +263,28 @@ export function LiveMatchPage() {
     const applyLocal = useCallback(
         (current: WcAnalysis, request: WcAnalysisRequest): WcAnalysis => {
             try {
-                return applyAnalysisRequest(current, request, mainSans, username ?? '');
+                return applyAnalysisRequest(current, request, mainSans, analyst ?? '');
             } catch {
                 // The API refuses it too and says why.
                 return current;
             }
         },
-        [mainSans, username],
+        [mainSans, analyst],
     );
-    // Only senseis load the analysis. Fans only ever see the game itself.
-    const analysisApi = useAnalysis(roundId, isSensei, applyLocal);
+    // Only senseis (and guest senseis) load the analysis. Fans only ever see the game itself.
+    const analysisApi = useAnalysis(roundId, canAnalyze, applyLocal, guestToken);
     const analysis = analysisApi.analysis;
 
     const tree = useMemo(
-        () => buildTree(moves, isSensei ? (analysis?.lines ?? []) : []),
-        [moves, isSensei, analysis?.lines],
+        () => buildTree(moves, canAnalyze ? (analysis?.lines ?? []) : []),
+        [moves, canAnalyze, analysis?.lines],
     );
 
     // A fan's own position; null follows the live position. Senseis share one
     // position instead: the analysis cursor, until the next move of the game.
     const [viewPath, setViewPath] = useState<string[] | null>(null);
     const sharedPath =
-        isSensei && analysis?.cursor && cursorIsCurrent(analysis.cursor, moves.length)
+        canAnalyze && analysis?.cursor && cursorIsCurrent(analysis.cursor, moves.length)
             ? analysis.cursor.path
             : null;
     const node: AnalysisNode =
@@ -288,7 +303,7 @@ export function LiveMatchPage() {
 
     /** Shows a position: shared with the other senseis, or just here for fans. Null is live. */
     const goTo = (target: AnalysisNode | null) => {
-        if (isSensei) {
+        if (canAnalyze) {
             analysisApi.select(target ? target.path : mainSans);
             setViewPath(null);
             return;
@@ -351,7 +366,7 @@ export function LiveMatchPage() {
         'wcLive.layout',
         null,
     );
-    const layout = savedLayout ?? (isSensei ? 'analysis' : 'stream');
+    const layout = savedLayout ?? (canAnalyze ? 'analysis' : 'stream');
     const streamView = layout === 'stream';
 
     // The Admin tab. The page always opens on a game, never here.
@@ -474,6 +489,36 @@ export function LiveMatchPage() {
         setRoster(await putRoster(request));
     }, []);
 
+    /** A guest sensei sets their own eval through their link. */
+    const scoreAsGuest = useCallback(
+        async (_senseiId: string, value: number) => {
+            if (!roundId || !guestToken) {
+                return;
+            }
+            const saved = await guestPutEval({ token: guestToken, roundId, ply, value });
+            setEvals((list) => [
+                ...list.filter((e) => !(e.senseiId === saved.senseiId && e.ply === saved.ply)),
+                saved,
+            ]);
+        },
+        [roundId, ply, guestToken],
+    );
+
+    /** For senseis: each guest's link to copy, or a new one. */
+    const guestLinks = useMemo<GuestLinks>(
+        () => ({
+            get: async (id) => {
+                const token = (await listInvites())[id];
+                if (!token) {
+                    throw new Error('No link for that guest');
+                }
+                return guestLink(window.location.origin, token);
+            },
+            renew: async (id) => guestLink(window.location.origin, await resetInvite(id)),
+        }),
+        [],
+    );
+
     // ---- Guess the move --------------------------------------------------
     const [myGuesses, setMyGuesses] = useState<Record<string, string>>({});
     const [guessSaving, setGuessSaving] = useState(false);
@@ -580,7 +625,8 @@ export function LiveMatchPage() {
     } else {
         guessState = {
             kind: 'open',
-            altToGuess: isSensei,
+            // On the analysis board a drag is an analysis move; Alt makes it a guess.
+            altToGuess: canAnalyze,
             moveLabel:
                 nextPly === 1
                     ? 'the first move (open until the game starts)'
@@ -636,6 +682,17 @@ export function LiveMatchPage() {
                 me={username}
                 onScore={scoreSensei}
                 onRoster={changeRoster}
+                guestLinks={guestLinks}
+            />
+        ) : guest ? (
+            <SenseiPanel
+                roster={roster}
+                values={valuesAtPly}
+                positionLabel={ply === 0 ? 'the start' : moveLabel(ply, moves[ply - 1]?.san)}
+                me={guest.id}
+                canManage={false}
+                onScore={scoreAsGuest}
+                onRoster={changeRoster}
             />
         ) : (
             <SenseiStrip roster={roster} pins={bar.pins} />
@@ -652,6 +709,26 @@ export function LiveMatchPage() {
                 <Alert severity='warning' sx={{ mb: 2 }} data-testid='acting-as'>
                     Local test: acting as <b>{actAs}</b>
                     {isSensei ? ' (a sensei)' : ' (a fan)'}. Change ?as= in the address to switch.
+                </Alert>
+            )}
+            {guest && (
+                <Alert
+                    severity='info'
+                    sx={{ mb: 2 }}
+                    data-testid='guest-mode'
+                    action={
+                        <Button color='inherit' size='small' onClick={guestAccess.leave}>
+                            Leave guest mode
+                        </Button>
+                    }
+                >
+                    You are on the bar as <b>{guest.name}</b>, a guest sensei. Set your eval with
+                    the arrows or symbols on your card, and use the analysis board with the senseis.
+                </Alert>
+            )}
+            {!isSensei && guestAccess.error && (
+                <Alert severity='warning' sx={{ mb: 2 }} data-testid='guest-link-error'>
+                    {guestAccess.error}
                 </Alert>
             )}
             <Stack spacing={0.5} sx={{ mb: 2 }}>
@@ -801,7 +878,7 @@ export function LiveMatchPage() {
                                 lastMove={node.ply > 0 ? [node.from, node.to] : undefined}
                                 orientation={orientation}
                                 onGuess={
-                                    isSensei
+                                    canAnalyze
                                         ? (uci) => {
                                               if (altHeld.current && canGuess) {
                                                   void onGuess(uci);
@@ -923,7 +1000,7 @@ export function LiveMatchPage() {
                             </IconButton>
                         </Tooltip>
                     </Stack>
-                    {isSensei && analysisApi.error && (
+                    {canAnalyze && analysisApi.error && (
                         <Typography variant='caption' color='error'>
                             {analysisApi.error}
                         </Typography>
@@ -958,8 +1035,8 @@ export function LiveMatchPage() {
                         guesses={myGuesses}
                         onSelect={goTo}
                         onLive={atLive ? undefined : () => goTo(null)}
-                        onPromote={isSensei ? (n) => analysisApi.promote(n.path) : undefined}
-                        onDelete={isSensei ? (n) => analysisApi.remove(n.path) : undefined}
+                        onPromote={canAnalyze ? (n) => analysisApi.promote(n.path) : undefined}
+                        onDelete={canAnalyze ? (n) => analysisApi.remove(n.path) : undefined}
                         // In the stream view the moves scroll in a short box, so the stream
                         // under them starts higher up, next to the board.
                         compact={streamView}
