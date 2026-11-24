@@ -37,4 +37,18 @@ describe('StreamEmbed', () => {
         render(<StreamEmbed />);
         expect(player('YouTube')).toBeDefined();
     });
+
+    it('can be minimized, which stops the player, and shown again', () => {
+        render(<StreamEmbed minimizable />);
+        fireEvent.click(screen.getByRole('button', { name: 'Minimize the stream' }));
+        expect(screen.queryByTitle('ChessDojo on Twitch')).toBeNull();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Show the stream' }));
+        expect(player('Twitch')).toBeDefined();
+    });
+
+    it('has no minimize button unless asked for one', () => {
+        render(<StreamEmbed />);
+        expect(screen.queryByRole('button', { name: 'Minimize the stream' })).toBeNull();
+    });
 });
