@@ -6,7 +6,7 @@ import { WcLeaderboard } from '@jackstenglein/chess-dojo-common/src/wcLive/api';
 import CloseIcon from '@mui/icons-material/Close';
 import InfoIcon from '@mui/icons-material/InfoOutlined';
 import { Alert, Box, Button, IconButton, Paper, Popover, Stack, Typography } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 
 export type GuessState =
@@ -32,7 +32,14 @@ interface GuessPanelProps {
 
 export function GuessPanel({ state, onGoLive, score }: GuessPanelProps) {
     // Once hidden, the instructions stay hidden; the ⓘ by the leaderboard has them all.
+    // Someone who has guessed once knows how it works, so a guess hides them too.
     const [hideHowTo, setHideHowTo] = useLocalStorage('wcLive.hideHowTo', false);
+    const hasGuessed = (score?.guessed ?? 0) > 0 || (state.kind === 'open' && !!state.guessSan);
+    useEffect(() => {
+        if (hasGuessed) {
+            setHideHowTo(true);
+        }
+    }, [hasGuessed, setHideHowTo]);
     return (
         <Paper
             elevation={8}
@@ -184,8 +191,10 @@ export function Leaderboard({ gameName, leaderboard, username, compact }: Leader
                         fontSize: '0.9rem',
                     }}
                 >
+                    {/* The name people chose, not the account ID (google_1234…). The
+                        link still goes to the profile by ID. */}
                     <Link href={`/profile/${e.username}`} sx={{ color: 'text.primary' }}>
-                        {e.username}
+                        {e.displayName || e.username}
                     </Link>
                 </Typography>
                 <Box
