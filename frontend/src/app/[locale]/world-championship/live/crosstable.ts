@@ -86,6 +86,14 @@ export function pointsFor(game: CrossGame, player: CrossPlayer): number | undefi
     }
 }
 
+/** A finished game's result as the page writes it: ½–½, 1–0 or 0–1. */
+export function formatResult(result: string): string | undefined {
+    if (!/^(1-0|0-1|1\/2-1\/2)$/.test(result)) {
+        return undefined;
+    }
+    return result.replaceAll('1/2', '½').replace('-', '–');
+}
+
 /** 1, 0 and ½, and 7½ for totals. */
 export function formatPoints(points: number): string {
     const whole = Math.floor(points);
