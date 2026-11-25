@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, Paper, Tooltip, Typography } from '@mui/material';
+import { Box, Paper, Stack, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { PlayerPhoto } from './PlayerPhoto';
 import { CROSS_PLAYERS, Crosstable, formatPoints, pointsFor } from './crosstable';
 
@@ -23,6 +23,10 @@ export function CrosstableView({
     liveNumber,
     onSelectGame,
 }: CrosstableViewProps) {
+    // The table shows only once the browser has loaded the match, so the server
+    // never renders it. That makes it safe to ask for the screen's real width on
+    // the first render.
+    const phone = useMediaQuery(useTheme().breakpoints.down('sm'), { noSsr: true });
     if (!table || table.games.length === 0) {
         return null;
     }
@@ -34,41 +38,82 @@ export function CrosstableView({
             sx={{ p: 1.5, containerType: 'inline-size' }}
             data-testid='crosstable'
         >
+            {phone && (
+                // A phone shows the match score here, as on a scoreboard. Its table
+                // has no room for the photos and the score.
+                <Stack
+                    direction='row'
+                    spacing={1}
+                    data-testid='crosstable-score'
+                    sx={{ alignItems: 'center', justifyContent: 'center', mb: 1, fontWeight: 700 }}
+                >
+                    <PlayerPhoto name={CROSS_PLAYERS[0].name} size={28} />
+                    <span>{CROSS_PLAYERS[0].name}</span>
+                    <Box
+                        component='span'
+                        sx={{
+                            fontWeight: 900,
+                            fontSize: '1.35rem',
+                            fontVariantNumeric: 'tabular-nums',
+                            whiteSpace: 'nowrap',
+                        }}
+                    >
+                        {formatPoints(totals[CROSS_PLAYERS[0].id])} :{' '}
+                        {formatPoints(totals[CROSS_PLAYERS[1].id])}
+                    </Box>
+                    <span>{CROSS_PLAYERS[1].name}</span>
+                    <PlayerPhoto name={CROSS_PLAYERS[1].name} size={28} />
+                </Stack>
+            )}
             <Box sx={{ overflowX: 'auto' }}>
                 <Box
                     component='table'
                     sx={{
                         // The table fills its box, and the 14 games fit in it without
-                        // scrolling. Only a narrow phone has to scroll.
+                        // scrolling.
                         width: 1,
                         borderCollapse: 'collapse',
                         fontVariantNumeric: 'tabular-nums',
-                        '& th, & td': {
-                            border: 1,
-                            borderColor: 'divider',
-                            textAlign: 'center',
-                            px: 0.25,
-                            py: 0.5,
-                            minWidth: 24,
-                        },
-                        // The board column drops to about 410px on a small laptop, and a
-                        // phone is narrower still, so the cells and the text shrink there.
-                        '@container (max-width: 500px)': {
-                            fontSize: '0.75rem',
-                            '& th, & td': { px: 0, minWidth: 15 },
-                            '& th:first-of-type, & td:first-of-type': {
-                                pl: 0.5,
-                                minWidth: '0 !important',
-                            },
-                            '& th:last-of-type, & td:last-of-type': { px: 0.25 },
-                        },
+                        ...(phone
+                            ? {
+                                  // On a phone the 14 games share the width evenly, with
+                                  // no lines between them.
+                                  tableLayout: 'fixed',
+                                  fontSize: '0.75rem',
+                                  '& th, & td': { textAlign: 'center', px: 0, py: 0.5 },
+                                  '& th': { borderBottom: 1, borderColor: 'divider' },
+                              }
+                            : {
+                                  '& th, & td': {
+                                      border: 1,
+                                      borderColor: 'divider',
+                                      textAlign: 'center',
+                                      px: 0.25,
+                                      py: 0.5,
+                                      minWidth: 24,
+                                  },
+                                  // The board column drops to about 410px on a small laptop,
+                                  // so the cells and the text shrink there.
+                                  '@container (max-width: 500px)': {
+                                      fontSize: '0.75rem',
+                                      '& th, & td': { px: 0, minWidth: 15 },
+                                      '& th:first-of-type, & td:first-of-type': {
+                                          pl: 0.5,
+                                          minWidth: '0 !important',
+                                      },
+                                      '& th:last-of-type, & td:last-of-type': { px: 0.25 },
+                                  },
+                              }),
                     }}
                 >
                     <thead>
                         <tr>
                             <Box
                                 component='th'
-                                sx={{ textAlign: 'left !important', minWidth: '96px !important' }}
+                                sx={{
+                                    textAlign: 'left !important',
+                                    ...(phone ? { width: 60 } : { minWidth: '96px !important' }),
+                                }}
                             >
                                 <Typography variant='caption' color='text.secondary'>
                                     Game
@@ -91,9 +136,11 @@ export function CrosstableView({
                                     {g.number}
                                 </Box>
                             ))}
-                            <Box component='th' sx={{ fontWeight: 800 }}>
-                                Score
-                            </Box>
+                            {!phone && (
+                                <Box component='th' sx={{ fontWeight: 800 }}>
+                                    Score
+                                </Box>
+                            )}
                         </tr>
                     </thead>
                     <tbody>
@@ -111,7 +158,7 @@ export function CrosstableView({
                                             gap: 0.75,
                                         }}
                                     >
-                                        <PlayerPhoto name={p.name} size={24} />
+                                        {!phone && <PlayerPhoto name={p.name} size={24} />}
                                         {p.name}
                                     </Box>
                                 </Box>
@@ -143,12 +190,15 @@ export function CrosstableView({
                                                               ? 'error.main'
                                                               : undefined,
                                                     // A corner shows the color the player had.
+                                                    // On a phone it sits above the result, in
+                                                    // the middle of the narrow cell.
+                                                    ...(phone && { pt: '14px !important' }),
                                                     '&::after': g.white
                                                         ? {
                                                               content: '""',
                                                               position: 'absolute',
-                                                              top: 2,
-                                                              right: 2,
+                                                              top: phone ? 4 : 2,
+                                                              right: phone ? 'calc(50% - 4px)' : 2,
                                                               width: 6,
                                                               height: 6,
                                                               borderRadius: '1px',
@@ -167,9 +217,14 @@ export function CrosstableView({
                                         </Tooltip>
                                     );
                                 })}
-                                <Box component='td' sx={{ fontWeight: 900, fontSize: '1.05rem' }}>
-                                    {formatPoints(totals[p.id])}
-                                </Box>
+                                {!phone && (
+                                    <Box
+                                        component='td'
+                                        sx={{ fontWeight: 900, fontSize: '1.05rem' }}
+                                    >
+                                        {formatPoints(totals[p.id])}
+                                    </Box>
+                                )}
                             </tr>
                         ))}
                     </tbody>
@@ -180,8 +235,9 @@ export function CrosstableView({
                 color='text.secondary'
                 sx={{ display: 'block', mt: 0.75 }}
             >
-                Match score {formatPoints(totals.gukesh)}–{formatPoints(totals.sindarov)}. First to
-                7½ wins.
+                {!phone &&
+                    `Match score ${formatPoints(totals.gukesh)}–${formatPoints(totals.sindarov)}. `}
+                First to 7½ wins.
             </Typography>
         </Paper>
     );
