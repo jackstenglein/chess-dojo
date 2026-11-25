@@ -55,7 +55,7 @@ export function WeeklyTrainingPlan() {
         endDate,
         weekSuggestions,
         suggestionsByDay,
-        timeline,
+        planTimeline: timeline,
         isCurrentUser,
         isLoading,
         user,
