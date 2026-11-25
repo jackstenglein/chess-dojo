@@ -166,6 +166,7 @@ func handleTask(event api.Request, request *ProgressUpdateRequest, user *databas
 		CreatedAt:           updatedAt,
 		Notes:               request.Notes,
 	}
+	tagPlan(timelineEntry, user)
 
 	if err := repository.PutTimelineEntry(timelineEntry); err != nil {
 		return api.Failure(err), nil
@@ -231,4 +232,19 @@ func (mc *milestoneChecker) fetchAllRequirements(cohort database.DojoCohort) ([]
 		startKey = nextKey
 	}
 	return requirements, nil
+}
+
+// tagPlan records on the timeline entry which plan was active when the progress
+// was logged, and the bucket the task was in. Entries logged on the Dojo plan
+// are left untagged.
+func tagPlan(entry *database.TimelineEntry, user *database.User) {
+	plan := user.GetActivePlan()
+	if plan == nil {
+		return
+	}
+	entry.PlanId = plan.Id
+	if bucket := plan.FindBucket(entry.RequirementId); bucket != nil {
+		entry.PlanBucketName = bucket.Name
+		entry.PlanBucketColor = bucket.Color
+	}
 }

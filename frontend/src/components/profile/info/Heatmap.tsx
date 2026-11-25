@@ -50,6 +50,7 @@ import {
 import { GiCrossedSwords } from 'react-icons/gi';
 import { LongPressEventType, LongPressReactEvents, useLongPress } from 'use-long-press';
 import { useTimelineContext } from '../activity/useTimeline';
+import { isHexColor } from '../trainingPlan/custom/bucketColors';
 import { TrainingPlanIcon } from '../trainingPlan/TrainingPlanIcon';
 import { DEFAULT_WORK_GOAL } from '../trainingPlan/workGoal';
 import { MIN_BLOCK_SIZE } from './HeatmapCard';
@@ -619,7 +620,7 @@ function DayDetails({
     const tNewsfeed = useTranslations('newsfeed');
     const { user: viewer } = useAuth();
 
-    // One row per task, with the day's time on it added up.
+    // One row per task (and plan bucket), with the day's time on it added up.
     const dayEntries = useMemo(() => {
         const byTask = new Map<string, TimelineEntry>();
         for (const e of entries) {
@@ -629,7 +630,7 @@ function DayDetails({
             const key =
                 e.requirementId === TimelineSpecialRequirementId.GameSubmission
                     ? e.id
-                    : e.requirementId;
+                    : `${e.requirementId}|${e.planId ?? ''}|${e.planBucketName ?? ''}`;
             const existing = byTask.get(key);
             byTask.set(
                 key,
@@ -678,7 +679,9 @@ function DayDetails({
                                     }
                                     sx={{
                                         fontSize: '1rem',
-                                        color: CategoryColors[entry.requirementCategory],
+                                        color: isHexColor(entry.planBucketColor)
+                                            ? entry.planBucketColor
+                                            : CategoryColors[entry.requirementCategory],
                                     }}
                                 />
                             )}
@@ -691,6 +694,16 @@ function DayDetails({
                                             link: (chunks: ReactNode) => chunks,
                                         })
                                       : entry.requirementName}
+                                {entry.planBucketName && (
+                                    <Typography
+                                        component='span'
+                                        variant='caption'
+                                        sx={{ color: 'text.secondary', ml: 0.75 }}
+                                        data-testid='heatmap-entry-bucket'
+                                    >
+                                        {entry.planBucketName}
+                                    </Typography>
+                                )}
                             </Typography>
                             {entry.minutesSpent > 0 && (
                                 <Typography

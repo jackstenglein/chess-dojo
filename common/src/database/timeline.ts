@@ -39,6 +39,15 @@ export interface TimelineEntry {
     progressBarSuffix: string;
     /** Whether the requirement updated was a custom task. */
     isCustomRequirement?: boolean;
+    /**
+     * The id of the custom plan that was active when the progress was logged.
+     * Unset means the Dojo plan.
+     */
+    planId?: string;
+    /** The name of the plan bucket the task was in when the progress was logged. */
+    planBucketName?: string;
+    /** The color of the plan bucket the task was in when the progress was logged. */
+    planBucketColor?: string;
     /** The total count the user must meet to complete the task. */
     totalCount: number;
     /** The user's count prior to this update. */
