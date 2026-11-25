@@ -20,9 +20,19 @@ import {
 import { useTranslations } from 'next-intl';
 import { useLocalStorage } from 'usehooks-ts';
 import KeyboardShortcuts, { KeyboardShortcutsProps } from './KeyboardShortcuts';
-import { CoordinateSize, CoordinateSizeKey } from './viewerSettingsConstants';
+import {
+    CoordinateSize,
+    CoordinateSizeKey,
+    PgnTextFontSize,
+    PgnTextFontSizeKey,
+} from './viewerSettingsConstants';
 
-export { CoordinateSize, CoordinateSizeKey } from './viewerSettingsConstants';
+export {
+    CoordinateSize,
+    CoordinateSizeKey,
+    PgnTextFontSize,
+    PgnTextFontSizeKey,
+} from './viewerSettingsConstants';
 
 export const BoardStyleKey = 'boardStyle';
 export const PieceStyleKey = 'pieceStyle';
@@ -146,6 +156,7 @@ export enum ViewerSetting {
     CorrectSolitaireMoveSound,
     IncorrectSolitaireMoveSound,
     InlineNotation,
+    PgnTextFontSize,
 }
 
 const ViewerSettings = ({
@@ -226,6 +237,10 @@ const ViewerSettings = ({
     const [inlineNotation, setInlineNotation] = useLocalStorage<boolean>(
         InlineNotationSetting.key,
         InlineNotationSetting.default,
+    );
+    const [pgnTextFontSize, setPgnTextFontSize] = useLocalStorage<PgnTextFontSize>(
+        PgnTextFontSizeKey,
+        PgnTextFontSize.Standard,
     );
 
     const [correctSound, setCorrectSound] = useLocalStorage(
@@ -414,6 +429,28 @@ const ViewerSettings = ({
                     >
                         {t('pgnTextSectionHeader')}
                     </Typography>
+                )}
+                {(!enabledSettings || enabledSettings[ViewerSetting.PgnTextFontSize]) && (
+                    <TextField
+                        select
+                        label={t('pgnTextFontSizeLabel')}
+                        value={pgnTextFontSize}
+                        onChange={(e) => setPgnTextFontSize(e.target.value as PgnTextFontSize)}
+                        sx={{ mt: 2, mb: 1 }}
+                    >
+                        <MenuItem value={PgnTextFontSize.Small}>
+                            {t('pgnTextFontSizeSmall')}
+                        </MenuItem>
+                        <MenuItem value={PgnTextFontSize.Standard}>
+                            {t('pgnTextFontSizeStandard')}
+                        </MenuItem>
+                        <MenuItem value={PgnTextFontSize.Large}>
+                            {t('pgnTextFontSizeLarge')}
+                        </MenuItem>
+                        <MenuItem value={PgnTextFontSize.ExtraLarge}>
+                            {t('pgnTextFontSizeExtraLarge')}
+                        </MenuItem>
+                    </TextField>
                 )}
                 {(!enabledSettings || enabledSettings[ViewerSetting.InlineNotation]) && (
                     <FormControlLabel

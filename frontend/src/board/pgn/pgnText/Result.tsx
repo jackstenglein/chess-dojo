@@ -2,6 +2,7 @@ import { Event, EventType } from '@jackstenglein/chess';
 import { Divider, Stack, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
+import { scalePgnRem } from '../boardTools/underboard/settings/viewerSettingsConstants';
 import { useChess } from '../PgnBoard';
 
 const Result = () => {
@@ -55,6 +56,7 @@ const Result = () => {
             <Typography
                 sx={{
                     fontWeight: 'bold',
+                    fontSize: scalePgnRem(1),
                     mt: 1,
                 }}
             >
@@ -64,6 +66,7 @@ const Result = () => {
                 sx={{
                     mb: 1,
                     fontStyle: 'italic',
+                    fontSize: scalePgnRem(1),
                 }}
             >
                 {description}

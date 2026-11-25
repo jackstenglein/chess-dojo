@@ -1,6 +1,7 @@
 import { PositionComment } from '@/database/game';
 import Avatar from '@/profile/Avatar';
 import { Stack, Tooltip, Typography } from '@mui/material';
+import { scalePgnRem } from '../boardTools/underboard/settings/viewerSettingsConstants';
 
 interface InlinePositionCommentsProps {
     comments: PositionComment[];
@@ -43,6 +44,7 @@ export default function InlinePositionComments({ comments, inline }: InlinePosit
                         variant={inline ? 'caption' : 'body2'}
                         sx={{
                             color: 'text.secondary',
+                            fontSize: scalePgnRem(inline ? 0.75 : 0.875),
                             whiteSpace: 'pre-line',
                             minWidth: 0,
                             wordBreak: 'break-word',

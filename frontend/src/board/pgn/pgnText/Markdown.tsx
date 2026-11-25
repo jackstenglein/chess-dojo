@@ -4,6 +4,7 @@ import { Box, Link, Stack, SxProps, Typography, useTheme } from '@mui/material';
 import { ReactNode } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { scalePgnRem } from '../boardTools/underboard/settings/viewerSettingsConstants';
 import { ChessContext, useChess } from '../PgnBoard';
 
 const allowedElements = [
@@ -71,18 +72,26 @@ const Markdown: React.FC<MarkdownProps> = ({ text, inline, move }) => {
                             {props.children}
                         </Link>
                     ),
-                    h1: (props) => <Text {...props} inline={inline} fontSize='1.25rem' />,
-                    h2: (props) => <Text {...props} inline={inline} fontSize='1.1875rem' />,
-                    h3: (props) => <Text {...props} inline={inline} fontSize='1.125rem' />,
-                    h4: (props) => <Text {...props} inline={inline} fontSize='1.0625rem' />,
-                    h5: (props) => <Text {...props} inline={inline} fontSize='1rem' />,
-                    h6: (props) => <Text {...props} inline={inline} fontSize='0.9375rem' />,
+                    h1: (props) => <Text {...props} inline={inline} fontSize={scalePgnRem(1.25)} />,
+                    h2: (props) => (
+                        <Text {...props} inline={inline} fontSize={scalePgnRem(1.1875)} />
+                    ),
+                    h3: (props) => (
+                        <Text {...props} inline={inline} fontSize={scalePgnRem(1.125)} />
+                    ),
+                    h4: (props) => (
+                        <Text {...props} inline={inline} fontSize={scalePgnRem(1.0625)} />
+                    ),
+                    h5: (props) => <Text {...props} inline={inline} fontSize={scalePgnRem(1)} />,
+                    h6: (props) => (
+                        <Text {...props} inline={inline} fontSize={scalePgnRem(0.9375)} />
+                    ),
                     ul: (props) => (
                         <ul
                             style={{
                                 margin: '4px 0',
                                 paddingLeft: '24px',
-                                fontSize: '0.875rem',
+                                fontSize: scalePgnRem(0.875),
                             }}
                         >
                             {props.children}
@@ -93,7 +102,7 @@ const Markdown: React.FC<MarkdownProps> = ({ text, inline, move }) => {
                             style={{
                                 margin: '4px 0',
                                 paddingLeft: '26px',
-                                fontSize: '0.875rem',
+                                fontSize: scalePgnRem(0.875),
                             }}
                         >
                             {props.children}
@@ -177,7 +186,7 @@ function Text(props: {
                 color: 'text.secondary',
                 p: props.p || '6px',
                 whiteSpace: 'pre-line',
-                fontSize: props.fontSize,
+                fontSize: props.fontSize ?? scalePgnRem(props.inline ? 0.75 : 0.875),
                 ...sx,
                 wordBreak: 'break-word',
             }}
