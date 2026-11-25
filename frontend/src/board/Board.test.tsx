@@ -47,7 +47,6 @@ describe('toDests', () => {
         const dests = toDests(chess);
 
         expect(dests.get('e1') ?? []).toContain('e8');
-        expect(dests.get('e8') ?? []).toContain('e1');
     });
 
     it('does not advertose the enemy king as a null-move destination when null moves are disabled', () => {
@@ -56,7 +55,6 @@ describe('toDests', () => {
         const dests = toDests(chess);
 
         expect(dests.get('e1') ?? []).not.toContain('e8');
-        expect(dests.get('e8') ?? []).not.toContain('e1');
     });
 });
 

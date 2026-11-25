@@ -78,12 +78,13 @@ describe('useSolitaireChess timers', () => {
         act(() => {
             result.current.onMove(board, chess, { orig: 'a2', dest: 'a3' });
         });
-        vi.mocked(board.set.bind(board)).mockClear();
+        const set = vi.mocked(board.set);
+        set.mockClear();
         unmount();
         act(() => {
             vi.advanceTimersByTime(500);
         });
 
-        expect(board.set.bind(board)).not.toHaveBeenCalled();
+        expect(set).not.toHaveBeenCalled();
     });
 });

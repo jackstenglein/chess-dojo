@@ -96,6 +96,14 @@ export type SolitaireChessOptions = Partial<
     incorrectMoveComment?: string;
 };
 
+function getAudio(ref: React.RefObject<HTMLAudioElement | null>, src: string) {
+    if (!ref.current) {
+        ref.current = new Audio(src);
+    }
+    ref.current.currentTime = 0;
+    return ref.current;
+}
+
 export function useSolitaireChess(
     chess: Chess,
     board: BoardApi | undefined,
@@ -111,17 +119,41 @@ export function useSolitaireChess(
     const onWrongMove = useRef<() => void>(undefined);
     const onComplete = useRef<() => void>(undefined);
     const allowDifferentMates = useRef(false);
+
     const [correctSound] = useLocalStorage(CORRECT_SOUND_KEY, SOLITAIRE_DEFAULT_CORRECT_SOUND);
+    const correctSoundAudio = useRef<HTMLAudioElement | null>(null);
+
     const [incorrectSound] = useLocalStorage(
         INCORRECT_SOUND_KEY,
         SOLITAIRE_DEFAULT_INCORRECT_SOUND,
     );
+    const incorrectSoundAudio = useRef<HTMLAudioElement | null>(null);
+
     const t = useTranslations('analysisBoard.underboard.tools');
     const [incorrectMoveComment, setIncorrectMoveComment] = useState(t('incorrectMoveComment'));
     const [enableEngine, setEnableEngine] = useState(false);
 
+    // Track pending timers to avoid memory leaks when unmounting
+    const pendingTimers = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
+    const clearPendingTimers = useCallback(() => {
+        for (const id of pendingTimers.current) {
+            clearTimeout(id);
+        }
+        pendingTimers.current.clear();
+    }, []);
+    const schedule = useCallback((callback: () => void, delay: number) => {
+        const id = setTimeout(() => {
+            pendingTimers.current.delete(id);
+            callback();
+        }, delay);
+        pendingTimers.current.add(id);
+    }, []);
+
+    useEffect(() => clearPendingTimers, [clearPendingTimers]);
+
     const start = useCallback(
         (move: Move | null, opts?: SolitaireChessOptions) => {
+            clearPendingTimers();
             if (opts?.playAs) {
                 setPlayAs(opts.playAs);
             }
@@ -155,15 +187,17 @@ export function useSolitaireChess(
                     move: chess.nextMove(move),
                     setCurrentMove,
                     delay: opts?.firstMoveDelayMs,
+                    schedule,
                 });
             }
         },
-        [setEnabled, chess, board, showGlyphs, playAs, t],
+        [setEnabled, chess, board, showGlyphs, playAs, t, clearPendingTimers, schedule],
     );
 
     const stop = useCallback(() => {
+        clearPendingTimers();
         setEnabled(false);
-    }, [setEnabled]);
+    }, [clearPendingTimers, setEnabled]);
 
     const onMove = useCallback(
         (board: BoardApi, chess: Chess, primMove: PrimitiveMove) => {
@@ -188,7 +222,7 @@ export function useSolitaireChess(
                 (allowDifferentMates.current && chess.isCheckmate(testMove))
             ) {
                 if (correctSound !== SolitaireSound.None) {
-                    const audio = new Audio(`/static/sounds/${correctSound}.mp3`);
+                    const audio = getAudio(correctSoundAudio, `/static/sounds/${correctSound}.mp3`);
                     void audio.play();
                 }
                 handleCorrectMove({
@@ -200,12 +234,13 @@ export function useSolitaireChess(
                     incorrectMoves,
                     setCurrentMove,
                     setResults,
+                    schedule,
                 });
                 return;
             }
 
             if (incorrectSound !== SolitaireSound.None) {
-                const audio = new Audio(`/static/sounds/${incorrectSound}.mp3`);
+                const audio = getAudio(incorrectSoundAudio, `/static/sounds/${incorrectSound}.mp3`);
                 void audio.play();
             }
 
@@ -230,7 +265,7 @@ export function useSolitaireChess(
                     eraseOnMovablePieceClick: false,
                 },
             });
-            setTimeout(() => {
+            schedule(() => {
                 reconcile(chess, board, showGlyphs);
             }, 500);
             onWrongMove.current?.();
@@ -243,6 +278,7 @@ export function useSolitaireChess(
             incorrectSound,
             correctSound,
             incorrectMoveComment,
+            schedule,
         ],
     );
 
@@ -292,6 +328,7 @@ function handleCorrectMove({
     incorrectMoves,
     setCurrentMove,
     setResults,
+    schedule,
 }: {
     chess: Chess;
     board: BoardApi;
@@ -301,6 +338,7 @@ function handleCorrectMove({
     incorrectMoves: RefObject<SimpleMove[]>;
     setCurrentMove: (v: Move | null) => void;
     setResults: React.Dispatch<React.SetStateAction<SolitaireResults>>;
+    schedule: (callback: () => void, delay: number) => void;
 }) {
     const nextMove = chess.move(move);
     const color = nextMove?.color === Color.white ? 'white' : 'black';
@@ -327,6 +365,7 @@ function handleCorrectMove({
             showGlyphs,
             move: nextMove?.next ?? null,
             setCurrentMove,
+            schedule,
         });
     } else {
         setCurrentMove(nextMove);
@@ -340,6 +379,7 @@ function waitForOpponentMove({
     move,
     setCurrentMove,
     delay = 500,
+    schedule,
 }: {
     chess: Chess;
     board: BoardApi | undefined;
@@ -347,13 +387,14 @@ function waitForOpponentMove({
     move: Move | null;
     setCurrentMove: (v: Move | null) => void;
     delay?: number;
+    schedule: (callback: () => void, delay: number) => void;
 }) {
     board?.set({
         movable: { color: 'both', dests: new Map() },
         premovable: { enabled: false },
     });
     setCurrentMove(move);
-    setTimeout(() => {
+    schedule(() => {
         chess.seek(move);
         reconcile(chess, board, showGlyphs);
     }, delay);

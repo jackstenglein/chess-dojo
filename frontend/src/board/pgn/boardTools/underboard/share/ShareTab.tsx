@@ -208,6 +208,7 @@ export function ShareTab() {
         a.href = window.URL.createObjectURL(response.data);
         a.dataset.downloadurl = ['application/octet-stream', a.download, a.href].join(':');
         a.click();
+        window.URL.revokeObjectURL(a.href);
     };
 
     const renderPgn = () => {

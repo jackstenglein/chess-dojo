@@ -1,4 +1,4 @@
-import { Chess, Move, SQUARES, type Square } from '@jackstenglein/chess';
+import { Chess, Move, type Square } from '@jackstenglein/chess';
 import { Chessground } from '@lichess-org/chessground';
 import { Api as BoardApi } from '@lichess-org/chessground/api';
 import { Config } from '@lichess-org/chessground/config';
@@ -47,15 +47,20 @@ export function toDests(chess?: Chess): Map<Key, Key[]> {
 
     const disableNullMoves = chess.disableNullMoves || Boolean(chess.currentMove()?.isNullMove);
     const dests = new Map<Key, Key[]>();
-    SQUARES.forEach((s) => {
-        const moves = chess.moves({ square: s, disableNullMoves });
-        if (moves) {
-            dests.set(
-                s,
-                moves.map((m) => (m as Move).to),
-            );
+    const add = (from: Key, to: Key) => {
+        const squareDests = dests.get(from);
+        if (squareDests) {
+            squareDests.push(to);
+        } else {
+            dests.set(from, [to]);
         }
-    });
+    };
+
+    for (const move of chess.moves({ disableNullMoves })) {
+        const from = move.from as Key;
+        const to = move.to as Key;
+        add(from, to);
+    }
     return dests;
 }
 
@@ -381,6 +386,18 @@ const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, 
         showGlyphs,
         playSound,
     ]);
+
+    useEffect(() => {
+        if (!board) {
+            return;
+        }
+        return () => {
+            board.destroy();
+            if (window.chessground === board) {
+                window.chessground = undefined;
+            }
+        };
+    }, [board]);
 
     useEffect(() => {
         if (chess && board) {

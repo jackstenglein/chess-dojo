@@ -1,5 +1,5 @@
 import { EventType, Move } from '@jackstenglein/chess';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { useReconcile } from '../Board';
 import { BlockBoardKeyboardShortcuts, useChess } from './PgnBoard';
@@ -144,12 +144,12 @@ const KeyboardHandler: React.FC<KeyboardHandlerProps> = ({ underboardRef }) => {
         [keydownMap],
     );
 
+    const wheelTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
     const onWheel = useCallback(() => {
         if (!chess || !board || !scrollToMove) {
             return;
         }
 
-        let timeoutId: unknown;
         let lastExecTime = 0;
 
         return function onWheel(event: WheelEvent) {
@@ -159,10 +159,10 @@ const KeyboardHandler: React.FC<KeyboardHandlerProps> = ({ underboardRef }) => {
             const currentTime = Date.now();
             const timeSinceLastExec = currentTime - lastExecTime;
 
-            if (!timeoutId) {
-                timeoutId = setTimeout(
+            if (!wheelTimeout.current) {
+                wheelTimeout.current = setTimeout(
                     () => {
-                        timeoutId = null;
+                        wheelTimeout.current = undefined;
                         const action =
                             event.deltaY < 0
                                 ? ShortcutAction.PreviousMove
@@ -198,6 +198,10 @@ const KeyboardHandler: React.FC<KeyboardHandlerProps> = ({ underboardRef }) => {
             window.removeEventListener('keyup', onKeyUp);
             if (wheelListener) {
                 boardNode?.removeEventListener('wheel', wheelListener);
+            }
+            if (wheelTimeout.current) {
+                clearTimeout(wheelTimeout.current);
+                wheelTimeout.current = undefined;
             }
         };
     }, [onKeyDown, onKeyUp, onWheel, boardRef]);

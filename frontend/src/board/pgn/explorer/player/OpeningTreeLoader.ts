@@ -207,26 +207,42 @@ export class OpeningTreeLoader {
         }
         const decoder = new TextDecoder();
 
-        let done = false;
-        while (!done) {
+        let remainder = '';
+        while (true) {
             const readVal = await reader.read();
-            done = readVal.done;
-            if (done) {
+            if (readVal.done) {
+                remainder += decoder.decode();
                 break;
             }
 
-            const chunk = decoder.decode(readVal.value);
-            for (let line of chunk.split('\n')) {
-                line = line.trim();
-                if (!line) continue;
-
-                try {
-                    const game = JSON.parse(line) as LichessGame;
-                    await this.indexLichessGame(source, game);
-                } catch (err) {
-                    logger.error?.('Failed to load lichess game: ', line, err);
-                }
+            const chunk = remainder + decoder.decode(readVal.value, { stream: true });
+            const lines = chunk.split('\n');
+            remainder = lines.pop() ?? '';
+            for (const line of lines) {
+                await this.indexLichessLine(source, line);
             }
+        }
+        if (remainder.trim()) {
+            await this.indexLichessLine(source, remainder);
+        }
+    }
+
+    /**
+     * Parses one NDJSON line into a game and indexes it. Blank lines are ignored.
+     * @param source The Lichess source the game belongs to.
+     * @param line The raw line, which may include surrounding whitespace.
+     */
+    private async indexLichessLine(source: PlayerSource, line: string) {
+        const trimmed = line.trim();
+        if (!trimmed) {
+            return;
+        }
+
+        try {
+            const game = JSON.parse(trimmed) as LichessGame;
+            await this.indexLichessGame(source, game);
+        } catch (err) {
+            logger.error?.('Failed to load lichess game: ', trimmed, err);
         }
     }
 
