@@ -10,8 +10,10 @@ import { ProgressUpdater } from '@/components/profile/trainingPlan/ProgressUpdat
 import { TimerContext } from '@/components/timer/TimerContext';
 import {
     CustomTask,
+    getCurrentCount,
     getTotalCount,
     getUnitScore,
+    goalPeriod,
     isComplete,
     isRequirement,
     Requirement,
@@ -276,7 +278,10 @@ function DetailsDialog({
     const progress = user?.progress[task.id];
 
     const totalCount = task.counts[selectedCohort] || task.counts[ALL_COHORTS] || 0;
-    const currentCount = progress?.counts?.[selectedCohort] || progress?.counts?.[ALL_COHORTS] || 0;
+    // A goal per day, week or month counts only this period's minutes.
+    const currentCount = goalPeriod(task)
+        ? getCurrentCount({ cohort: selectedCohort, requirement: task, progress, timeline })
+        : progress?.counts?.[selectedCohort] || progress?.counts?.[ALL_COHORTS] || 0;
     // Tasks with no goal (time only) are never "completed", like isComplete() says.
     const isCompleted =
         task.scoreboardDisplay !== ScoreboardDisplay.NonDojo && currentCount >= totalCount;

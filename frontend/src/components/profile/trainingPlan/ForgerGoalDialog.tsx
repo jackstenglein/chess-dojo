@@ -2,7 +2,13 @@
 
 import { useApi } from '@/api/Api';
 import { useAuth } from '@/auth/Auth';
-import { CustomTask, ScoreboardDisplay } from '@/database/requirement';
+import {
+    CustomTask,
+    GoalPeriod,
+    goalPeriod,
+    goalPeriodLabel,
+    ScoreboardDisplay,
+} from '@/database/requirement';
 import { dojoCohorts } from '@/database/user';
 import {
     Button,
@@ -14,6 +20,8 @@ import {
     DialogTitle,
     Stack,
     TextField,
+    ToggleButton,
+    ToggleButtonGroup,
 } from '@mui/material';
 import { useState } from 'react';
 
@@ -24,7 +32,29 @@ export const TACTICS_FORGER_TASK_ID = 'dojo-tactics-forger';
 export const TACTICS_FORGER_TASK_DESCRIPTION =
     'Time spent solving puzzles in the Dojo Tactics Forger, logged automatically. Use Set goal to pick your own goal in minutes.';
 
-const PRESETS = [300, 600, 1200, 3000];
+type Period = GoalPeriod | 'total';
+
+/** Goal choices that fit each period, in minutes. */
+const PRESETS: Record<Period, number[]> = {
+    day: [15, 30, 45, 60],
+    week: [60, 120, 180, 300],
+    month: [300, 600, 900, 1200],
+    total: [300, 600, 1200, 3000],
+};
+
+const PERIODS: [Period, string][] = [
+    ['day', 'Per day'],
+    ['week', 'Per week'],
+    ['month', 'Per month'],
+    ['total', 'Total'],
+];
+
+const fmtMinutes = (m: number) =>
+    m < 60
+        ? `${m} min`
+        : m % 60
+          ? `${Math.floor(m / 60)}h ${m % 60}m`
+          : `${m / 60} hour${m === 60 ? '' : 's'}`;
 
 /** The goal in minutes the user set on the Forger task, or 0 when it has none. */
 export function forgerGoal(task: CustomTask | undefined, cohort: string | undefined): number {
@@ -41,6 +71,8 @@ export function ForgerGoalDialog({ open, onClose }: { open: boolean; onClose: ()
     const api = useApi();
     const task = user?.customTasks?.find((t) => t.id === TACTICS_FORGER_TASK_ID);
     const current = forgerGoal(task, user?.dojoCohort);
+    const currentPeriod: Period = (task && goalPeriod(task)) || (current ? 'total' : 'week');
+    const [period, setPeriod] = useState<Period>(currentPeriod);
     const [value, setValue] = useState(current ? String(current) : '');
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
@@ -58,7 +90,8 @@ export function ForgerGoalDialog({ open, onClose }: { open: boolean; onClose: ()
             description: TACTICS_FORGER_TASK_DESCRIPTION,
             counts: Object.fromEntries(dojoCohorts.map((c) => [c, goal])),
             scoreboardDisplay: goal > 0 ? ScoreboardDisplay.Minutes : ScoreboardDisplay.NonDojo,
-            progressBarSuffix: 'Minutes',
+            // The period lives in the unit label; see goalPeriod().
+            progressBarSuffix: period === 'total' ? 'Minutes' : `Minutes per ${period}`,
             updatedAt: new Date().toISOString(),
         };
         try {
@@ -79,21 +112,39 @@ export function ForgerGoalDialog({ open, onClose }: { open: boolean; onClose: ()
             <DialogContent>
                 <DialogContentText sx={{ mb: 2 }}>
                     Your time in the Dojo Tactics Forger is logged to your training plan
-                    automatically. Pick a goal in minutes to track it with a progress bar, or leave
-                    it empty to just log your time.
+                    automatically. Pick a goal for each day, week or month (it starts over each
+                    time), or for all time. Leave it empty to just log your time.
                 </DialogContentText>
+                <ToggleButtonGroup
+                    exclusive
+                    size='small'
+                    fullWidth
+                    value={period}
+                    onChange={(_, p: Period | null) => {
+                        if (!p) return;
+                        setPeriod(p);
+                        setValue('');
+                    }}
+                    sx={{ mb: 2 }}
+                >
+                    {PERIODS.map(([p, label]) => (
+                        <ToggleButton key={p} value={p}>
+                            {label}
+                        </ToggleButton>
+                    ))}
+                </ToggleButtonGroup>
                 <Stack direction='row' spacing={1} sx={{ mb: 2, flexWrap: 'wrap', rowGap: 1 }}>
-                    {PRESETS.map((m) => (
+                    {PRESETS[period].map((m) => (
                         <Chip
                             key={m}
-                            label={`${m / 60} hours`}
+                            label={fmtMinutes(m)}
                             color={value === String(m) ? 'primary' : 'default'}
                             onClick={() => setValue(String(m))}
                         />
                     ))}
                 </Stack>
                 <TextField
-                    label='Goal (minutes)'
+                    label={`Goal in minutes ${period === 'total' ? '(all time)' : goalPeriodLabel(period).replace('today', 'per day').replace('this ', 'per ')}`}
                     type='number'
                     fullWidth
                     value={value}
@@ -103,7 +154,10 @@ export function ForgerGoalDialog({ open, onClose }: { open: boolean; onClose: ()
                     }}
                     error={!!error}
                     helperText={
-                        error || (current ? `Current goal: ${current} minutes` : 'No goal yet')
+                        error ||
+                        (current
+                            ? `Current goal: ${fmtMinutes(current)} ${currentPeriod === 'total' ? 'in all' : `per ${currentPeriod}`}`
+                            : 'No goal yet')
                     }
                     slotProps={{ htmlInput: { min: 0, step: 30 } }}
                 />
