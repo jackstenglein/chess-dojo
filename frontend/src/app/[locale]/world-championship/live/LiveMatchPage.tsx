@@ -1395,16 +1395,17 @@ function PlayerBar({
                 <Paper
                     elevation={0}
                     sx={{
-                        px: 1.5,
+                        px: { xs: 1.25, sm: 1.5 },
                         py: 0.5,
                         // Trimming the line box to the digits centers them. The larger
                         // padding makes up the height the trim removes.
                         '@supports (text-box: trim-both cap alphabetic)': {
                             textBox: 'trim-both cap alphabetic',
-                            py: '11px',
+                            py: { xs: '8px', sm: '11px' },
                         },
                         fontWeight: 600,
-                        fontSize: '1.35rem',
+                        // A phone's clock is smaller, which leaves the name more of the row.
+                        fontSize: { xs: '1.1rem', sm: '1.35rem' },
                         fontVariantNumeric: 'tabular-nums',
                         bgcolor: running ? 'text.primary' : 'action.hover',
                         color: running ? 'background.paper' : 'text.primary',
