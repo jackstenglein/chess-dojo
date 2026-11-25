@@ -1984,15 +1984,31 @@ async function showPractice() {
     });
   };
   // All puzzles: one row per tab, with its own "All ..." chip; mix any themes from any tab.
+  // A tab's theme list starts closed behind a "Choose themes" button; one you've picked
+  // single themes from stays open.
+  const openTabs = new Set();
   const fillMixed = (sc) => {
     const chip = (k, label, on) => `<button type="button" class="chip-btn ${on ? 'on' : ''}" data-k="${esc(k)}">${esc(label)}</button>`;
     $themes.innerHTML = `<div class="mix-row">${chip('', 'Everything', !chosen.size)}</div>` + sc.parts.map((pt) => {
       const whole = chosen.has(pt.track);
       const names = catalog(pt.track).themes;
-      return `<div class="mix-row"><span class="mix-tab">${TRACKS[pt.track].label}</span>${chip(pt.track, `All ${TRACKS[pt.track].label.toLowerCase()}`, whole)}${
-        pt.keys.map((k) => chip(`${pt.track}|${k}`, shortName(names.find((t) => t.key === k)), !whole && chosen.has(`${pt.track}|${k}`))).join('')}</div>`;
+      const picked = pt.keys.filter((k) => chosen.has(`${pt.track}|${k}`)).length;
+      const open = openTabs.has(pt.track) || picked > 0;
+      return `<div class="mix-tab-block ${open ? 'open' : ''}">
+        <div class="mix-row"><span class="mix-tab">${TRACKS[pt.track].label}</span>${chip(pt.track, `All ${TRACKS[pt.track].label.toLowerCase()}`, whole)}
+          <button type="button" class="mix-more" data-tab="${pt.track}" aria-expanded="${open}">${picked ? `${picked} picked` : 'Choose themes'} <small>(${pt.keys.length})</small> <span class="mix-chev">▾</span></button></div>
+        ${open ? `<div class="mix-row mix-themes">${pt.keys.map((k) => chip(`${pt.track}|${k}`, shortName(names.find((t) => t.key === k)), !whole && chosen.has(`${pt.track}|${k}`))).join('')}</div>` : ''}
+      </div>`;
     }).join('');
-    $themes.querySelectorAll('button').forEach((b) => {
+    $themes.querySelectorAll('.mix-more').forEach((b) => {
+      b.onclick = () => {
+        const tr = b.dataset.tab;
+        if (openTabs.has(tr)) openTabs.delete(tr);
+        else openTabs.add(tr);
+        fillMixed(sc);
+      };
+    });
+    $themes.querySelectorAll('button[data-k]').forEach((b) => {
       b.onclick = () => {
         const k = b.dataset.k;
         if (!k) chosen.clear();

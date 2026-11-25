@@ -1216,3 +1216,12 @@ html.embed .nav { margin-left: 0; }
 /* Phones: no resize handle. The board already fills the width, and the handle would sit on the
    corner square where it gets in the way of moving a piece. */
 @media (max-width: 700px) { .board-resize { display: none; } }
+/* Custom, All puzzles: each tab's themes open from a Choose themes button */
+#pThemes .mix-tab-block { width: 100%; }
+#pThemes .mix-more { font: inherit; font-size: 13px; font-weight: 600; color: var(--accent); background: rgba(245,165,36,.1); border: 1px dashed var(--accent); border-radius: 999px; padding: 4px 12px; cursor: pointer; }
+#pThemes .mix-more small { color: var(--muted); font-weight: 400; }
+#pThemes .mix-more:hover { background: rgba(245,165,36,.2); }
+#pThemes .mix-chev { display: inline-block; transition: transform .15s; }
+#pThemes .open .mix-chev { transform: rotate(180deg); }
+#pThemes .mix-themes { padding: 6px 0 4px 82px; }
+@media (max-width: 700px) { #pThemes .mix-themes { padding-left: 0; } }
