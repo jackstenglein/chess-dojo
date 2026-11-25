@@ -27,6 +27,14 @@ export function resolveLayout(saved: WcLayout | null, canAnalyze: boolean): WcLa
 export const PHONE_LANDSCAPE = '@media (orientation: landscape) and (max-height: 500px)';
 
 /**
+ * Matches a phone and nothing wider. Held upright, a phone is under the theme's
+ * sm breakpoint. On its side it is short. Here the games are a GamePicker and
+ * not tabs.
+ */
+export const HANDSET =
+    '@media (max-width: 599.95px), (orientation: landscape) and (max-height: 500px)';
+
+/**
  * A phone either way up. Held upright it is narrower than the theme's md
  * breakpoint, where the page goes down to one column.
  */
@@ -73,16 +81,16 @@ const FAN_LANDSCAPE_ROWS: readonly (readonly [FanPart | '.', FanPart | '.'])[] =
     ['cross', 'cross'],
 ];
 
-/** How tall the game tabs are on a phone on its side. */
-export const FAN_LANDSCAPE_TABS = 36;
+/** How tall the GamePicker is, which a phone has in place of the game tabs. */
+export const GAME_PICKER_HEIGHT = 36;
 
 /**
  * On a phone on its side the board is as tall as the screen has room for under
- * the site's header and the tabs, with 8px above the tabs, under them and
- * under the board. It is never so wide that the players beside it have less
- * than about 220px.
+ * the site's header and the game picker, with 8px above the picker, under it
+ * and under the board. It is never so wide that the players beside it have
+ * less than about 220px.
  */
-export const FAN_LANDSCAPE_BOARD = `min(calc(100dvh - var(--navbar-height) - ${FAN_LANDSCAPE_TABS + 24}px), calc(100vw - 340px))`;
+export const FAN_LANDSCAPE_BOARD = `min(calc(100dvh - var(--navbar-height) - ${GAME_PICKER_HEIGHT + 24}px), calc(100vw - 340px))`;
 
 /** The grid of the fan view on a phone on its side. */
 export const fanLandscapeGrid = {
