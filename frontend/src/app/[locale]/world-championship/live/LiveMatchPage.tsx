@@ -66,6 +66,7 @@ import { AddGameDialog } from './AddGameDialog';
 import { AdminView } from './AdminView';
 import { useAnalysis } from './analysisClient';
 import { BoardThemeButton } from './BoardThemeButton';
+import { ClockText } from './ClockText';
 import { useCrosstable } from './crosstable';
 import { CrosstableView } from './CrosstableView';
 import { GuessPanel, GuessState, Leaderboard } from './GuessTheMove';
@@ -1261,15 +1262,15 @@ function PlayerBar({
                             textBox: 'trim-both cap alphabetic',
                             py: '11px',
                         },
-                        fontWeight: 800,
-                        fontSize: '1.15rem',
+                        fontWeight: 600,
+                        fontSize: '1.35rem',
                         fontVariantNumeric: 'tabular-nums',
                         bgcolor: running ? 'text.primary' : 'action.hover',
                         color: running ? 'background.paper' : 'text.primary',
                     }}
                     data-testid='player-clock'
                 >
-                    {formatClock(seconds)}
+                    <ClockText text={formatClock(seconds)} />
                 </Paper>
             </Stack>
         </Stack>

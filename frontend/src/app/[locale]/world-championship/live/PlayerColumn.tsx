@@ -1,6 +1,7 @@
 'use client';
 
 import { Box, Paper, Stack, Typography } from '@mui/material';
+import { ClockText } from './ClockText';
 import { CrossPlayer, Crosstable, playerOf } from './crosstable';
 import { formatClock, LivePlayer } from './lichessFeed';
 import { PlayerPhoto } from './PlayerPhoto';
@@ -219,14 +220,14 @@ function ColumnClock({ seconds, running }: { seconds: number; running: boolean }
             sx={{
                 py: 1,
                 textAlign: 'center',
-                fontWeight: 800,
-                fontSize: '1.75rem',
+                fontWeight: 600,
+                fontSize: '2rem',
                 fontVariantNumeric: 'tabular-nums',
                 bgcolor: running ? 'text.primary' : 'action.hover',
                 color: running ? 'background.paper' : 'text.primary',
             }}
         >
-            {formatClock(seconds)}
+            <ClockText text={formatClock(seconds)} />
         </Paper>
     );
 }
