@@ -64,10 +64,22 @@ export function Notation({
     const [menu, setMenu] = useState<{ node: AnalysisNode; x: number; y: number }>();
     const scroller = useRef<HTMLDivElement>(null);
 
-    // Keep the move on the board in view.
+    // Keep the move on the board in view. Only the list scrolls. scrollIntoView
+    // would scroll the page too, and on a phone that takes the board off screen
+    // every time a move is played.
     useEffect(() => {
-        const el = scroller.current?.querySelector('[data-current="true"]');
-        el?.scrollIntoView({ block: 'nearest' });
+        const list = scroller.current;
+        const el = list?.querySelector('[data-current="true"]');
+        if (!list || !el) {
+            return;
+        }
+        const shown = list.getBoundingClientRect();
+        const move = el.getBoundingClientRect();
+        if (move.top < shown.top) {
+            list.scrollTop -= shown.top - move.top;
+        } else if (move.bottom > shown.bottom) {
+            list.scrollTop += move.bottom - shown.bottom;
+        }
     }, [current]);
 
     const mainline: AnalysisNode[] = [];
