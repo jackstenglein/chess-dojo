@@ -15,14 +15,19 @@ import { PHONE_LANDSCAPE } from './liveLayout';
 // Pins
 // ---------------------------------------------------------------------------
 
+/** A pin's size, the same everywhere or smaller on a phone. */
+type PinSize = number | { xs: number; md: number };
+
 /** A sensei's initial in their color, as on the bar. */
-export function SenseiPin({ sensei, size = 22 }: { sensei: WcSensei; size?: number }) {
+export function SenseiPin({ sensei, size = 22 }: { sensei: WcSensei; size?: PinSize }) {
+    const scaled = (factor: number) =>
+        typeof size === 'number' ? size * factor : { xs: size.xs * factor, md: size.md * factor };
     return (
         <Box
             aria-hidden='true'
             sx={{
-                width: size,
-                height: size,
+                width: scaled(1),
+                height: scaled(1),
                 borderRadius: '50%',
                 bgcolor: sensei.color,
                 color: '#fff',
@@ -30,7 +35,7 @@ export function SenseiPin({ sensei, size = 22 }: { sensei: WcSensei; size?: numb
                 boxShadow: '0 1px 3px rgba(0,0,0,0.6)',
                 display: 'grid',
                 placeItems: 'center',
-                fontSize: size * 0.5,
+                fontSize: scaled(0.5),
                 fontWeight: 900,
                 lineHeight: 1,
                 // Trim the line box to the capital, so the letter sits in the middle.
@@ -302,59 +307,83 @@ export function EvalAverage({ average }: { average: number }) {
 // The strip above the board
 // ---------------------------------------------------------------------------
 
+/** Kept for screen readers, but not shown, under the md breakpoint. */
+const HIDDEN_ON_A_PHONE = {
+    position: { xs: 'absolute', md: 'static' },
+    width: { xs: '1px', md: 'auto' },
+    height: { xs: '1px', md: 'auto' },
+    overflow: 'hidden',
+    clipPath: { xs: 'inset(50%)', md: 'none' },
+} as const;
+
 /** Each active sensei above the board, with the eval they have in force. */
 export function SenseiStrip({ roster, pins }: { roster: WcSensei[]; pins: WcPin[] }) {
+    const active = roster.filter((s) => s.active);
+    // Three senseis fit a phone's row with their names. More do not, so then the
+    // row shows only their initials and evals.
+    const crowded = active.length > 3;
     return (
-        <Stack spacing={0.75} data-testid='sensei-strip'>
-            {roster
-                .filter((s) => s.active)
-                .map((s) => {
-                    const pin = pins.find((p) => p.sensei.id === s.id);
-                    return (
-                        <Stack
-                            key={s.id}
-                            data-testid={`sensei-chip-${s.id}`}
-                            direction='row'
-                            spacing={0.75}
+        // On a phone the senseis share a row, and go to a second row if they do not fit.
+        <Stack
+            direction={{ xs: 'row', md: 'column' }}
+            spacing={{ xs: 0.5, md: 0.75 }}
+            useFlexGap
+            data-testid='sensei-strip'
+            sx={{ flexWrap: 'wrap' }}
+        >
+            {active.map((s) => {
+                const pin = pins.find((p) => p.sensei.id === s.id);
+                return (
+                    <Stack
+                        key={s.id}
+                        data-testid={`sensei-chip-${s.id}`}
+                        direction='row'
+                        spacing={{ xs: 0.5, md: 0.75 }}
+                        sx={{
+                            alignItems: 'center',
+                            border: 1,
+                            borderColor: 'divider',
+                            borderRadius: 5,
+                            py: 0.25,
+                            pl: { xs: 0.375, md: 0.5 },
+                            pr: { xs: 0.875, md: 1.25 },
+                            flex: { xs: '1 1 auto', md: 'none' },
+                            fontSize: { xs: '0.8125rem', md: '1rem' },
+                            ...(crowded && { justifyContent: { xs: 'center', md: 'flex-start' } }),
+                        }}
+                    >
+                        <SenseiPin sensei={s} size={{ xs: 20, md: 24 }} />
+                        <Typography
                             sx={{
-                                alignItems: 'center',
-                                border: 1,
-                                borderColor: 'divider',
-                                borderRadius: 5,
-                                py: 0.25,
-                                pl: 0.5,
-                                pr: 1.25,
+                                fontSize: 'inherit',
+                                fontWeight: 600,
+                                flexGrow: 1,
+                                // The name and the eval are trimmed to the capitals, so
+                                // both sit in the middle of the row. The padding keeps
+                                // noWrap from cutting off descenders, and the margin
+                                // takes that height back out.
+                                textBox: 'trim-both cap alphabetic',
+                                py: '4px',
+                                my: '-4px',
+                                ...(crowded && HIDDEN_ON_A_PHONE),
+                            }}
+                            noWrap
+                        >
+                            {s.name}
+                        </Typography>
+                        <Typography
+                            sx={{
+                                fontSize: 'inherit',
+                                fontWeight: 800,
+                                fontVariantNumeric: 'tabular-nums',
+                                textBox: 'trim-both cap alphabetic',
                             }}
                         >
-                            <SenseiPin sensei={s} size={24} />
-                            <Typography
-                                sx={{
-                                    fontWeight: 600,
-                                    flexGrow: 1,
-                                    // The name and the eval are trimmed to the capitals, so
-                                    // both sit in the middle of the row. The padding keeps
-                                    // noWrap from cutting off descenders, and the margin
-                                    // takes that height back out.
-                                    textBox: 'trim-both cap alphabetic',
-                                    py: '4px',
-                                    my: '-4px',
-                                }}
-                                noWrap
-                            >
-                                {s.name}
-                            </Typography>
-                            <Typography
-                                sx={{
-                                    fontWeight: 800,
-                                    fontVariantNumeric: 'tabular-nums',
-                                    textBox: 'trim-both cap alphabetic',
-                                }}
-                            >
-                                {pin ? formatEval(pin.value) : '–'}
-                            </Typography>
-                        </Stack>
-                    );
-                })}
+                            {pin ? formatEval(pin.value) : '–'}
+                        </Typography>
+                    </Stack>
+                );
+            })}
         </Stack>
     );
 }
