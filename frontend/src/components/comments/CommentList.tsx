@@ -3,6 +3,7 @@ import { useAuth } from '@/auth/Auth';
 import { toDojoDateString, toDojoTimeString } from '@/components/calendar/displayDate';
 import { Link } from '@/components/navigation/Link';
 import Avatar from '@/profile/Avatar';
+import CohortIcon from '@/scoreboard/CohortIcon';
 import { Comment } from '@jackstenglein/chess-dojo-common/src/database/timeline';
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -44,6 +45,11 @@ interface CommentListProps {
     threaded?: boolean;
     onSubmitReply?: (parentId: string, content: string) => Promise<void>;
     outlined?: boolean;
+    /**
+     * A lighter look for feeds: a smaller avatar, a flat bubble, the name in bold
+     * with the cohort badge, and the date as "November 24 · 9:49 PM".
+     */
+    compact?: boolean;
 }
 
 const CommentList: React.FC<CommentListProps> = ({
@@ -55,6 +61,7 @@ const CommentList: React.FC<CommentListProps> = ({
     threaded,
     onSubmitReply,
     outlined,
+    compact,
 }) => {
     const t = useTranslations('comments');
     const [replyingTo, setReplyingTo] = useState<string | null>(null);
@@ -221,15 +228,19 @@ const CommentList: React.FC<CommentListProps> = ({
 
     return (
         <Stack
-            spacing={2}
+            spacing={compact ? 1.25 : 2}
             sx={{
                 width: 1,
                 alignItems: 'start',
-                mb: 2,
+                mb: compact ? 0.5 : 2,
             }}
         >
             {hiddenComments > 0 && viewCommentsLink && (
-                <Link href={viewCommentsLink} sx={{ pl: '52px' }}>
+                <Link
+                    href={viewCommentsLink}
+                    underline='hover'
+                    sx={compact ? { pl: '40px', fontSize: '0.8rem' } : { pl: '52px' }}
+                >
                     {t('viewEarlierComments', { count: hiddenComments })}
                 </Link>
             )}
@@ -241,6 +252,7 @@ const CommentList: React.FC<CommentListProps> = ({
                     onEdit={onEdit}
                     onDelete={onDelete}
                     outlined={outlined}
+                    compact={compact}
                 />
             ))}
         </Stack>
@@ -253,6 +265,7 @@ interface CommentListItemProps {
     onDelete?: (commentId: string) => Promise<void>;
     onReply?: (parentCommentId: string) => void;
     outlined?: boolean;
+    compact?: boolean;
 }
 
 const CommentListItem: React.FC<CommentListItemProps> = ({
@@ -261,6 +274,7 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
     onDelete,
     onReply,
     outlined,
+    compact,
 }) => {
     const t = useTranslations('comments');
     const { user } = useAuth();
@@ -348,7 +362,11 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
             <RequestSnackbar request={editRequest} />
             <RequestSnackbar request={deleteRequest} />
 
-            <Avatar username={comment.owner} displayName={comment.ownerDisplayName} size={40} />
+            <Avatar
+                username={comment.owner}
+                displayName={comment.ownerDisplayName}
+                size={compact ? 28 : 40}
+            />
 
             <Stack
                 sx={{
@@ -357,15 +375,19 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
                 }}
             >
                 <Paper
-                    elevation={2}
+                    elevation={compact ? 0 : 2}
                     sx={{
                         px: '12px',
-                        py: '8px',
-                        borderRadius: '6px',
+                        py: compact ? '6px' : '8px',
+                        borderRadius: compact ? 2 : '6px',
                         ...(outlined && {
                             border: 1,
                             borderColor: 'divider',
                             boxShadow: 'none',
+                        }),
+                        ...(compact && {
+                            backgroundColor: 'action.hover',
+                            backgroundImage: 'none',
                         }),
                     }}
                 >
@@ -377,16 +399,38 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
                                 alignItems: 'center',
                             }}
                         >
-                            <Link href={`/profile/${comment.owner}`}>
-                                <Typography
-                                    variant='subtitle1'
-                                    sx={{
-                                        color: 'text.secondary',
-                                    }}
+                            {compact ? (
+                                <Stack
+                                    direction='row'
+                                    sx={{ alignItems: 'center', gap: 0.5, minWidth: 0 }}
                                 >
-                                    {comment.ownerDisplayName} ({comment.ownerCohort})
-                                </Typography>
-                            </Link>
+                                    <Typography variant='body2' sx={{ fontWeight: 600 }} noWrap>
+                                        <Link
+                                            href={`/profile/${comment.owner}`}
+                                            underline='hover'
+                                            sx={{ color: 'inherit' }}
+                                        >
+                                            {comment.ownerDisplayName}
+                                        </Link>
+                                    </Typography>
+                                    <CohortIcon
+                                        cohort={comment.ownerCohort}
+                                        size={14}
+                                        tooltip={comment.ownerCohort}
+                                    />
+                                </Stack>
+                            ) : (
+                                <Link href={`/profile/${comment.owner}`}>
+                                    <Typography
+                                        variant='subtitle1'
+                                        sx={{
+                                            color: 'text.secondary',
+                                        }}
+                                    >
+                                        {comment.ownerDisplayName} ({comment.ownerCohort})
+                                    </Typography>
+                                </Link>
+                            )}
 
                             {canModify && !editing && (
                                 <IconButton
@@ -450,6 +494,7 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
                             <>
                                 <Typography
                                     ref={contentRef}
+                                    variant={compact ? 'body2' : 'body1'}
                                     sx={{
                                         whiteSpace: 'pre-line',
                                         ...(!expanded && {
@@ -497,18 +542,21 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
                     spacing={1}
                     sx={{
                         alignItems: 'center',
-                        mt: outlined ? 0.25 : undefined,
-                        px: outlined ? 0.5 : undefined,
+                        mt: outlined || compact ? 0.25 : undefined,
+                        px: outlined || compact ? 0.5 : undefined,
                     }}
                 >
                     <Typography
                         variant='caption'
                         sx={{
                             color: 'text.secondary',
+                            // Matches the newsfeed entry's date.
+                            ...(compact && { fontSize: '0.8125rem', letterSpacing: 0 }),
                         }}
                     >
-                        {toDojoDateString(createdAt, timezone)} •{' '}
-                        {toDojoTimeString(createdAt, timezone, timeFormat)}
+                        {compact
+                            ? `${toDojoDateString(createdAt, timezone, 'backward', { month: 'long', day: 'numeric' })} · ${toDojoTimeString(createdAt, timezone, timeFormat, 'backward', { hour: 'numeric', minute: '2-digit' })}`
+                            : `${toDojoDateString(createdAt, timezone)} • ${toDojoTimeString(createdAt, timezone, timeFormat)}`}
                         {isEdited && ` • ${t('edited')}`}
                     </Typography>
                 </Stack>

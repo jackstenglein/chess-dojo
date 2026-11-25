@@ -4,16 +4,7 @@ import { useAuth } from '@/auth/Auth';
 import { Reaction, TimelineEntry } from '@/database/timeline';
 import { User } from '@/database/user';
 import AddReactionIcon from '@mui/icons-material/AddReaction';
-import {
-    Button,
-    IconButton,
-    Menu,
-    Paper,
-    Stack,
-    Tooltip,
-    Typography,
-    useTheme,
-} from '@mui/material';
+import { Button, IconButton, Menu, Stack, Tooltip, Typography, useTheme } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { CSSProperties, useMemo, useState } from 'react';
 
@@ -100,7 +91,11 @@ function getNewTypes(
     return types;
 }
 
-const ReactionEmoji: React.FC<{ type: string; icon?: boolean }> = ({ type, icon }) => {
+const ReactionEmoji: React.FC<{ type: string; icon?: boolean; small?: boolean }> = ({
+    type,
+    icon,
+    small,
+}) => {
     const theme = useTheme();
 
     switch (type) {
@@ -125,8 +120,8 @@ const ReactionEmoji: React.FC<{ type: string; icon?: boolean }> = ({ type, icon 
             return (
                 <img
                     alt={type}
-                    width={icon ? '100%' : '20.1833px'}
-                    height={icon ? '100%' : '30px'}
+                    width={icon ? '100%' : small ? '18px' : '20.1833px'}
+                    height={icon ? '100%' : small ? '18px' : '30px'}
                     style={styles}
                     src={ReactionTypesToImage[type]}
                     crossOrigin='anonymous'
@@ -139,8 +134,10 @@ const ReactionEmoji: React.FC<{ type: string; icon?: boolean }> = ({ type, icon 
 
     return (
         <Typography
+            component='span'
             sx={{
-                fontSize: '1.25rem',
+                fontSize: small ? '1rem' : '1.25rem',
+                lineHeight: 1,
             }}
         >
             {type}
@@ -208,41 +205,52 @@ const ReactionList: React.FC<ReactionListProps> = ({ owner, id, reactions, onEdi
             <RequestSnackbar request={request} />
 
             <Tooltip title={t('addReaction')}>
-                <IconButton color='primary' onClick={handleClick}>
-                    <AddReactionIcon />
+                <IconButton color='primary' size='small' onClick={handleClick}>
+                    <AddReactionIcon fontSize='small' />
                 </IconButton>
             </Tooltip>
 
-            {Object.entries(reactionMap).map(([type, reactors]) => (
-                <Tooltip key={type} title={t('reactedBy', { names: reactors.join(', ') })}>
-                    <Button
-                        variant={isReactor(user, reactions, type) ? 'contained' : 'outlined'}
-                        onClick={() => onReact(type)}
-                    >
-                        <Paper
-                            elevation={2}
-                            sx={{
-                                px: 0.75,
-                                borderRadius: 1,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                            }}
+            {Object.entries(reactionMap).map(([type, reactors]) => {
+                const mine = isReactor(user, reactions, type);
+                return (
+                    <Tooltip key={type} title={t('reactedBy', { names: reactors.join(', ') })}>
+                        <Button
+                            variant='outlined'
+                            size='small'
+                            aria-pressed={mine}
+                            onClick={() => onReact(type)}
+                            sx={(theme) => ({
+                                minWidth: 0,
+                                height: 28,
+                                px: 1,
+                                gap: 0.5,
+                                borderRadius: 14,
+                                color: 'text.primary',
+                                borderColor: mine ? 'primary.main' : 'divider',
+                                backgroundColor: mine
+                                    ? `color-mix(in srgb, ${theme.palette.primary.main} 16%, transparent)`
+                                    : 'transparent',
+                                '&:hover': {
+                                    borderColor: mine ? 'primary.main' : 'text.secondary',
+                                },
+                            })}
                         >
-                            <ReactionEmoji type={type} />
-                        </Paper>
-
-                        <Typography
-                            sx={{
-                                ml: '0.375rem',
-                                fontWeight: '600',
-                            }}
-                        >
-                            {reactors.length}
-                        </Typography>
-                    </Button>
-                </Tooltip>
-            ))}
+                            <ReactionEmoji type={type} small />
+                            <Typography
+                                component='span'
+                                sx={{
+                                    fontSize: '0.8rem',
+                                    fontWeight: 600,
+                                    fontVariantNumeric: 'tabular-nums',
+                                    color: mine ? 'primary.main' : 'text.secondary',
+                                }}
+                            >
+                                {reactors.length}
+                            </Typography>
+                        </Button>
+                    </Tooltip>
+                );
+            })}
 
             <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
                 <Stack
