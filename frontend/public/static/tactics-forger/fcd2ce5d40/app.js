@@ -2164,11 +2164,23 @@ function placementCard() {
   if (track !== 'tactics') return '';
   const cohort = progress.seed?.cohort ?? cloud.cohort;
   if (progress.placement) {
-    // Taken before: a small line, with a retake link once a week has passed.
+    // Taken before: your placement rating, with past results and a retake once a week has passed.
+    const pl = progress.placement;
     const wait = placementWait();
-    return `<p class="start-link placement-line">Placement test: ${progress.placement.score}/${progress.placement.n} · puzzle ratings start at <b>${seedRating()}</b> · ${wait
-      ? `next test in ${Math.ceil(wait / (24 * 3600e3))} day${wait > 24 * 3600e3 ? 's' : ''}`
-      : '<a href="#/placement">retake it</a>'} · <a href="#/placement-history">past results</a></p>`;
+    const days = Math.ceil(wait / (24 * 3600e3));
+    const when = new Date(pl.at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    return `<section class="placement-done">
+      <span class="pd-icon" aria-hidden="true">🎯</span>
+      <div class="pd-main">
+        <div class="pd-label">Placement rating</div>
+        <div class="pd-rating">${Math.round(pl.perf)}</div>
+        <div class="pd-sub">${pl.score}/${pl.n} solved · ${esc(when)}</div>
+      </div>
+      <div class="pd-actions">
+        <a class="btn ghost small" href="#/placement-history">Past results</a>
+        ${wait ? `<span class="pd-wait">Retake in ${days} day${days === 1 ? '' : 's'}</span>` : '<a class="btn primary small" href="#/placement">Retake</a>'}
+      </div>
+    </section>`;
   }
   return `<section class="start-card placement-card">
     <h2><span class="pc-icon" aria-hidden="true">🎯</span> Placement test <small>optional</small></h2>
@@ -2417,7 +2429,7 @@ const COHORT_SOURCES = {
   local: {
     label: 'This device',
     async load() {
-      return [{ id: 'me', me: true, name: progress.settings.name || 'You', ...myProfile() }];
+      return [{ id: 'me', me: true, name: progress.settings.name || 'You', cohort: progress.seed?.cohort ?? cloud.cohort ?? null, ...myProfile() }];
     },
   },
   // Everyone who has saved Tactics Forger progress on chessdojo.club. Your own row uses this
@@ -2426,9 +2438,9 @@ const COHORT_SOURCES = {
     label: 'ChessDojo members',
     async load() {
       const [me] = await COHORT_SOURCES.local.load();
-      const res = await askHost('leaderboard').catch(() => null);
-      if (!res?.ok) return [me];
-      const rows = res.data.players;
+      const res = await leaderboardSnapshot();
+      if (!res) return [me];
+      const rows = res.players;
       const mine = rows.find((p) => p.username === res.username);
       const others = rows.filter((p) => p.username !== res.username).map((p) => ({
         id: p.username, name: p.displayName, cohort: p.cohort,
@@ -2440,7 +2452,7 @@ const COHORT_SOURCES = {
         const rs = [p.rating, p.openingsRating, p.endgamesRating].filter((v) => v != null);
         return { ...p, overallRating: rs.length ? Math.round(sum(rs) / rs.length) : null };
       });
-      return [{ ...me, name: mine?.displayName || me.name, cohort: mine?.cohort }, ...others];
+      return [{ ...me, name: mine?.displayName || me.name, cohort: mine?.cohort ?? me.cohort }, ...others];
     },
   },
   // Preview only: 1,000 made-up Dojoers so the page can be seen with a real-sized cohort.
@@ -2459,6 +2471,7 @@ const COHORT_SOURCES = {
           rating: solved ? Math.round(400 + rnd() * 1500) : null,
           openingsRating: solved && rnd() < 0.6 ? Math.round(400 + rnd() * 1500) : null,
           endgamesRating: solved && rnd() < 0.5 ? Math.round(400 + rnd() * 600) : null, attempts: solved, xp: solved * 15,
+          cohort: DEMO_COHORTS[Math.floor(rnd() * DEMO_COHORTS.length)],
         };
       });
       return [...me, ...fake];
@@ -2466,6 +2479,131 @@ const COHORT_SOURCES = {
   },
 };
 const COHORT_SOURCE = new URLSearchParams(location.search).has('demo-cohort') ? 'demo' : HOSTED ? 'dojo' : 'local';
+const DEMO_COHORTS = ['0-400', '400-600', '600-700', '800-900', '1000-1100', '1200-1300', '1400-1500', '1600-1700', '1800-1900', '2000-2100'];
+
+// ---- Community stats -----------------------------------------------------------------------------
+// Everyone's numbers come from a snapshot taken twice a day (8 AM and 8 PM, your time), so they
+// don't jump around while you play; your own row is always live.
+const SNAPSHOT_KEY = 'tacticsLadder.lbSnapshot';
+function snapshotSlot(now = new Date()) {
+  const d = new Date(now);
+  d.setMinutes(0, 0, 0);
+  const h = now.getHours();
+  if (h >= 20) d.setHours(20);
+  else if (h >= 8) d.setHours(8);
+  else {
+    d.setDate(d.getDate() - 1);
+    d.setHours(20);
+  }
+  return d.getTime();
+}
+async function leaderboardSnapshot() {
+  const slot = snapshotSlot();
+  try {
+    const c = JSON.parse(localStorage.getItem(SNAPSHOT_KEY));
+    if (c?.slot === slot && c.username === cloud.username) return (leaderboardSnapshot.at = slot, c);
+  } catch {}
+  const res = await askHost('leaderboard').catch(() => null);
+  if (!res?.ok) return null;
+  const snap = { slot, username: res.username, players: res.data.players };
+  try {
+    localStorage.setItem(SNAPSHOT_KEY, JSON.stringify(snap));
+  } catch {}
+  leaderboardSnapshot.at = slot;
+  return snap;
+}
+// How sure cohort ratings can be. A rating estimate gets tighter with the puzzles each person
+// plays (about +-60 points after 30, +-35 after 100, +-20 after 300), and a cohort ranking
+// needs enough people in it (READY_PLAYERS). Each tier asks every Dojo cohort for READY_PLAYERS
+// players with tier.per puzzles; progress counts only puzzles that help: each player's up to
+// tier.per, from a cohort's READY_PLAYERS most active players.
+const DOJO_COHORTS = ['0-300', '300-400', '400-500', '500-600', '600-700', '700-800', '800-900', '900-1000',
+  '1000-1100', '1100-1200', '1200-1300', '1300-1400', '1400-1500', '1500-1600', '1600-1700', '1700-1800',
+  '1800-1900', '1900-2000', '2000-2100', '2100-2200', '2200-2300', '2300-2400', '2400+'];
+const READY_PLAYERS = 30;
+const RATING_TIERS = [
+  { name: 'Rough', per: 30, pm: 60 },
+  { name: 'Solid', per: 100, pm: 35 },
+  { name: 'Precise', per: 300, pm: 20 },
+];
+const READY_PER = RATING_TIERS[1].per; // a player counts as "ready" at this many puzzles
+const cohortTierProgress = (list, per) =>
+  sum(list.map((p) => p.attempts || 0).sort((x, y) => y - x).slice(0, READY_PLAYERS).map((n) => Math.min(n, per)));
+const cohortReady = (list) => list.filter((p) => (p.attempts || 0) >= READY_PER).length;
+const cohortOrder = (c) => Number(String(c).match(/\d+/)?.[0] ?? 9999);
+function communityStats(players) {
+  const tot = (list) => {
+    const attempts = sum(list.map((p) => p.attempts || 0));
+    return {
+      players: list.length,
+      solved: sum(list.map((p) => p.solved || 0)),
+      attempts,
+      ms: sum(list.map((p) => (p.attempts || 0) * (p.avgMs || 0))),
+      accuracy: attempts ? sum(list.map((p) => (p.accuracy || 0) * (p.attempts || 0))) / attempts : null,
+      rating: (() => {
+        const rs = list.map((p) => p.rating).filter((v) => v != null);
+        return rs.length ? Math.round(sum(rs) / rs.length) : null;
+      })(),
+    };
+  };
+  const byCohort = new Map();
+  for (const p of players) if (p.cohort) byCohort.set(p.cohort, [...(byCohort.get(p.cohort) ?? []), p]);
+  return {
+    all: tot(players),
+    cohorts: [...byCohort.entries()].sort((a, b) => cohortOrder(a[0]) - cohortOrder(b[0])).map(([c, list]) => ({ cohort: c, ...tot(list) })),
+  };
+}
+const fmtHours = (ms) => {
+  const h = ms / 3600e3;
+  return h >= 100 ? `${Math.round(h).toLocaleString()}h` : h >= 1 ? `${h.toFixed(1)}h` : `${Math.round(ms / 60e3)}m`;
+};
+function communitySection(players, myCohort) {
+  const st = communityStats(players);
+  const mine = st.cohorts.find((c) => c.cohort === myCohort);
+  const bar = (v, goal) => `<div class="cm-bar"><div style="width:${goal ? Math.min(100, (v / goal) * 100) : 0}%"></div></div>`;
+  const inCohort = (c) => players.filter((p) => p.cohort === c);
+  const when = leaderboardSnapshot.at ? new Date(leaderboardSnapshot.at).toLocaleString(undefined, { weekday: 'short', hour: 'numeric', minute: '2-digit' }) : null;
+  // Dojo-wide: one bar per tier, from every Dojo cohort (empty ones count as 0).
+  const tiers = RATING_TIERS.map((t) => {
+    const goal = DOJO_COHORTS.length * READY_PLAYERS * t.per;
+    const have = sum(DOJO_COHORTS.map((c) => cohortTierProgress(inCohort(c), t.per)));
+    return { ...t, goal, have, done: have >= goal };
+  });
+  const myReady = mine ? cohortReady(inCohort(myCohort)) : 0;
+  const myTier = mine ? [...RATING_TIERS].reverse().find((t) => inCohort(myCohort).filter((p) => (p.attempts || 0) >= t.per).length >= READY_PLAYERS) : null;
+  return `<section class="panel community">
+    <h2>Community <span class="h2-meta">${when ? `updated ${when} · next update at 8 AM / 8 PM` : 'everyone in the Tactics Forger'}</span></h2>
+    <div class="cm-totals">
+      <div><b>${st.all.players.toLocaleString()}</b><small>Dojoer${st.all.players === 1 ? '' : 's'}</small></div>
+      <div><b>${st.all.solved.toLocaleString()}</b><small>puzzles solved</small></div>
+      <div><b>${fmtHours(st.all.ms)}</b><small>time spent</small></div>
+      <div><b>${st.all.accuracy == null ? '–' : `${Math.round(st.all.accuracy * 100)}%`}</b><small>first-try accuracy</small></div>
+    </div>
+    <div class="cm-goal all">
+      <div class="cm-goal-top"><b>Dojo-wide rating accuracy</b><span>puzzles played that count</span></div>
+      <p>The more puzzles everyone plays, the more accurate everyone's cohort rating gets. Each tier needs ${READY_PLAYERS} players in every one of the ${DOJO_COHORTS.length} cohorts with enough puzzles.</p>
+      ${tiers.map((t) => `<div class="cm-tier ${t.done ? 'done' : ''}">
+        <div class="cm-goal-top"><span><b>${t.name}</b> · ratings within ±${t.pm} · ${t.per} puzzles each</span><span>${t.done ? '✓ ' : ''}${t.have.toLocaleString()} / ${t.goal.toLocaleString()}</span></div>
+        ${bar(t.have, t.goal)}</div>`).join('')}
+    </div>
+    ${mine ? `<div class="cm-goal ${myReady >= READY_PLAYERS ? 'done' : ''}">
+      <div class="cm-goal-top"><b>${esc(myCohort)}</b><span>${myReady.toLocaleString()} / ${READY_PLAYERS} players ready</span></div>
+      ${bar(myReady, READY_PLAYERS)}
+      <p>${myTier
+        ? `Your cohort is at the <b>${myTier.name}</b> tier: cohort ratings are within about ±${myTier.pm} points.`
+        : `A player is ready at ${READY_PER} puzzles played. Once ${READY_PLAYERS} players in ${esc(myCohort)} are ready, cohort standings stop being provisional.`}</p>
+    </div>` : ''}
+    ${st.cohorts.length ? `<table class="theme-table cm-table"><thead><tr><th>Cohort</th><th>Dojoers</th><th>Players ready</th><th>Avg solved</th><th>Avg tactics</th><th>Accuracy</th><th>Time</th></tr></thead><tbody>
+      ${st.cohorts.map((c) => {
+        const ready = cohortReady(inCohort(c.cohort));
+        return `<tr class="${c.cohort === myCohort ? 'me' : ''}"><td>${esc(c.cohort)}</td><td>${c.players.toLocaleString()}</td>
+        <td class="cm-cell">${bar(ready, READY_PLAYERS)}<small>${ready}/${READY_PLAYERS}</small></td>
+        <td>${Math.round(c.solved / Math.max(1, c.players)).toLocaleString()}</td><td>${c.rating ?? '–'}</td>
+        <td>${c.accuracy == null ? '–' : `${Math.round(c.accuracy * 100)}%`}</td><td>${fmtHours(c.ms)}</td></tr>`;
+      }).join('')}
+    </tbody></table>` : ''}
+  </section>`;
+}
 
 // Your stats in the shape every cohort member will have.
 function myProfile() {
@@ -2516,12 +2654,12 @@ function topLabel(st) {
   const top = Math.max(0.1, (1 - st.pctAhead) * 100);
   return `#${st.rank} of ${st.n.toLocaleString()} · top ${top < 1 ? top.toFixed(1) : Math.round(top)}%`;
 }
-const standingView = { cohortOnly: false };
+const standingView = { cohortOnly: null }; // null: your cohort when you have one
 async function showStanding() {
   const src = COHORT_SOURCES[COHORT_SOURCE];
   const everyone = await src.load();
   const meAll = everyone.find((p) => p.me);
-  const cohortOnly = standingView.cohortOnly && !!meAll.cohort;
+  const cohortOnly = (standingView.cohortOnly ?? true) && !!meAll.cohort;
   const cohort = cohortOnly ? everyone.filter((p) => p.me || p.cohort === meAll.cohort) : everyone;
   const me = cohort.find((p) => p.me);
   const others = cohort.length - 1;
@@ -2534,7 +2672,7 @@ async function showStanding() {
       <div class="sh-rank"><small>Puzzles solved</small><b>#${main.rank}</b><span>of ${main.n.toLocaleString()} Dojoer${main.n === 1 ? '' : 's'}</span></div>
       <div class="sh-text">
         ${others
-          ? `<h2>You've solved more puzzles than <b>${Math.round(main.pctAhead * 100)}%</b> of Dojoers</h2>
+          ? `<h2>You've solved more puzzles than <b>${Math.round(main.pctAhead * 100)}%</b> of ${cohortOnly ? `your cohort${(me.attempts || 0) < READY_PER || cohortReady(cohort) < READY_PLAYERS ? ' <small class="prov-tag" title="Until you and ${READY_PLAYERS} players in your cohort have played ${READY_PER} puzzles">provisional</small>' : ''}` : 'Dojoers'}</h2>
              <p>${topLabel(main)} — ahead of ${main.behind.toLocaleString()} of ${others.toLocaleString()} others.</p>`
           : HOSTED
             ? `<h2>You're out in front — no other Dojoer${cohortOnly ? ' in your cohort' : ''} has saved Tactics Forger progress yet.</h2>
@@ -2546,6 +2684,7 @@ async function showStanding() {
         <div class="sh-axis"><span>Fewest puzzles</span><span>Most puzzles</span></div>
       </div>
     </section>
+    ${communitySection(everyone, meAll.cohort)}
     <section class="metric-grid"></section>
     <section class="panel"><h2>Top Dojoers <span class="h2-meta">by puzzles solved</span></h2>
       <table class="theme-table lb"><thead><tr><th>#</th><th>Dojoer</th><th>Solved</th><th>Sets</th><th>Accuracy</th><th>Avg time</th><th>Tactics</th><th>Openings</th><th>Endgames</th></tr></thead><tbody></tbody></table>
@@ -3464,7 +3603,10 @@ function playRun(run) {
     animation: { enabled: true, duration: 220 },
     highlight: { lastMove: true, check: true },
     movable: { free: false, showDests: true },
-    premovable: { enabled: false },
+    // You can pick up your next piece (click or drag) while the opponent's reply is still coming,
+    // and finish the move once it lands. These aren't premoves: a move made before the reply is
+    // dropped (the piece goes back), so every move is judged against the position you see.
+    premovable: { enabled: true, showDests: false, events: { set: () => cg.cancelPremove() } },
     draggable: { showGhost: true },
     trustAllEvents: new URLSearchParams(location.search).has('test'),
   });
@@ -3499,8 +3641,10 @@ function playRun(run) {
       turnColor: turn,
       check: chess.inCheck(),
       lastMove,
-      movable: { color: !done && turn === player ? player : undefined, dests: !done && turn === player ? dests(chess) : new Map(), events: { after: onUserMove } },
+      // Your pieces stay movable on the opponent's turn too, so you can pick one up early.
+      movable: { color: !done ? player : undefined, dests: !done && turn === player ? dests(chess) : new Map(), events: { after: onUserMove } },
     });
+    if (done) cg.cancelPremove();
   }
 
   function playComputer() {
@@ -3527,7 +3671,9 @@ function playRun(run) {
     sawSolution = false;
     solvedLine = false;
     player = chess.turn() === 'w' ? 'black' : 'white';
-    cg.set({ orientation: player, fen: p.fen, lastMove: undefined, check: false, movable: { color: undefined, dests: new Map() } });
+    cg.cancelPremove();
+    // You can pick up a piece before the opponent's first move too.
+    cg.set({ orientation: player, fen: p.fen, turnColor: colorName(chess.turn()), lastMove: undefined, check: false, movable: { color: player, dests: new Map(), events: { after: onUserMove } } });
     renderPips();
     const rec = puzzleRec(p.id);
     const seen = !rec ? '<span class="pz-tag new">New puzzle</span>'
@@ -3746,7 +3892,8 @@ async function sendTrainingTime(final = false) {
   trainingTime.puzzles = 0;
   trainingTime.sending = true;
   try {
-    const res = await askHost('logTime', { minutes, puzzles });
+    const s = currentSession(false);
+    const res = await askHost('logTime', { minutes, puzzles, session: s?.id ?? null });
     if (!res?.ok) throw new Error('logTime failed');
   } catch {
     // Keep it for the next try (e.g. offline).
@@ -3757,6 +3904,32 @@ async function sendTrainingTime(final = false) {
   }
 }
 document.addEventListener('visibilitychange', () => document.visibilityState === 'hidden' && sendTrainingTime(true));
+// Past play: sessions from before live logging reached the site (TRAINING_LIVE_FROM) are added
+// once per account, one entry per session on the day it was played. progress.trainingBackfill
+// is the start of the last session added, so an interrupted run picks up where it stopped.
+const TRAINING_LIVE_FROM = Date.parse('2026-11-25T04:20:08Z');
+async function backfillTrainingTime() {
+  if (!HOSTED || !cloud.username || progress.trainingBackfill === -1) return;
+  const done = progress.trainingBackfill ?? 0;
+  const past = [];
+  for (const s of progress.sessions ?? []) {
+    if (s.start <= done) continue;
+    const before = s.attempts.filter((a) => (a[5]?.at ?? s.start) < TRAINING_LIVE_FROM);
+    if (!before.length) continue;
+    const minutes = Math.round(sum(before.map((a) => a[5]?.total ?? a[3] ?? 0)) / 60e3);
+    if (minutes >= 1) past.push({ start: s.start, minutes, puzzles: before.length });
+  }
+  for (let i = 0; i < past.length; i += 10) {
+    const batch = past.slice(i, i + 10);
+    const res = await askHost('backfill', { sessions: batch }, 120000).catch(() => null);
+    if (!res?.ok) return; // try again next time
+    progress.trainingBackfill = batch.at(-1).start;
+    saveProgress();
+  }
+  progress.trainingBackfill = -1; // all done
+  saveProgress();
+}
+
 
 // ---- Saving to your Dojo account (only inside chessdojo.club) --------------------------------
 // The page around the frame (TacticsForgerFrame on the site) makes the signed-in API calls; the app
@@ -3764,7 +3937,7 @@ document.addEventListener('visibilitychange', () => document.visibilityState ===
 // saved a few seconds after each change. If another device saved in between (409), the app loads
 // that copy, merges and saves again.
 let hostSeq = 0;
-function askHost(type, body) {
+function askHost(type, body, timeoutMs = 20000) {
   return new Promise((resolve, reject) => {
     const id = ++hostSeq;
     const done = (e) => {
@@ -3777,7 +3950,7 @@ function askHost(type, body) {
     const timer = setTimeout(() => {
       window.removeEventListener('message', done);
       reject(new Error(`host ${type} timed out`));
-    }, 20000);
+    }, timeoutMs);
     window.addEventListener('message', done);
     window.parent.postMessage({ source: 'tactics-forger', id, type, body }, location.origin);
   });
@@ -3791,6 +3964,10 @@ function mergeProgress(a, b) {
   const older = newer === a ? b : a;
   const out = { ...older, ...newer };
   out.xp = Math.max(a.xp ?? 0, b.xp ?? 0);
+  // Past sessions already added to the training plan: the furthest either copy got.
+  const reach = (v) => (v === -1 ? Infinity : v ?? 0); // -1 = all done
+  const bf = Math.max(reach(a.trainingBackfill), reach(b.trainingBackfill));
+  if (bf) out.trainingBackfill = bf === Infinity ? -1 : bf;
   // The first cohort kept stays; the latest placement test counts.
   out.seed = older.seed ?? newer.seed;
   out.placement = [a.placement, b.placement].filter(Boolean).sort((x, y) => (y.at ?? 0) - (x.at ?? 0))[0];
@@ -4130,6 +4307,7 @@ function setupOffline() {
     if (ok) {
       renderStats();
       if (!location.hash.includes('/play/')) route(); // don't restart a puzzle already in progress
+      backfillTrainingTime();
     }
   };
   await connect();
