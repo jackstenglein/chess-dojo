@@ -1918,7 +1918,9 @@ async function loadPool(scope, picked = []) {
       const keys = !picked.length || picked.includes(pt.track) ? pt.keys : pt.keys.filter((k) => picked.includes(`${pt.track}|${k}`));
       return keys.length ? loadPool({ track: pt.track, keys }) : [];
     }));
-    return lists.flat();
+    // Some puzzles are in more than one tab (e.g. a fork from a Sicilian game); keep each once.
+    const seen = new Set();
+    return lists.flat().filter((p) => !seen.has(p.id) && seen.add(p.id));
   }
   const keys = picked.length ? picked : scope.keys;
   const themes = await Promise.all(keys.map((k) => loadTheme(k, scope.track)));
@@ -3636,6 +3638,7 @@ function playRun(run) {
         solved: solvedLine ? 1 : 0, sol: sawSolution ? 1 : 0, at: Date.now(),
         ...(run.mode === 'placement' ? { pl: 1 } : {}),
       });
+      logTrainingTime(total);
       renderStats();
       renderLive();
     }
@@ -3644,6 +3647,38 @@ function playRun(run) {
 
   startPuzzle();
 }
+
+// ---- Time on your Dojo training plan (only inside chessdojo.club) --------------------------
+// Puzzle-solving time goes to the "Dojo Tactics Forger" task on your training plan, in whole
+// minutes: about once a minute while you play, and what's left (half a minute or more) when you
+// leave the page. The page makes the API calls ('logTime'); one timeline entry grows per visit.
+const trainingTime = { ms: 0, puzzles: 0, sending: false };
+function logTrainingTime(ms) {
+  if (!HOSTED) return;
+  trainingTime.ms += Math.max(0, ms);
+  trainingTime.puzzles++;
+  if (trainingTime.ms >= 60e3) sendTrainingTime();
+}
+async function sendTrainingTime(final = false) {
+  if (!HOSTED || !cloud.username || trainingTime.sending) return;
+  const minutes = final ? Math.round(trainingTime.ms / 60e3) : Math.floor(trainingTime.ms / 60e3);
+  if (minutes < 1) return;
+  const puzzles = trainingTime.puzzles;
+  trainingTime.ms = Math.max(0, trainingTime.ms - minutes * 60e3);
+  trainingTime.puzzles = 0;
+  trainingTime.sending = true;
+  try {
+    const res = await askHost('logTime', { minutes, puzzles });
+    if (!res?.ok) throw new Error('logTime failed');
+  } catch {
+    // Keep it for the next try (e.g. offline).
+    trainingTime.ms += minutes * 60e3;
+    trainingTime.puzzles += puzzles;
+  } finally {
+    trainingTime.sending = false;
+  }
+}
+document.addEventListener('visibilitychange', () => document.visibilityState === 'hidden' && sendTrainingTime(true));
 
 // ---- Saving to your Dojo account (only inside chessdojo.club) --------------------------------
 // The page around the frame (TacticsForgerFrame on the site) makes the signed-in API calls; the app
