@@ -88,4 +88,77 @@ describe('Notation', () => {
         expect(screen.queryAllByTestId('variation-block')).toHaveLength(0);
         expect(screen.getByText('Nc6')).toBeTruthy();
     });
+
+    describe('keeping the move on the board in view', () => {
+        afterEach(() => vi.restoreAllMocks());
+
+        const fanTree = buildTree(moves, []);
+        const at = (path: string[]) => findNode(fanTree, path) ?? fanTree;
+        const notation = (current: AnalysisNode) => (
+            <Notation
+                root={fanTree}
+                current={current}
+                moves={moves}
+                guesses={{}}
+                onSelect={() => undefined}
+            />
+        );
+
+        /**
+         * Tests have no layout, so this gives the list and the current move their
+         * boxes by hand. The list shows 100 to 200, and nothing else has a size.
+         */
+        function place(move: { top: number; bottom: number }) {
+            vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+                this: HTMLElement,
+            ) {
+                if (this.dataset.current === 'true') {
+                    return move as DOMRect;
+                }
+                const isList = !!this.querySelector(':scope > [data-current="true"]');
+                return (isList ? { top: 100, bottom: 200 } : { top: 0, bottom: 0 }) as DOMRect;
+            });
+        }
+
+        function list() {
+            const el = screen.getByText('Nc6').closest('button')?.parentElement;
+            if (!el) {
+                throw new Error('no move list');
+            }
+            return el;
+        }
+
+        it('scrolls the list down to a new move below it, and never the page', () => {
+            const pageScroll = vi.spyOn(Element.prototype, 'scrollIntoView');
+            place({ top: 150, bottom: 170 });
+            const { rerender } = render(notation(at(['e4', 'e5', 'Nf3'])));
+            expect(list().scrollTop).toBe(0);
+
+            // The next move of the game is 40px below the bottom of the list.
+            place({ top: 220, bottom: 240 });
+            rerender(notation(at(['e4', 'e5', 'Nf3', 'Nc6'])));
+            expect(list().scrollTop).toBe(40);
+            // scrollIntoView also scrolls the page, which on a phone takes the board off screen.
+            expect(pageScroll).not.toHaveBeenCalled();
+        });
+
+        it('scrolls the list up to a move above it', () => {
+            place({ top: 150, bottom: 170 });
+            const { rerender } = render(notation(at(['e4', 'e5', 'Nf3', 'Nc6'])));
+            list().scrollTop = 80;
+
+            // Stepping back shows a move that is 30px above the top of the list.
+            place({ top: 70, bottom: 90 });
+            rerender(notation(at(['e4', 'e5'])));
+            expect(list().scrollTop).toBe(50);
+        });
+
+        it('leaves the list alone when the move is already showing', () => {
+            place({ top: 150, bottom: 170 });
+            const { rerender } = render(notation(at(['e4', 'e5', 'Nf3'])));
+            list().scrollTop = 25;
+            rerender(notation(at(['e4', 'e5', 'Nf3', 'Nc6'])));
+            expect(list().scrollTop).toBe(25);
+        });
+    });
 });
