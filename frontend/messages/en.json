@@ -223,7 +223,7 @@
                 "partialTime": "{worked} / {goal}"
             },
             "full": {
-                "heading": "Dojo Training Plan",
+                "heading": "Full Training Plan",
                 "cohort": "Cohort",
                 "showCompletedTasks": "Show Completed Tasks",
                 "hideCompletedTasksTooltip": "Hide Completed Tasks",
