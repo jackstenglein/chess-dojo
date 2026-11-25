@@ -77,7 +77,13 @@ export function DailyTrainingPlan() {
         return [startDate.toISOString(), endDate.toISOString()];
     }, []);
 
-    const { suggestionsByDay, isCurrentUser, timeline, isLoading, user } = use(TrainingPlanContext);
+    const {
+        suggestionsByDay,
+        isCurrentUser,
+        planTimeline: timeline,
+        isLoading,
+        user,
+    } = use(TrainingPlanContext);
 
     const [goalTime, _, workedTime, extraTaskIds] = useTrainingPlanProgress({
         startDate,
@@ -253,7 +259,7 @@ function DailyTrainingPlanInternal({
     endDate: string;
     extraTaskIds: Set<string>;
 }) {
-    const { suggestionsByDay, user, skippedTaskIds, allRequirements, pinnedTasks } =
+    const { suggestionsByDay, user, skippedTaskIds, allRequirements, pinnedTasks, activePlan } =
         use(TrainingPlanContext);
     const suggestedTasks = useMemo(() => suggestionsByDay[new Date().getDay()], [suggestionsByDay]);
     const [selectedTask, setSelectedTask] = useState<Requirement | CustomTask>();
@@ -300,9 +306,10 @@ function DailyTrainingPlanInternal({
             )}
 
             <Grid container sx={{ width: 1 }} columnSpacing={2} rowSpacing={2}>
-                {shouldPromptGraduation(user) && !skippedTaskIds?.includes(GRADUATION_SKIP_ID) && (
-                    <GraduationTask />
-                )}
+                {/* Graduating is part of the Dojo plan, so it is not prompted from a custom plan. */}
+                {!activePlan &&
+                    shouldPromptGraduation(user) &&
+                    !skippedTaskIds?.includes(GRADUATION_SKIP_ID) && <GraduationTask />}
 
                 {suggestedTasks.map((t) =>
                     t.task.id === SCHEDULE_CLASSICAL_GAME_TASK_ID ? (
@@ -352,7 +359,7 @@ function DailyTrainingPlanItem({
     const tCommon = useTranslations('profile.trainingPlan.common');
     const tQuickLog = useTranslations('profile.trainingPlan.quickLog');
     const task = useTranslatedRequirement(suggestion.task) ?? suggestion.task;
-    const { isCurrentUser, pinnedTasks, openPinEditor, timeline, user, toggleSkip } =
+    const { isCurrentUser, pinnedTasks, openPinEditor, timeline, planTimeline, user, toggleSkip } =
         use(TrainingPlanContext);
     const isPinned = pinnedTasks.some((t) => t.id === task.id);
 
@@ -362,7 +369,7 @@ function DailyTrainingPlanItem({
         startDate,
         endDate,
         tasks,
-        timeline,
+        timeline: planTimeline,
     });
 
     const currentCount = getCurrentCount({

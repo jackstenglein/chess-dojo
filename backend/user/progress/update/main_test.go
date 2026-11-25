@@ -134,7 +134,7 @@ func TestCheckMilestoneNotification(t *testing.T) {
 			name: "DifferentCohortNotificationNotBlocked",
 			user: &database.User{
 				Username:                   "test-user",
-				DisplayName:               "Test Player",
+				DisplayName:                "Test Player",
 				DojoCohort:                 "1500-1600",
 				SentMilestoneNotifications: []string{"85_1400-1500"},
 				Progress: map[string]*database.RequirementProgress{
@@ -394,4 +394,36 @@ func TestCheckNotification_RecordMilestoneError_DoesNotPanic(t *testing.T) {
 	}
 
 	mc.checkNotification(user)
+}
+
+func TestTagPlan(t *testing.T) {
+	plan := &database.CustomPlan{
+		Id: "plan-1",
+		Buckets: []*database.CustomPlanBucket{
+			{Id: "b1", Name: "Tactics", Color: "#82e356", TaskIds: []string{"task-1"}},
+		},
+	}
+
+	tests := []struct {
+		name       string
+		user       *database.User
+		taskId     string
+		wantPlan   string
+		wantBucket string
+		wantColor  string
+	}{
+		{name: "dojo plan", user: &database.User{}, taskId: "task-1"},
+		{name: "task in plan", user: &database.User{ActivePlanId: "plan-1", CustomPlans: []*database.CustomPlan{plan}}, taskId: "task-1", wantPlan: "plan-1", wantBucket: "Tactics", wantColor: "#82e356"},
+		{name: "task not in plan", user: &database.User{ActivePlanId: "plan-1", CustomPlans: []*database.CustomPlan{plan}}, taskId: "task-2", wantPlan: "plan-1"},
+		{name: "deleted plan", user: &database.User{ActivePlanId: "gone", CustomPlans: []*database.CustomPlan{plan}}, taskId: "task-1"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			entry := &database.TimelineEntry{RequirementId: tt.taskId}
+			tagPlan(entry, tt.user)
+			if entry.PlanId != tt.wantPlan || entry.PlanBucketName != tt.wantBucket || entry.PlanBucketColor != tt.wantColor {
+				t.Errorf("tagPlan() = (%q, %q, %q), want (%q, %q, %q)", entry.PlanId, entry.PlanBucketName, entry.PlanBucketColor, tt.wantPlan, tt.wantBucket, tt.wantColor)
+			}
+		})
+	}
 }
