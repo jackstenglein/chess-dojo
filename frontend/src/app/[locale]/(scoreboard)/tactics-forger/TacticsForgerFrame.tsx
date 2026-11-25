@@ -7,6 +7,11 @@ import {
     saveTacticsForgerProgress,
 } from '@/api/puzzleApi';
 import { useAuth } from '@/auth/Auth';
+import {
+    ForgerGoalDialog,
+    TACTICS_FORGER_TASK_DESCRIPTION,
+    TACTICS_FORGER_TASK_ID,
+} from '@/components/profile/trainingPlan/ForgerGoalDialog';
 import { CustomTask, RequirementProgress, ScoreboardDisplay } from '@/database/requirement';
 import { TimelineEntry } from '@/database/timeline';
 import { ALL_COHORTS, dojoCohorts, User } from '@/database/user';
@@ -36,17 +41,13 @@ type ForgerRequest =
  * this component makes the authenticated API calls and replies with the result (or the HTTP
  * status, so the app can handle 409 conflicts).
  */
-/** The Forger's task on each user's training plan (one per user, kept in user.customTasks). */
-export const TACTICS_FORGER_TASK_ID = 'dojo-tactics-forger';
-
 /** The task as first added: Tactics, time only, no goal (the user can set one with Edit). */
 function forgerTask(username: string): CustomTask {
     return {
         id: TACTICS_FORGER_TASK_ID,
         owner: username,
         name: 'Dojo Tactics Forger',
-        description:
-            'Time spent solving puzzles in the Dojo Tactics Forger, logged automatically. Use Edit to set your own goal in minutes.',
+        description: TACTICS_FORGER_TASK_DESCRIPTION,
         counts: Object.fromEntries(dojoCohorts.map((c) => [c, 0])),
         scoreboardDisplay: ScoreboardDisplay.NonDojo,
         category: 'Tactics' as CustomTask['category'],
@@ -68,6 +69,8 @@ export function TacticsForgerFrame({ src }: { src: string }) {
     const { user } = useAuth();
     const api = useApi();
     const [analysis, setAnalysis] = useState<ForgerAnalysis | null>(null);
+    // Asked once, right after the task is added to the plan: pick a goal (or not now).
+    const [askGoal, setAskGoal] = useState(false);
     // The message handler outlives renders, so it reads the latest user and API through refs.
     const latest = useRef<{ user?: User; api: typeof api }>({ user, api });
     useEffect(() => {
@@ -85,6 +88,7 @@ export function TacticsForgerFrame({ src }: { src: string }) {
         if (!u || minutes < 1) throw new Error('not signed in');
         if (!u.customTasks?.some((t) => t.id === TACTICS_FORGER_TASK_ID)) {
             await a.updateUser({ customTasks: [...(u.customTasks ?? []), forgerTask(u.username)] });
+            setAskGoal(true);
         }
         const cohort = u.dojoCohort;
         const today = new Date().toDateString();
@@ -208,6 +212,7 @@ export function TacticsForgerFrame({ src }: { src: string }) {
                     border: 0,
                 }}
             />
+            {askGoal && <ForgerGoalDialog open onClose={() => setAskGoal(false)} />}
             {analysis && (
                 <ForgerAnalysisDialog analysis={analysis} onClose={() => setAnalysis(null)} />
             )}
