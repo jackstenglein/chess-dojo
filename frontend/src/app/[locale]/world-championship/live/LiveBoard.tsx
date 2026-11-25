@@ -129,8 +129,15 @@ export function LiveBoard({
                         const promotion = piece?.type === 'p' && lastRank ? 'q' : '';
                         const keep = onGuessRef.current?.(`${orig}${dest}${promotion}`) === true;
                         if (!keep) {
-                            // Put the pieces back: a guess is shown as an arrow.
-                            board.set({ fen, lastMove: lastMoveKeys });
+                            // Put the pieces back: a guess is shown as an arrow. They go
+                            // back at once. A piece that slides back to where it came
+                            // from looks like a move the board refused.
+                            board.set({
+                                fen,
+                                lastMove: lastMoveKeys,
+                                animation: { enabled: false },
+                            });
+                            board.set({ animation: { enabled: true } });
                         }
                     },
                 },
