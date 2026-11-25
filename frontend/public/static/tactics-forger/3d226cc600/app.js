@@ -3501,10 +3501,49 @@ function playRun(run) {
   }
 
   function onUserMove(orig, dest) {
-    const expected = moves[ply];
     const piece = chess.get(orig);
     const isPromo = piece?.type === 'p' && (dest[1] === '8' || dest[1] === '1');
-    const promo = isPromo ? (expected.startsWith(orig + dest) && expected[4] ? expected[4] : 'q') : '';
+    // A pawn on the last rank: ask which piece (picking for the player would give the answer away).
+    if (isPromo) return choosePromotion(dest, player).then((promo) => (promo ? judgeMove(orig, dest, promo) : sync()));
+    judgeMove(orig, dest, '');
+  }
+  // The promotion picker: queen, rook, bishop, knight over the promotion file, like Lichess.
+  // Resolves with the piece letter, or null if the player clicks away (the pawn goes back).
+  function choosePromotion(dest, color) {
+    return new Promise((resolve) => {
+      const frame = page.querySelector('.board-frame');
+      const file = dest.charCodeAt(0) - 97;
+      const col = player === 'white' ? file : 7 - file;
+      const fromTop = (player === 'white') === (dest[1] === '8');
+      const pieces = [['q', 'queen'], ['r', 'rook'], ['b', 'bishop'], ['n', 'knight']];
+      const pick = el(`<div class="promo-pick" role="dialog" aria-label="Promote to">
+        <div class="promo-col" style="left:${col * 12.5}%;${fromTop ? 'top:0' : 'bottom:0;flex-direction:column-reverse'}">
+          ${pieces.map(([k, name]) => `<button type="button" class="promo-btn" data-p="${k}" aria-label="${name}" title="${name[0].toUpperCase() + name.slice(1)}"><i class="cg-piece-img" style="background-image:var(--${color}-${name})"></i></button>`).join('')}
+        </div></div>`);
+      applyBoardLook(pick);
+      const done = (p) => {
+        pick.remove();
+        document.removeEventListener('keydown', keys, true);
+        resolve(p);
+      };
+      const keys = (e) => {
+        const k = { Escape: null, q: 'q', r: 'r', b: 'b', n: 'n' }[e.key];
+        if (k === undefined) return;
+        e.preventDefault();
+        e.stopPropagation();
+        done(k);
+      };
+      pick.onclick = (e) => {
+        const b = e.target.closest('.promo-btn');
+        done(b ? b.dataset.p : null);
+      };
+      document.addEventListener('keydown', keys, true);
+      frame.append(pick);
+    });
+  }
+
+  function judgeMove(orig, dest, promo) {
+    const expected = moves[ply];
     const uci = orig + dest + promo;
     let ok = uci === expected;
     if (!ok && ply === moves.length - 1) {
