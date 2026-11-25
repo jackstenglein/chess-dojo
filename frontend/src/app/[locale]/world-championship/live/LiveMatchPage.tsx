@@ -61,7 +61,7 @@ import {
     useMediaQuery,
 } from '@mui/material';
 import { isAxiosError } from 'axios';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { AddGameDialog } from './AddGameDialog';
 import { AdminView } from './AdminView';
@@ -103,7 +103,7 @@ import { useMoveSounds } from './moveSounds';
 import { Notation } from './Notation';
 import { PLAYER_COLUMN_WIDTH, PlayerColumn } from './PlayerColumn';
 import { PlayerPhoto } from './PlayerPhoto';
-import { EVAL_BAR_WIDTH, EvalBar, SenseiStrip } from './SenseiEval';
+import { EVAL_BAR_GAP, EVAL_BAR_WIDTH, EvalAverage, EvalBar, SenseiStrip } from './SenseiEval';
 import { GuestLinks, SenseiPanel } from './SenseiPanel';
 import { StreamEmbed } from './StreamEmbed';
 import {
@@ -804,6 +804,8 @@ export function LiveMatchPage() {
             maxWidth='xl'
             sx={{
                 py: { xs: 2, md: 3 },
+                // A phone gives the board the width that wider margins would take.
+                px: { xs: 1.5, sm: 3 },
                 ...(streamView && { [PHONE_LANDSCAPE]: { py: 1 } }),
             }}
         >
@@ -1069,7 +1071,7 @@ export function LiveMatchPage() {
                     useFlexGap
                     sx={{ minWidth: 0, gridArea: 'board', ...(streamView && fanUnwrapSx) }}
                 >
-                    <Stack direction='row' spacing={1} sx={fan('board')}>
+                    <Stack direction='row' spacing={EVAL_BAR_GAP} sx={fan('board')}>
                         <EvalBar average={bar.average} pins={bar.pins} orientation={orientation} />
                         <Box
                             sx={{
@@ -1123,6 +1125,7 @@ export function LiveMatchPage() {
                             seconds={clocks[bottomColor]}
                             running={clocks.running === bottomColor}
                             beside={streamView}
+                            underBar={<EvalAverage average={bar.average} />}
                         />
                     </Box>
                     <Stack
@@ -1320,24 +1323,29 @@ function PlayerBar({
     seconds,
     running,
     beside,
+    underBar,
 }: {
     player?: LivePlayer;
     seconds: number;
     running: boolean;
+    /** Shown in the space under the eval bar, left of the player. */
+    underBar?: ReactNode;
     /** The fan view puts the bar beside the board on a phone on its side, not above or below it. */
     beside?: boolean;
 }) {
     return (
         // The same row as the board: a space as wide as the eval bar, the same
         // gap, then the player, so the photo starts exactly at the board's edge.
-        <Stack direction='row' spacing={1} useFlexGap sx={{ alignItems: 'center' }}>
+        <Stack direction='row' spacing={EVAL_BAR_GAP} useFlexGap sx={{ alignItems: 'center' }}>
             <Box
                 sx={{
                     width: EVAL_BAR_WIDTH,
                     flexShrink: 0,
                     ...(beside && { [PHONE_LANDSCAPE]: { display: 'none' } }),
                 }}
-            />
+            >
+                {underBar}
+            </Box>
             <Stack
                 direction='row'
                 sx={{
