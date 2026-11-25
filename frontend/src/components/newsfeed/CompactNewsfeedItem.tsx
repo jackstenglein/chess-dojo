@@ -16,7 +16,7 @@ import GameNewsfeedItem from '../../app/[locale]/(scoreboard)/newsfeed/(detail)/
 import GraduationNewsfeedItem from '../../app/[locale]/(scoreboard)/newsfeed/(detail)/[owner]/[id]/GraduationNewsfeedItem';
 import CommentList from '../comments/CommentList';
 import { Link } from '../navigation/Link';
-import { ActivityHeading, ActivityPanel, DojoPointsChange } from './ActivityPanel';
+import { ActivityHeading, ActivityPanel, DojoPointsChange, META_TEXT } from './ActivityPanel';
 import { useEntryDateTime } from './NewsfeedItemHeader';
 import ReactionList from './ReactionList';
 
@@ -43,7 +43,7 @@ function EntryByline({ entry }: { entry: TimelineEntry }) {
                 </Typography>
                 <CohortIcon cohort={cohort} size={16} tooltip={t('memberOfCohort', { cohort })} />
             </Stack>
-            <Typography variant='caption' sx={{ color: 'text.secondary', lineHeight: 1.3 }}>
+            <Typography variant='caption' sx={{ ...META_TEXT, color: 'text.secondary' }}>
                 {dateTime}
             </Typography>
         </Stack>
@@ -244,6 +244,7 @@ function ProgressBody({ entry, simple }: { entry: TimelineEntry; simple?: boolea
                 <Typography
                     variant='caption'
                     sx={{
+                        ...META_TEXT,
                         display: 'inline-flex',
                         alignItems: 'center',
                         gap: 0.25,
@@ -255,14 +256,21 @@ function ProgressBody({ entry, simple }: { entry: TimelineEntry; simple?: boolea
                     {t('completed')}
                 </Typography>
             ) : reopened ? (
-                <Typography variant='caption' sx={{ fontWeight: 600, color: 'warning.main' }}>
+                <Typography
+                    variant='caption'
+                    sx={{ ...META_TEXT, fontWeight: 600, color: 'warning.main' }}
+                >
                     {t('markedNotDone')}
                 </Typography>
             ) : (
                 delta !== 0 && (
                     <Typography
                         variant='caption'
-                        sx={{ fontWeight: 600, color: delta > 0 ? 'success.main' : 'warning.main' }}
+                        sx={{
+                            ...META_TEXT,
+                            fontWeight: 600,
+                            color: delta > 0 ? 'success.main' : 'warning.main',
+                        }}
                     >
                         {`${delta > 0 ? '+' : '−'}${Math.abs(delta)} ${
                             Math.abs(delta) === 1 ? singularUnit(unit) : unit
@@ -394,7 +402,7 @@ function ProgressBody({ entry, simple }: { entry: TimelineEntry; simple?: boolea
                     {timeAdded > 0 && !isComplete && (
                         <Typography
                             variant='caption'
-                            sx={{ fontWeight: 600, color: 'success.main' }}
+                            sx={{ ...META_TEXT, fontWeight: 600, color: 'success.main' }}
                         >
                             +{formatTime(timeAdded, tCommon)}
                         </Typography>
@@ -418,7 +426,7 @@ function Stat({ icon, children }: { icon: ReactNode; children: ReactNode }) {
             {icon}
             <Typography
                 variant='caption'
-                sx={{ color: 'inherit', fontVariantNumeric: 'tabular-nums' }}
+                sx={{ ...META_TEXT, color: 'inherit', fontVariantNumeric: 'tabular-nums' }}
             >
                 {children}
             </Typography>

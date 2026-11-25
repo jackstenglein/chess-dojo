@@ -2,7 +2,7 @@ import { Box } from '@mui/material';
 import { ChessDojoIcon } from './ChessDojoIcon';
 
 /**
- * A Dojo point as a small blue coin stamped with the Dojo uniform. It is sized like
+ * A Dojo point as a small navy coin stamped with the Dojo uniform. It is sized like
  * an icon, by `size` or the surrounding font.
  */
 export function DojoPointsIcon({ size = '1em' }: { size?: string }) {
@@ -19,8 +19,8 @@ export function DojoPointsIcon({ size = '1em' }: { size?: string }) {
                 width: '1.25em',
                 height: '1.25em',
                 borderRadius: '50%',
-                background: 'radial-gradient(circle at 35% 30%, #8cc4ff, #3d8ee8 55%, #1f63c2)',
-                boxShadow: 'inset 0 0 0 1px #174f9c',
+                background: 'radial-gradient(circle at 35% 30%, #4a6db3, #1f3a7a 55%, #142857)',
+                boxShadow: 'inset 0 0 0 1px #5c7cc0',
                 color: '#ffffff',
             }}
         >

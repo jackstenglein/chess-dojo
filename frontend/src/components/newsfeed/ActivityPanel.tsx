@@ -5,6 +5,13 @@ import { Box, Stack, Tooltip, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { ReactNode } from 'react';
 
+/**
+ * The small text around an entry (its date, the time logged, the points): a touch
+ * larger than MUI's caption and without its wide letter-spacing, so it reads as
+ * part of the entry rather than as fine print.
+ */
+export const META_TEXT = { fontSize: '0.8125rem', letterSpacing: 0, lineHeight: 1.4 } as const;
+
 /** The softly tinted box an entry's activity sits in, set apart from who posted it. */
 export function ActivityPanel({ children }: { children: ReactNode }) {
     return (
@@ -108,7 +115,12 @@ export function DojoPointsChange({ entry }: { entry: TimelineEntry }) {
                 <Typography
                     variant='caption'
                     aria-hidden
-                    sx={{ color: 'inherit', fontVariantNumeric: 'tabular-nums' }}
+                    sx={{
+                        ...META_TEXT,
+                        fontWeight: 600,
+                        color: 'text.primary',
+                        fontVariantNumeric: 'tabular-nums',
+                    }}
                 >
                     +{points}
                 </Typography>
