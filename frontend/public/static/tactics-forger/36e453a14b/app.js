@@ -693,7 +693,7 @@ function rankRoad(trk = track) {
       <span class="rank-icon" title="${rp.rank[2]}: ${rp.rank[3]}">${rankIcon(rp.rank[1], 40)}</span>
       <div class="rr-title"><small>Your ${L} rank</small><b>${rp.rank[2]}</b></div>
       <div class="rr-rating" title="${L} rating from every ${L.toLowerCase()} puzzle you've played, in any mode. It started at ${seedRating()}${progress.seed?.cohort || cloud.cohort ? `, the low end of your cohort (${esc(progress.seed?.cohort ?? cloud.cohort)})` : ''}${progress.placement ? ' and your placement test' : ''}. A first-try solve at your level is +1 (harder +2 or +4, easier +0.5 down to +0.01); a miss is -1 (easy puzzles cost more, hard ones less). Your overall rating is ${overallRating()}, the average of Tactics, Openings and Endgames. ${tr.games.toLocaleString()} puzzles played.">
-        <small>${L} rating</small><b>${fmtPts(tr.exact)}</b></div>
+        <small>${L} rating</small><b>${tr.rating}</b></div>
       <div class="rr-next">${rp.next
         ? `<span title="${[rp.toGo ? `${rp.toGo} rating points` : '', rp.solvedToGo ? `${rp.solvedToGo.toLocaleString()} more puzzle points` : ''].filter(Boolean).join(' and ')} to go"><small>Next rank</small><b class="inline-rank">${rankIcon(rp.next[1], 22)} ${rp.next[2]}</b></span>`
         : '<b>Top rank reached</b>'}</div>
