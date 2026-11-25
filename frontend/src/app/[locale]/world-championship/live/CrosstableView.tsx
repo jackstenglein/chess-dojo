@@ -29,20 +29,38 @@ export function CrosstableView({
     const { games, totals } = table;
 
     return (
-        <Paper variant='outlined' sx={{ p: 1.5 }} data-testid='crosstable'>
+        <Paper
+            variant='outlined'
+            sx={{ p: 1.5, containerType: 'inline-size' }}
+            data-testid='crosstable'
+        >
             <Box sx={{ overflowX: 'auto' }}>
                 <Box
                     component='table'
                     sx={{
+                        // The table fills its box, and the 14 games fit in it without
+                        // scrolling. Only a narrow phone has to scroll.
+                        width: 1,
                         borderCollapse: 'collapse',
                         fontVariantNumeric: 'tabular-nums',
                         '& th, & td': {
                             border: 1,
                             borderColor: 'divider',
                             textAlign: 'center',
-                            px: 0.75,
+                            px: 0.25,
                             py: 0.5,
-                            minWidth: 30,
+                            minWidth: 24,
+                        },
+                        // The board column drops to about 410px on a small laptop, and a
+                        // phone is narrower still, so the cells and the text shrink there.
+                        '@container (max-width: 500px)': {
+                            fontSize: '0.75rem',
+                            '& th, & td': { px: 0, minWidth: 15 },
+                            '& th:first-of-type, & td:first-of-type': {
+                                pl: 0.5,
+                                minWidth: '0 !important',
+                            },
+                            '& th:last-of-type, & td:last-of-type': { px: 0.25 },
                         },
                     }}
                 >
