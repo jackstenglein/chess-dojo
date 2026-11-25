@@ -550,6 +550,8 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
                         variant='caption'
                         sx={{
                             color: 'text.secondary',
+                            // Matches the newsfeed entry's date.
+                            ...(compact && { fontSize: '0.8125rem', letterSpacing: 0 }),
                         }}
                     >
                         {compact
