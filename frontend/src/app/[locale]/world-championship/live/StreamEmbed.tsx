@@ -23,6 +23,9 @@ export const YOUTUBE_CHANNEL_ID = 'UC4liTXRJ-XknH6OtKz-tOuw';
 
 type Platform = 'twitch' | 'youtube';
 
+/** The card is too narrow for its header on one line. That is mostly a phone. */
+const NARROW = '@container (max-width: 520px)';
+
 /**
  * The ChessDojo stream on Twitch or YouTube. The viewer picks one and the
  * browser remembers it. Twitch only plays inside pages whose host it is told
@@ -55,16 +58,33 @@ export function StreamEmbed({ minimizable }: { minimizable?: boolean } = {}) {
             : `https://www.twitch.tv/${TWITCH_CHANNEL}`;
 
     return (
-        <Paper variant='outlined' sx={{ p: 1.5 }} data-testid='stream-embed'>
+        <Paper
+            variant='outlined'
+            sx={{ p: 1.5, containerType: 'inline-size' }}
+            data-testid='stream-embed'
+        >
             <Stack
                 direction='row'
                 spacing={1.5}
-                sx={{ alignItems: 'center', mb: minimized ? 0 : 1 }}
+                useFlexGap
+                sx={{
+                    alignItems: 'center',
+                    mb: minimized ? 0 : 1,
+                    // A narrow card has two lines: the title and the minimize button,
+                    // then the switch and the link.
+                    flexWrap: 'wrap',
+                    rowGap: 0,
+                    [NARROW]: { '& > .second-line': { order: 1, mt: 0.5 } },
+                }}
             >
-                <Typography variant='subtitle1' sx={{ fontWeight: 800 }}>
+                <Typography
+                    variant='subtitle1'
+                    sx={{ fontWeight: 800, whiteSpace: 'nowrap', [NARROW]: { flexGrow: 1 } }}
+                >
                     Watch ChessDojo live
                 </Typography>
                 <ToggleButtonGroup
+                    className='second-line'
                     size='small'
                     exclusive
                     value={platform}
@@ -78,8 +98,14 @@ export function StreamEmbed({ minimizable }: { minimizable?: boolean } = {}) {
                         YouTube
                     </ToggleButton>
                 </ToggleButtonGroup>
-                <Box sx={{ flexGrow: 1 }} />
-                <Link href={openHref} target='_blank' rel='noopener noreferrer' variant='body2'>
+                <Box className='second-line' sx={{ flexGrow: 1 }} />
+                <Link
+                    className='second-line'
+                    href={openHref}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    variant='body2'
+                >
                     Open on {platform === 'youtube' ? 'YouTube' : 'Twitch'}
                 </Link>
                 {minimizable && (
@@ -94,6 +120,8 @@ export function StreamEmbed({ minimizable }: { minimizable?: boolean } = {}) {
                         </IconButton>
                     </Tooltip>
                 )}
+                {/* Ends the first line of a narrow card. */}
+                <Box sx={{ display: 'none', [NARROW]: { display: 'block', flexBasis: '100%' } }} />
             </Stack>
             <Box
                 hidden={minimized}
