@@ -2417,7 +2417,7 @@ const COHORT_SOURCES = {
   local: {
     label: 'This device',
     async load() {
-      return [{ id: 'me', me: true, name: progress.settings.name || 'You', ...myProfile() }];
+      return [{ id: 'me', me: true, name: progress.settings.name || 'You', cohort: progress.seed?.cohort ?? cloud.cohort ?? null, ...myProfile() }];
     },
   },
   // Everyone who has saved Tactics Forger progress on chessdojo.club. Your own row uses this
@@ -2426,9 +2426,9 @@ const COHORT_SOURCES = {
     label: 'ChessDojo members',
     async load() {
       const [me] = await COHORT_SOURCES.local.load();
-      const res = await askHost('leaderboard').catch(() => null);
-      if (!res?.ok) return [me];
-      const rows = res.data.players;
+      const res = await leaderboardSnapshot();
+      if (!res) return [me];
+      const rows = res.players;
       const mine = rows.find((p) => p.username === res.username);
       const others = rows.filter((p) => p.username !== res.username).map((p) => ({
         id: p.username, name: p.displayName, cohort: p.cohort,
@@ -2440,7 +2440,7 @@ const COHORT_SOURCES = {
         const rs = [p.rating, p.openingsRating, p.endgamesRating].filter((v) => v != null);
         return { ...p, overallRating: rs.length ? Math.round(sum(rs) / rs.length) : null };
       });
-      return [{ ...me, name: mine?.displayName || me.name, cohort: mine?.cohort }, ...others];
+      return [{ ...me, name: mine?.displayName || me.name, cohort: mine?.cohort ?? me.cohort }, ...others];
     },
   },
   // Preview only: 1,000 made-up Dojoers so the page can be seen with a real-sized cohort.
@@ -2459,6 +2459,7 @@ const COHORT_SOURCES = {
           rating: solved ? Math.round(400 + rnd() * 1500) : null,
           openingsRating: solved && rnd() < 0.6 ? Math.round(400 + rnd() * 1500) : null,
           endgamesRating: solved && rnd() < 0.5 ? Math.round(400 + rnd() * 600) : null, attempts: solved, xp: solved * 15,
+          cohort: DEMO_COHORTS[Math.floor(rnd() * DEMO_COHORTS.length)],
         };
       });
       return [...me, ...fake];
@@ -2466,6 +2467,102 @@ const COHORT_SOURCES = {
   },
 };
 const COHORT_SOURCE = new URLSearchParams(location.search).has('demo-cohort') ? 'demo' : HOSTED ? 'dojo' : 'local';
+const DEMO_COHORTS = ['0-400', '400-600', '600-700', '800-900', '1000-1100', '1200-1300', '1400-1500', '1600-1700', '1800-1900', '2000-2100'];
+
+// ---- Community stats -----------------------------------------------------------------------------
+// Everyone's numbers come from a snapshot taken twice a day (8 AM and 8 PM, your time), so they
+// don't jump around while you play; your own row is always live.
+const SNAPSHOT_KEY = 'tacticsLadder.lbSnapshot';
+function snapshotSlot(now = new Date()) {
+  const d = new Date(now);
+  d.setMinutes(0, 0, 0);
+  const h = now.getHours();
+  if (h >= 20) d.setHours(20);
+  else if (h >= 8) d.setHours(8);
+  else {
+    d.setDate(d.getDate() - 1);
+    d.setHours(20);
+  }
+  return d.getTime();
+}
+async function leaderboardSnapshot() {
+  const slot = snapshotSlot();
+  try {
+    const c = JSON.parse(localStorage.getItem(SNAPSHOT_KEY));
+    if (c?.slot === slot && c.username === cloud.username) return (leaderboardSnapshot.at = slot, c);
+  } catch {}
+  const res = await askHost('leaderboard').catch(() => null);
+  if (!res?.ok) return null;
+  const snap = { slot, username: res.username, players: res.data.players };
+  try {
+    localStorage.setItem(SNAPSHOT_KEY, JSON.stringify(snap));
+  } catch {}
+  leaderboardSnapshot.at = slot;
+  return snap;
+}
+// Puzzles a cohort solves together before everyone in it gets a proper cohort rating: until
+// then there isn't enough data to place people, so standings are provisional.
+const COMMUNITY_GOAL = 10000;
+const cohortOrder = (c) => Number(String(c).match(/\d+/)?.[0] ?? 9999);
+function communityStats(players) {
+  const tot = (list) => {
+    const attempts = sum(list.map((p) => p.attempts || 0));
+    return {
+      players: list.length,
+      solved: sum(list.map((p) => p.solved || 0)),
+      attempts,
+      ms: sum(list.map((p) => (p.attempts || 0) * (p.avgMs || 0))),
+      accuracy: attempts ? sum(list.map((p) => (p.accuracy || 0) * (p.attempts || 0))) / attempts : null,
+      rating: (() => {
+        const rs = list.map((p) => p.rating).filter((v) => v != null);
+        return rs.length ? Math.round(sum(rs) / rs.length) : null;
+      })(),
+    };
+  };
+  const byCohort = new Map();
+  for (const p of players) if (p.cohort) byCohort.set(p.cohort, [...(byCohort.get(p.cohort) ?? []), p]);
+  return {
+    all: tot(players),
+    cohorts: [...byCohort.entries()].sort((a, b) => cohortOrder(a[0]) - cohortOrder(b[0])).map(([c, list]) => ({ cohort: c, ...tot(list) })),
+  };
+}
+const fmtHours = (ms) => {
+  const h = ms / 3600e3;
+  return h >= 100 ? `${Math.round(h).toLocaleString()}h` : h >= 1 ? `${h.toFixed(1)}h` : `${Math.round(ms / 60e3)}m`;
+};
+function communitySection(players, myCohort) {
+  const st = communityStats(players);
+  const mine = st.cohorts.find((c) => c.cohort === myCohort);
+  const bar = (solved, goal) => `<div class="cm-bar"><div style="width:${Math.min(100, (solved / goal) * 100)}%"></div></div>`;
+  const allGoal = COMMUNITY_GOAL * Math.max(1, st.cohorts.length);
+  const when = leaderboardSnapshot.at ? new Date(leaderboardSnapshot.at).toLocaleString(undefined, { weekday: 'short', hour: 'numeric', minute: '2-digit' }) : null;
+  return `<section class="panel community">
+    <h2>Community <span class="h2-meta">${when ? `updated ${when} · next update at 8 AM / 8 PM` : 'everyone in the Tactics Forger'}</span></h2>
+    <div class="cm-totals">
+      <div><b>${st.all.players.toLocaleString()}</b><small>Dojoer${st.all.players === 1 ? '' : 's'}</small></div>
+      <div><b>${st.all.solved.toLocaleString()}</b><small>puzzles solved</small></div>
+      <div><b>${fmtHours(st.all.ms)}</b><small>time spent</small></div>
+      <div><b>${st.all.accuracy == null ? '–' : `${Math.round(st.all.accuracy * 100)}%`}</b><small>first-try accuracy</small></div>
+    </div>
+    ${mine ? `<div class="cm-goal ${mine.solved >= COMMUNITY_GOAL ? 'done' : ''}">
+      <div class="cm-goal-top"><b>${esc(myCohort)} community goal</b><span>${mine.solved.toLocaleString()} / ${COMMUNITY_GOAL.toLocaleString()} puzzles</span></div>
+      ${bar(mine.solved, COMMUNITY_GOAL)}
+      <p>${mine.solved >= COMMUNITY_GOAL
+        ? `Reached! There's enough data to give everyone in ${esc(myCohort)} a proper cohort rating.`
+        : `Every puzzle anyone in your cohort solves fills this bar. At ${COMMUNITY_GOAL.toLocaleString()}, there's enough data to give everyone in ${esc(myCohort)} a proper cohort rating — until then, standings are provisional.`}</p>
+    </div>` : ''}
+    <div class="cm-goal all">
+      <div class="cm-goal-top"><b>Everyone</b><span>${st.all.solved.toLocaleString()} / ${allGoal.toLocaleString()} puzzles</span></div>
+      ${bar(st.all.solved, allGoal)}
+    </div>
+    ${st.cohorts.length ? `<table class="theme-table cm-table"><thead><tr><th>Cohort</th><th>Dojoers</th><th>Community goal</th><th>Avg solved</th><th>Avg tactics</th><th>Accuracy</th><th>Time</th></tr></thead><tbody>
+      ${st.cohorts.map((c) => `<tr class="${c.cohort === myCohort ? 'me' : ''}"><td>${esc(c.cohort)}</td><td>${c.players.toLocaleString()}</td>
+        <td class="cm-cell">${bar(c.solved, COMMUNITY_GOAL)}<small>${Math.round(Math.min(1, c.solved / COMMUNITY_GOAL) * 100)}%</small></td>
+        <td>${Math.round(c.solved / Math.max(1, c.players)).toLocaleString()}</td><td>${c.rating ?? '–'}</td>
+        <td>${c.accuracy == null ? '–' : `${Math.round(c.accuracy * 100)}%`}</td><td>${fmtHours(c.ms)}</td></tr>`).join('')}
+    </tbody></table>` : ''}
+  </section>`;
+}
 
 // Your stats in the shape every cohort member will have.
 function myProfile() {
@@ -2516,12 +2613,12 @@ function topLabel(st) {
   const top = Math.max(0.1, (1 - st.pctAhead) * 100);
   return `#${st.rank} of ${st.n.toLocaleString()} · top ${top < 1 ? top.toFixed(1) : Math.round(top)}%`;
 }
-const standingView = { cohortOnly: false };
+const standingView = { cohortOnly: null }; // null: your cohort when you have one
 async function showStanding() {
   const src = COHORT_SOURCES[COHORT_SOURCE];
   const everyone = await src.load();
   const meAll = everyone.find((p) => p.me);
-  const cohortOnly = standingView.cohortOnly && !!meAll.cohort;
+  const cohortOnly = (standingView.cohortOnly ?? true) && !!meAll.cohort;
   const cohort = cohortOnly ? everyone.filter((p) => p.me || p.cohort === meAll.cohort) : everyone;
   const me = cohort.find((p) => p.me);
   const others = cohort.length - 1;
@@ -2534,7 +2631,7 @@ async function showStanding() {
       <div class="sh-rank"><small>Puzzles solved</small><b>#${main.rank}</b><span>of ${main.n.toLocaleString()} Dojoer${main.n === 1 ? '' : 's'}</span></div>
       <div class="sh-text">
         ${others
-          ? `<h2>You've solved more puzzles than <b>${Math.round(main.pctAhead * 100)}%</b> of Dojoers</h2>
+          ? `<h2>You've solved more puzzles than <b>${Math.round(main.pctAhead * 100)}%</b> of ${cohortOnly ? `your cohort${communityStats(cohort).all.solved < COMMUNITY_GOAL ? ' <small class="prov-tag">provisional</small>' : ''}` : 'Dojoers'}</h2>
              <p>${topLabel(main)} — ahead of ${main.behind.toLocaleString()} of ${others.toLocaleString()} others.</p>`
           : HOSTED
             ? `<h2>You're out in front — no other Dojoer${cohortOnly ? ' in your cohort' : ''} has saved Tactics Forger progress yet.</h2>
@@ -2546,6 +2643,7 @@ async function showStanding() {
         <div class="sh-axis"><span>Fewest puzzles</span><span>Most puzzles</span></div>
       </div>
     </section>
+    ${communitySection(everyone, meAll.cohort)}
     <section class="metric-grid"></section>
     <section class="panel"><h2>Top Dojoers <span class="h2-meta">by puzzles solved</span></h2>
       <table class="theme-table lb"><thead><tr><th>#</th><th>Dojoer</th><th>Solved</th><th>Sets</th><th>Accuracy</th><th>Avg time</th><th>Tactics</th><th>Openings</th><th>Endgames</th></tr></thead><tbody></tbody></table>
