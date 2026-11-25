@@ -1,6 +1,9 @@
+import { ChessDojoIcon } from '@/style/ChessDojoIcon';
 import {
     CheckCircle,
+    Checklist,
     EditNote,
+    Groups,
     RateReview,
     School,
     TrendingUp,
@@ -40,12 +43,16 @@ export function StarterPlanComplete({
             color: '#4ce06a',
             value: `+${AVERAGE_RATING_GAIN}`,
             label: t('statAverageGain'),
+            detail: t('statAverageGainDetail'),
+            detailIcon: <Checklist />,
         },
         {
             icon: <Whatshot />,
             color: '#f7941f',
             value: tStats('ratingPoints.value'),
             label: t('statTotalPoints'),
+            detail: t('statTotalPointsDetail'),
+            detailIcon: <Groups />,
         },
         {
             icon: <School />,
@@ -72,9 +79,14 @@ export function StarterPlanComplete({
                         variant='outlined'
                         size='small'
                     />
-                    <Typography variant='h4' sx={{ fontWeight: 'bold' }}>
-                        {t('completeTitle')}
-                    </Typography>
+                    <Stack direction='row' spacing={1.5} sx={{ alignItems: 'center' }}>
+                        <ChessDojoIcon
+                            sx={{ fontSize: { xs: '2rem', sm: '2.5rem' }, color: 'primary.main' }}
+                        />
+                        <Typography variant='h4' sx={{ fontWeight: 'bold' }}>
+                            {t('completeTitle')}
+                        </Typography>
+                    </Stack>
                     <Typography sx={{ color: 'text.secondary', maxWidth: 640 }}>
                         {t('completeBody')}
                     </Typography>
@@ -146,9 +158,9 @@ interface StatTileProps {
     color: string;
     value: string;
     label: string;
-    /** An optional highlight line under the label. */
-    detail?: string;
-    detailIcon?: ReactNode;
+    /** A highlight line at the bottom of the tile, in the accent color. */
+    detail: string;
+    detailIcon: ReactNode;
 }
 
 /** A headline number with an icon, tinted in its accent color. */
@@ -198,6 +210,9 @@ function StatTile({ icon, color, value, label, detail, detailIcon }: StatTilePro
                     direction='row'
                     spacing={0.75}
                     sx={{
+                        // Lines up the highlight across tiles of different heights.
+                        mt: 'auto !important',
+                        pt: 1,
                         alignItems: 'center',
                         color,
                         '& svg': { fontSize: '1rem' },
