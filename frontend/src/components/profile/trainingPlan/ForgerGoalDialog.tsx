@@ -125,7 +125,14 @@ export function ForgerGoalDialog({ open, onClose }: { open: boolean; onClose: ()
                         setPeriod(p);
                         setValue('');
                     }}
-                    sx={{ mb: 2 }}
+                    sx={{
+                        mb: 2,
+                        '& .MuiToggleButton-root': {
+                            textTransform: 'none',
+                            whiteSpace: 'nowrap',
+                            px: 0.5,
+                        },
+                    }}
                 >
                     {PERIODS.map(([p, label]) => (
                         <ToggleButton key={p} value={p}>
@@ -162,7 +169,9 @@ export function ForgerGoalDialog({ open, onClose }: { open: boolean; onClose: ()
                     slotProps={{ htmlInput: { min: 0, step: 30 } }}
                 />
             </DialogContent>
-            <DialogActions>
+            <DialogActions
+                sx={{ '& .MuiButton-root': { textTransform: 'none', whiteSpace: 'nowrap' } }}
+            >
                 {current > 0 && (
                     <Button color='error' disabled={saving} onClick={() => void save(0)}>
                         Remove goal

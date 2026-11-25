@@ -1205,3 +1205,14 @@ html.embed .nav { margin-left: 0; }
 .promo-btn { aspect-ratio: 1; width: 100%; padding: 6%; border: 0; border-radius: 50%; background: radial-gradient(circle, #d9d9d9 25%, #8a8a8a 100%); cursor: pointer; transition: border-radius .15s, background .15s; }
 .promo-btn:hover, .promo-btn:focus-visible { border-radius: 8%; background: radial-gradient(circle, #f5a524 25%, #b4741a 100%); }
 .promo-btn .cg-piece-img { display: block; width: 100%; height: 100%; background-size: contain; background-repeat: no-repeat; background-position: center; }
+/* Puzzle page: nothing below the board jumps while you solve. The button row keeps its space
+   when empty, and on phones the status stays one line. */
+.play-side .controls { min-height: 42px; }
+@media (max-width: 700px) {
+  .play-side .status { min-height: 48px; height: 48px; font-size: 14px; display: flex; align-items: center; flex-wrap: nowrap; gap: 6px; white-space: nowrap; overflow: hidden; }
+  .play-side .status small { display: none; }
+  .play-side .status .pz-tag { font-size: 11px; padding: 1px 6px; }
+}
+/* Phones: no resize handle. The board already fills the width, and the handle would sit on the
+   corner square where it gets in the way of moving a piece. */
+@media (max-width: 700px) { .board-resize { display: none; } }

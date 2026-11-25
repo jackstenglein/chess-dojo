@@ -4,7 +4,7 @@ import { DefaultUnderboardTab } from '@/board/pgn/boardTools/underboard/underboa
 import PgnBoard from '@/board/pgn/PgnBoard';
 import { GameContext } from '@/context/useGame';
 import { Chess } from '@jackstenglein/chess';
-import { AppBar, Button, Dialog, Stack, Toolbar, Typography } from '@mui/material';
+import { AppBar, Box, Button, Dialog, Stack, Toolbar, Typography } from '@mui/material';
 import { useMemo } from 'react';
 
 /** A puzzle the Tactics Forger asks to analyse: Lichess format (FEN before their move, UCI moves). */
@@ -49,11 +49,18 @@ export function ForgerAnalysisDialog({
                 sx={{ borderBottom: 1, borderColor: 'divider' }}
             >
                 <Toolbar sx={{ gap: 2 }}>
-                    <Typography sx={{ flexGrow: 1, fontWeight: 'bold' }}>
+                    <Typography noWrap sx={{ flexGrow: 1, minWidth: 0, fontWeight: 'bold' }}>
                         {analysis.title ?? 'Puzzle analysis'}
                     </Typography>
-                    <Button variant='contained' onClick={onClose}>
-                        Back to the Forger
+                    <Button
+                        variant='contained'
+                        onClick={onClose}
+                        sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}
+                    >
+                        Back
+                        <Box component='span' sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                            &nbsp;to the Forger
+                        </Box>
                     </Button>
                 </Toolbar>
             </AppBar>
