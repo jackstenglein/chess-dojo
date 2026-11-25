@@ -83,7 +83,19 @@ import {
     useRoundFeed,
 } from './lichessFeed';
 import { LiveBoard } from './LiveBoard';
-import { parseLayout, resolveLayout, WcLayout } from './liveLayout';
+import {
+    FAN_LANDSCAPE_BOARD,
+    FAN_LANDSCAPE_TABS,
+    fanLandscapeGrid,
+    FanPart,
+    fanPartSx,
+    fanUnwrapSx,
+    parseLayout,
+    PHONE,
+    PHONE_LANDSCAPE,
+    resolveLayout,
+    WcLayout,
+} from './liveLayout';
 import { useActAs } from './localTesting';
 import { useMoveSounds } from './moveSounds';
 import { Notation } from './Notation';
@@ -391,6 +403,8 @@ export function LiveMatchPage() {
     };
     const streamView = layout === 'stream';
     const playerColumn = layout === 'analysis2';
+    /** Only the fan view rearranges its parts on a phone. */
+    const fan = (part: FanPart) => (streamView ? fanPartSx(part) : {});
 
     // The Admin tab. The page always opens on a game, never here.
     const canAdmin = !!user?.isAdmin || (!!actAs && isSensei);
@@ -738,13 +752,36 @@ export function LiveMatchPage() {
         />
     );
 
+    const notation = (
+        <Notation
+            root={tree}
+            current={node}
+            moves={moves}
+            guesses={myGuesses}
+            onSelect={goTo}
+            onLive={atLive ? undefined : () => goTo(null)}
+            onPromote={canAnalyze ? (n) => analysisApi.promote(n.path) : undefined}
+            onDelete={canAnalyze ? (n) => analysisApi.remove(n.path) : undefined}
+            // In the stream view the moves scroll in a short box, so the stream
+            // under them starts higher up, next to the board.
+            compact={streamView}
+            fill={!streamView}
+        />
+    );
+
     // ---- Layout ----------------------------------------------------------
     const topColor = orientation === 'white' ? 'black' : 'white';
     const bottomColor = orientation;
     const player = (color: 'white' | 'black') => (color === 'white' ? feed.white : feed.black);
 
     return (
-        <Container maxWidth='xl' sx={{ py: { xs: 2, md: 3 } }}>
+        <Container
+            maxWidth='xl'
+            sx={{
+                py: { xs: 2, md: 3 },
+                ...(streamView && { [PHONE_LANDSCAPE]: { py: 1 } }),
+            }}
+        >
             {/* The two views differ in height. Reserving room for the scrollbar stops
                 the page from shifting sideways when a switch adds or removes one. */}
             <GlobalStyles styles={{ html: { scrollbarGutter: 'stable' } }} />
@@ -788,7 +825,25 @@ export function LiveMatchPage() {
             )}
 
             {rounds.length > 0 && (
-                <Stack direction='row' sx={{ alignItems: 'center', mb: 2, minWidth: 0 }}>
+                <Stack
+                    direction='row'
+                    sx={{
+                        alignItems: 'center',
+                        mb: 2,
+                        minWidth: 0,
+                        // A phone on its side has no height to spare. The tabs are
+                        // lower there, so the whole board fits under them.
+                        ...(streamView && {
+                            [PHONE_LANDSCAPE]: {
+                                mb: 1,
+                                '& .MuiTabs-root, & .MuiTab-root': {
+                                    minHeight: FAN_LANDSCAPE_TABS,
+                                    py: 0,
+                                },
+                            },
+                        }),
+                    }}
+                >
                     <Tabs
                         value={adminOpen ? ADMIN_TAB : (roundId ?? false)}
                         onChange={(_, id: string) =>
@@ -924,7 +979,8 @@ export function LiveMatchPage() {
                           },
                     gridTemplateAreas: streamView
                         ? {
-                              xs: '"top" "board" "twitch" "moves" "leaders"',
+                              // A phone stacks the parts in the order liveLayout gives them.
+                              xs: 'none',
                               md: '"top ." "board moves" "twitch twitch" "leaders leaders"',
                               lg: '"top . ." "board twitch twitch" "board moves leaders"',
                           }
@@ -941,6 +997,7 @@ export function LiveMatchPage() {
                             },
                     // In the stream view the board spans the stream row and the notation row.
                     gridTemplateRows: streamView ? { lg: 'auto auto 1fr' } : undefined,
+                    ...(streamView && { [PHONE_LANDSCAPE]: fanLandscapeGrid }),
                 }}
             >
                 <Box
@@ -949,12 +1006,14 @@ export function LiveMatchPage() {
                         gridArea: 'top',
                         // In analysis view 2 the player column replaces the bars, except on a phone.
                         display: playerColumn ? { xs: 'block', md: 'none' } : 'block',
+                        ...fan('top'),
                     }}
                 >
                     <PlayerBar
                         player={player(topColor)}
                         seconds={clocks[topColor]}
                         running={clocks.running === topColor}
+                        beside={streamView}
                     />
                 </Box>
                 {playerColumn && (
@@ -980,8 +1039,12 @@ export function LiveMatchPage() {
                         />
                     </Box>
                 )}
-                <Stack spacing={1} sx={{ minWidth: 0, gridArea: 'board' }}>
-                    <Stack direction='row' spacing={1}>
+                <Stack
+                    spacing={1}
+                    useFlexGap
+                    sx={{ minWidth: 0, gridArea: 'board', ...(streamView && fanUnwrapSx) }}
+                >
+                    <Stack direction='row' spacing={1} sx={fan('board')}>
                         <EvalBar average={bar.average} pins={bar.pins} orientation={orientation} />
                         <Box
                             sx={{
@@ -993,6 +1056,9 @@ export function LiveMatchPage() {
                                 maxWidth: playerColumn
                                     ? { md: 'max(360px, calc(100dvh - 230px))' }
                                     : undefined,
+                                ...(streamView && {
+                                    [PHONE_LANDSCAPE]: { flexGrow: 0, width: FAN_LANDSCAPE_BOARD },
+                                }),
                             }}
                         >
                             <LiveBoard
@@ -1021,14 +1087,31 @@ export function LiveMatchPage() {
                             />
                         </Box>
                     </Stack>
-                    <Box sx={{ display: playerColumn ? { xs: 'block', md: 'none' } : 'block' }}>
+                    <Box
+                        sx={{
+                            display: playerColumn ? { xs: 'block', md: 'none' } : 'block',
+                            ...fan('bottom'),
+                        }}
+                    >
                         <PlayerBar
                             player={player(bottomColor)}
                             seconds={clocks[bottomColor]}
                             running={clocks.running === bottomColor}
+                            beside={streamView}
                         />
                     </Box>
-                    <Stack direction='row' spacing={0.5} sx={{ alignItems: 'center' }}>
+                    <Stack
+                        direction='row'
+                        spacing={0.5}
+                        useFlexGap
+                        sx={[
+                            { alignItems: 'center' },
+                            fan('nav'),
+                            // On a phone the fan view's buttons close up, which leaves
+                            // the move between them room to show in full.
+                            streamView && { [PHONE]: { gap: 0 } },
+                        ]}
+                    >
                         <Tooltip title='Start'>
                             <span>
                                 <IconButton
@@ -1060,6 +1143,7 @@ export function LiveMatchPage() {
                                 textAlign: 'center',
                                 fontWeight: 800,
                                 fontSize: { xs: '1rem', sm: '1.25rem' },
+                                ...(streamView && { [PHONE]: { fontSize: '1rem' } }),
                                 fontVariantNumeric: 'tabular-nums',
                                 minWidth: 0,
                                 whiteSpace: 'nowrap',
@@ -1127,17 +1211,19 @@ export function LiveMatchPage() {
                         <BoardThemeButton />
                     </Stack>
                     {canAnalyze && analysisApi.error && (
-                        <Typography variant='caption' color='error'>
+                        <Typography variant='caption' color='error' sx={fan('error')}>
                             {analysisApi.error}
                         </Typography>
                     )}
-                    {streamView && senseiEvals}
-                    {crosstableView}
+                    {streamView && <Box sx={fan('evals')}>{senseiEvals}</Box>}
+                    {streamView ? <Box sx={fan('cross')}>{crosstableView}</Box> : crosstableView}
                     {feed.status === 'error' && (
-                        <Alert severity='error'>Could not load this game from Lichess.</Alert>
+                        <Alert severity='error' sx={fan('notice')}>
+                            Could not load this game from Lichess.
+                        </Alert>
                     )}
                     {gameOver && (
-                        <Alert severity='info'>
+                        <Alert severity='info' sx={fan('notice')}>
                             {round?.name ?? 'This game'} ended {feed.result.replace('1/2', '½')}.
                         </Alert>
                     )}
@@ -1149,28 +1235,17 @@ export function LiveMatchPage() {
                     next to them the guess panel sits under the leaderboard. */}
                 <Stack
                     spacing={2}
+                    useFlexGap
                     sx={{
                         minWidth: 0,
                         gridArea: 'moves',
                         height: streamView ? undefined : { lg: 'var(---cg-height)' },
+                        ...(streamView && fanUnwrapSx),
                     }}
                 >
                     {/* In the fan view the guess panel comes first, above the moves. */}
-                    {streamView && guessPanel}
-                    <Notation
-                        root={tree}
-                        current={node}
-                        moves={moves}
-                        guesses={myGuesses}
-                        onSelect={goTo}
-                        onLive={atLive ? undefined : () => goTo(null)}
-                        onPromote={canAnalyze ? (n) => analysisApi.promote(n.path) : undefined}
-                        onDelete={canAnalyze ? (n) => analysisApi.remove(n.path) : undefined}
-                        // In the stream view the moves scroll in a short box, so the stream
-                        // under them starts higher up, next to the board.
-                        compact={streamView}
-                        fill={!streamView}
-                    />
+                    {streamView && <Box sx={fan('guess')}>{guessPanel}</Box>}
+                    {streamView ? <Box sx={fan('moves')}>{notation}</Box> : notation}
                     {!streamView && senseiEvals}
                 </Stack>
 
@@ -1179,6 +1254,7 @@ export function LiveMatchPage() {
                     sx={{
                         minWidth: 0,
                         gridArea: 'leaders',
+                        ...fan('leaders'),
                         ...(!streamView && {
                             minHeight: { lg: 'var(---cg-height)' },
                             justifyContent: 'space-between',
@@ -1194,7 +1270,7 @@ export function LiveMatchPage() {
                     {!streamView && guessPanel}
                 </Stack>
 
-                <Box sx={{ minWidth: 0, gridArea: 'twitch' }}>
+                <Box sx={{ minWidth: 0, gridArea: 'twitch', ...fan('twitch') }}>
                     <StreamEmbed minimizable={streamView} />
                 </Box>
             </Box>
@@ -1217,16 +1293,25 @@ function PlayerBar({
     player,
     seconds,
     running,
+    beside,
 }: {
     player?: LivePlayer;
     seconds: number;
     running: boolean;
+    /** The fan view puts the bar beside the board on a phone on its side, not above or below it. */
+    beside?: boolean;
 }) {
     return (
         // The same row as the board: a space as wide as the eval bar, the same
         // gap, then the player, so the photo starts exactly at the board's edge.
-        <Stack direction='row' spacing={1} sx={{ alignItems: 'center' }}>
-            <Box sx={{ width: EVAL_BAR_WIDTH, flexShrink: 0 }} />
+        <Stack direction='row' spacing={1} useFlexGap sx={{ alignItems: 'center' }}>
+            <Box
+                sx={{
+                    width: EVAL_BAR_WIDTH,
+                    flexShrink: 0,
+                    ...(beside && { [PHONE_LANDSCAPE]: { display: 'none' } }),
+                }}
+            />
             <Stack
                 direction='row'
                 sx={{
@@ -1239,6 +1324,7 @@ function PlayerBar({
                     // leave the board up to 8 device pixels narrower than its box. This cap
                     // ends the clock at the board's edge, not the box's.
                     maxWidth: 'var(---cg-width)',
+                    ...(beside && { [PHONE_LANDSCAPE]: { maxWidth: 'none' } }),
                 }}
             >
                 <Stack direction='row' spacing={1} sx={{ alignItems: 'center', minWidth: 0 }}>
