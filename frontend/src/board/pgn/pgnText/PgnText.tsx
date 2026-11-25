@@ -11,6 +11,11 @@ import { useChess } from '../PgnBoard';
 import ResizeHandle from '../ResizeHandle';
 import { SaveAllVariationsButton } from '../boardTools/underboard/comments/SaveAllVariationsButton';
 import { HideEngine } from '../boardTools/underboard/settings/ViewerSettings';
+import {
+    getPgnTextFontSx,
+    PgnTextFontSize,
+    PgnTextFontSizeKey,
+} from '../boardTools/underboard/settings/viewerSettingsConstants';
 import { ResizableData } from '../resize';
 import GameComment from './GameComment';
 import Result from './Result';
@@ -22,6 +27,10 @@ const PgnTextBody = () => {
     const ref = useRef<HTMLDivElement>(null);
     const { config, slots, slotProps, solitaire } = useChess();
     const [hideEngine] = useLocalStorage(HideEngine.Key, HideEngine.Default);
+    const [fontSize] = useLocalStorage<PgnTextFontSize>(
+        PgnTextFontSizeKey,
+        PgnTextFontSize.Standard,
+    );
 
     const handleScroll = (child: HTMLElement | null) => {
         const scrollParent = ref.current;
@@ -53,6 +62,7 @@ const PgnTextBody = () => {
                     flexGrow: 1,
                     minHeight: 0,
                     width: 1,
+                    ...getPgnTextFontSx(fontSize),
                 }}
             >
                 <GameComment />

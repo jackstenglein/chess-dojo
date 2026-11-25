@@ -4,6 +4,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import ViewerSettings, {
     CoordinateSize,
     CoordinateSizeKey,
+    PgnTextFontSize,
+    PgnTextFontSizeKey,
     ShowInlineCommentsInPgn,
     ViewerSetting,
 } from './ViewerSettings';
@@ -17,23 +19,36 @@ afterEach(() => {
     localStorage.clear();
 });
 
-describe('ViewerSettings coordinate size', () => {
-    it('shows the coordinate size setting with the standard default', () => {
+describe.each([
+    {
+        label: 'Coordinate Size',
+        option: 'Large',
+        storageKey: CoordinateSizeKey,
+        storedValue: CoordinateSize.Large,
+        setting: ViewerSetting.CoordinateSize,
+    },
+    {
+        label: 'PGN Text Font Size',
+        option: 'Extra Large',
+        storageKey: PgnTextFontSizeKey,
+        storedValue: PgnTextFontSize.ExtraLarge,
+        setting: ViewerSetting.PgnTextFontSize,
+    },
+])('ViewerSettings $label', ({ label, option, storageKey, storedValue, setting }) => {
+    it('shows the setting with the standard default', () => {
         renderWithIntl(<ViewerSettings />);
 
-        expect(screen.getByRole('combobox', { name: 'Coordinate Size' })).toHaveTextContent(
-            'Standard',
-        );
+        expect(screen.getByRole('combobox', { name: label })).toHaveTextContent('Standard');
     });
 
-    it('persists the large coordinate size selection', async () => {
+    it(`persists the ${option} selection`, async () => {
         renderWithIntl(<ViewerSettings />);
 
-        fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Coordinate Size' }));
+        fireEvent.mouseDown(screen.getByRole('combobox', { name: label }));
         const listbox = await screen.findByRole('listbox');
-        fireEvent.click(within(listbox).getByRole('option', { name: 'Large' }));
+        fireEvent.click(within(listbox).getByRole('option', { name: option }));
 
-        expect(localStorage.getItem(CoordinateSizeKey)).toBe(JSON.stringify(CoordinateSize.Large));
+        expect(localStorage.getItem(storageKey)).toBe(JSON.stringify(storedValue));
     });
 
     it('can be hidden by enabledSettings', () => {
@@ -41,15 +56,13 @@ describe('ViewerSettings coordinate size', () => {
             <ViewerSettings enabledSettings={{ [ViewerSetting.CoordinateStyle]: true }} />,
         );
 
-        expect(screen.queryByRole('combobox', { name: 'Coordinate Size' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('combobox', { name: label })).not.toBeInTheDocument();
     });
 
     it('can be shown by enabledSettings', () => {
-        renderWithIntl(
-            <ViewerSettings enabledSettings={{ [ViewerSetting.CoordinateSize]: true }} />,
-        );
+        renderWithIntl(<ViewerSettings enabledSettings={{ [setting]: true }} />);
 
-        expect(screen.getByRole('combobox', { name: 'Coordinate Size' })).toBeInTheDocument();
+        expect(screen.getByRole('combobox', { name: label })).toBeInTheDocument();
     });
 });
 

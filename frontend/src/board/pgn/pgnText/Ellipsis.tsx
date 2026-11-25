@@ -1,6 +1,7 @@
 import { useReconcile } from '@/board/Board';
 import { Button, Grid, Typography } from '@mui/material';
 import { useChess } from '../PgnBoard';
+import { scalePgnRem } from '../boardTools/underboard/settings/viewerSettingsConstants';
 
 export const Ellipsis = ({ ply, firstMove }: { ply: number; firstMove?: boolean }) => {
     const { chess } = useChess();
@@ -19,6 +20,7 @@ export const Ellipsis = ({ ply, firstMove }: { ply: number; firstMove?: boolean 
                 <Button
                     sx={{
                         textTransform: 'none',
+                        fontSize: scalePgnRem(0.875),
                         pl: 1,
                         borderRadius: 0,
                         justifyContent: 'start',
@@ -34,6 +36,7 @@ export const Ellipsis = ({ ply, firstMove }: { ply: number; firstMove?: boolean 
                 <Typography
                     sx={{
                         color: 'text.secondary',
+                        fontSize: scalePgnRem(1),
                         pl: 1,
                     }}
                 >
