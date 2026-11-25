@@ -1869,10 +1869,13 @@ function practiceScopes() {
   // tab ('openings|b_sicilian'), so you can mix e.g. Sicilian + Benoni + Fork + Knight endgames.
   const parts = [['tactics', tac.themes], ['openings', catalogs.openings?.themes], ['endgames', indexes.endgames?.themes]]
     .filter(([, ts]) => ts?.length).map(([tr, ts]) => ({ track: tr, keys: ts.map((t) => t.key) }));
+  // Tactics themes come in their three tiers; a whole tier is picked as 'tactics~0' (Basic) etc.
+  const tacPart = parts.find((pt) => pt.track === 'tactics');
+  if (tacPart) tacPart.tiers = TACTIC_STAGES.map((st, si) => ({ id: `tactics~${si}`, name: st.name, keys: tacKeys(si) }));
   const allRanges = parts.map((pt) => range(pt.track, pt.keys));
   out.push({
     id: 'all', label: 'All puzzles (tactics, openings, endgames)', mixed: true, track: null, parts,
-    keys: parts.flatMap((pt) => [pt.track, ...pt.keys.map((k) => `${pt.track}|${k}`)]), range: [Math.min(...allRanges.map((r) => r[0])), Math.max(...allRanges.map((r) => r[1]))],
+    keys: parts.flatMap((pt) => [pt.track, ...(pt.tiers ?? []).map((t) => t.id), ...pt.keys.map((k) => `${pt.track}|${k}`)]), range: [Math.min(...allRanges.map((r) => r[0])), Math.max(...allRanges.map((r) => r[1]))],
   });
   TACTIC_STAGES.forEach((st, si) => {
     const keys = tacKeys(si);
@@ -1915,7 +1918,8 @@ async function loadPool(scope, picked = []) {
   if (scope.mixed) {
     // Everything: picked = whole tabs and/or single themes (none = all of them).
     const lists = await Promise.all(scope.parts.map((pt) => {
-      const keys = !picked.length || picked.includes(pt.track) ? pt.keys : pt.keys.filter((k) => picked.includes(`${pt.track}|${k}`));
+      const inTier = new Set((pt.tiers ?? []).filter((t) => picked.includes(t.id)).flatMap((t) => t.keys));
+      const keys = !picked.length || picked.includes(pt.track) ? pt.keys : pt.keys.filter((k) => inTier.has(k) || picked.includes(`${pt.track}|${k}`));
       return keys.length ? loadPool({ track: pt.track, keys }) : [];
     }));
     // Some puzzles are in more than one tab (e.g. a fork from a Sicilian game); keep each once.
@@ -1992,12 +1996,18 @@ async function showPractice() {
     $themes.innerHTML = `<div class="mix-row">${chip('', 'Everything', !chosen.size)}</div>` + sc.parts.map((pt) => {
       const whole = chosen.has(pt.track);
       const names = catalog(pt.track).themes;
-      const picked = pt.keys.filter((k) => chosen.has(`${pt.track}|${k}`)).length;
+      const picked = pt.keys.filter((k) => chosen.has(`${pt.track}|${k}`)).length + (pt.tiers ?? []).filter((t) => chosen.has(t.id)).length;
       const open = openTabs.has(pt.track) || picked > 0;
       return `<div class="mix-tab-block ${open ? 'open' : ''}">
         <div class="mix-row"><span class="mix-tab">${TRACKS[pt.track].label}</span>${chip(pt.track, `All ${TRACKS[pt.track].label.toLowerCase()}`, whole)}
           <button type="button" class="mix-more" data-tab="${pt.track}" aria-expanded="${open}">${picked ? `${picked} picked` : 'Choose themes'} <small>(${pt.keys.length})</small> <span class="mix-chev">▾</span></button></div>
-        ${open ? `<div class="mix-row mix-themes">${pt.keys.map((k) => chip(`${pt.track}|${k}`, shortName(names.find((t) => t.key === k)), !whole && chosen.has(`${pt.track}|${k}`))).join('')}</div>` : ''}
+        ${!open ? '' : pt.tiers
+          ? pt.tiers.map((tier) => {
+            const all = !whole && chosen.has(tier.id);
+            return `<div class="mix-tier"><span class="mix-tier-name">${esc(tier.name.replace(/ Tactics$/, ''))}</span>${chip(tier.id, `All ${tier.name.toLowerCase()}`, all)}${
+              tier.keys.map((k) => chip(`${pt.track}|${k}`, shortName(names.find((t) => t.key === k)), !whole && !all && chosen.has(`${pt.track}|${k}`))).join('')}</div>`;
+          }).join('')
+          : `<div class="mix-row mix-themes">${pt.keys.map((k) => chip(`${pt.track}|${k}`, shortName(names.find((t) => t.key === k)), !whole && chosen.has(`${pt.track}|${k}`))).join('')}</div>`}
       </div>`;
     }).join('');
     $themes.querySelectorAll('.mix-more').forEach((b) => {
@@ -2011,15 +2021,27 @@ async function showPractice() {
     $themes.querySelectorAll('button[data-k]').forEach((b) => {
       b.onclick = () => {
         const k = b.dataset.k;
+        const tiers = sc.parts.find((pt) => pt.tiers)?.tiers ?? [];
         if (!k) chosen.clear();
-        else if (!k.includes('|')) {
-          // A whole tab replaces its single themes, and the other way round.
+        else if (k.includes('~')) {
+          // A whole tier replaces its single themes (and the whole tab), and the other way round.
+          const tier = tiers.find((t) => t.id === k);
           const had = chosen.has(k);
-          for (const x of [...chosen]) if (x.startsWith(`${k}|`)) chosen.delete(x);
+          chosen.delete('tactics');
+          for (const key of tier.keys) chosen.delete(`tactics|${key}`);
+          if (had) chosen.delete(k);
+          else chosen.add(k);
+        } else if (!k.includes('|')) {
+          // A whole tab replaces its tiers and single themes, and the other way round.
+          const had = chosen.has(k);
+          for (const x of [...chosen]) if (x.startsWith(`${k}|`) || x.startsWith(`${k}~`)) chosen.delete(x);
           if (had) chosen.delete(k);
           else chosen.add(k);
         } else {
-          chosen.delete(k.split('|')[0]);
+          const [tr, key] = k.split('|');
+          chosen.delete(tr);
+          const tier = tiers.find((t) => t.keys.includes(key));
+          if (tier) chosen.delete(tier.id);
           if (chosen.has(k)) chosen.delete(k);
           else chosen.add(k);
         }
@@ -2069,6 +2091,7 @@ async function showPractice() {
 }
 // A pick in All puzzles: 'tactics' -> "All tactics", 'endgames|knightEndgame' -> "Knight Endgames".
 function mixName(k) {
+  if (k.includes('~')) return `All ${TACTIC_STAGES[Number(k.split('~')[1])]?.name.toLowerCase() ?? 'tactics'}`;
   const [tr, key] = k.split('|');
   return key ? themeName(sessionKey(key, tr)) : `All ${TRACKS[tr]?.label.toLowerCase() ?? tr}`;
 }
