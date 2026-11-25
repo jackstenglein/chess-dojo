@@ -1,2 +1,2 @@
 // Written by tactics-ladder/scripts/export_to_site.sh. Do not edit by hand.
-export const TACTICS_FORGER_VERSION = '41231c65f1';
+export const TACTICS_FORGER_VERSION = 'b09a01460a';
