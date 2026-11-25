@@ -211,7 +211,7 @@
                 "partialTime": "{worked} / {goal}"
             },
             "full": {
-                "heading": "Plan de entrenamiento Dojo",
+                "heading": "Plan de entrenamiento completo",
                 "cohort": "Cohorte",
                 "showCompletedTasks": "Mostrar tareas completadas",
                 "hideCompletedTasksTooltip": "Ocultar tareas completadas",
