@@ -3,7 +3,6 @@ import { isFree, User } from '@/database/user';
 import { Stack } from '@mui/material';
 import { createContext, useEffect, useMemo, useState } from 'react';
 import { getLockedTaskCount, isFreeStarterPlanDone } from './custom/freePlan';
-import { FreePlanTabs } from './custom/FreePlanTabs';
 import { StarterPlanComplete } from './custom/StarterPlanComplete';
 import { DailyTrainingPlan } from './daily/DailyTrainingPlan';
 import { FullTrainingPlan } from './full/FullTrainingPlan';
@@ -34,14 +33,14 @@ export function TrainingPlanTab({ user }: { user: User }) {
             (preview === StarterPreviewMode.On && !isStarterPlanFinished(user.tutorials)));
 
     // Past the starter plan, free-tier members choose between building their own
-    // custom plan and the Dojo plan, which asks them to join once they have done
-    // its free part.
-    const showFreeTabs = trainingPlan.isCurrentUser && isFree(user) && !showStarterPlan;
+    // custom plan and the Dojo plan (FreePlanSwitch), which asks them to join once
+    // they have done its free part.
+    const isFreeMember = trainingPlan.isCurrentUser && isFree(user) && !showStarterPlan;
     const freeStarterDone = useMemo(
         () => isFreeStarterPlanDone(user, trainingPlan.allRequirements, trainingPlan.timeline),
         [user, trainingPlan.allRequirements, trainingPlan.timeline],
     );
-    const showJoinPrompt = showFreeTabs && !trainingPlan.activePlan && freeStarterDone;
+    const showJoinPrompt = isFreeMember && !trainingPlan.activePlan && freeStarterDone;
 
     useEffect(() => {
         setCohort(user.dojoCohort);
@@ -64,7 +63,6 @@ export function TrainingPlanTab({ user }: { user: User }) {
                     />
                 ) : (
                     <>
-                        {showFreeTabs && <FreePlanTabs />}
                         {showJoinPrompt ? (
                             <StarterPlanComplete
                                 cohort={user.dojoCohort}

@@ -41,6 +41,7 @@ import { useTranslations } from 'next-intl';
 import { use, useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { CategoryLabel } from '../CategoryLabel';
+import { FreePlanSwitch } from '../custom/FreePlanSwitch';
 import { displayProgress } from '../full/FullTrainingPlanItem';
 import { OverbookedDayAlert } from '../OverbookedDayAlert';
 import { ScheduleClassicalGameDaily } from '../ScheduleClassicalGame';
@@ -120,6 +121,8 @@ export function DailyTrainingPlan() {
                 direction='row'
                 sx={{
                     alignItems: 'center',
+                    flexWrap: 'wrap',
+                    rowGap: 1,
                 }}
             >
                 <Tooltip title={expanded ? tCommon('hide') : tCommon('show')}>
@@ -153,6 +156,8 @@ export function DailyTrainingPlan() {
                     workGoalHistory={user.workGoalHistory}
                     variant='icon'
                 />
+
+                <FreePlanSwitch />
             </Stack>
 
             {!isLoading && taskCount > 0 && (
