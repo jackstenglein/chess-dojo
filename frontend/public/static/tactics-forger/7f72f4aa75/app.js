@@ -2164,11 +2164,23 @@ function placementCard() {
   if (track !== 'tactics') return '';
   const cohort = progress.seed?.cohort ?? cloud.cohort;
   if (progress.placement) {
-    // Taken before: a small line, with a retake link once a week has passed.
+    // Taken before: your placement rating, with past results and a retake once a week has passed.
+    const pl = progress.placement;
     const wait = placementWait();
-    return `<p class="start-link placement-line">Placement test: ${progress.placement.score}/${progress.placement.n} · puzzle ratings start at <b>${seedRating()}</b> · ${wait
-      ? `next test in ${Math.ceil(wait / (24 * 3600e3))} day${wait > 24 * 3600e3 ? 's' : ''}`
-      : '<a href="#/placement">retake it</a>'} · <a href="#/placement-history">past results</a></p>`;
+    const days = Math.ceil(wait / (24 * 3600e3));
+    const when = new Date(pl.at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    return `<section class="placement-done">
+      <span class="pd-icon" aria-hidden="true">🎯</span>
+      <div class="pd-main">
+        <div class="pd-label">Placement rating</div>
+        <div class="pd-rating">${Math.round(pl.perf)}</div>
+        <div class="pd-sub">${pl.score}/${pl.n} solved · ${esc(when)}</div>
+      </div>
+      <div class="pd-actions">
+        <a class="btn ghost small" href="#/placement-history">Past results</a>
+        ${wait ? `<span class="pd-wait">Retake in ${days} day${days === 1 ? '' : 's'}</span>` : '<a class="btn primary small" href="#/placement">Retake</a>'}
+      </div>
+    </section>`;
   }
   return `<section class="start-card placement-card">
     <h2><span class="pc-icon" aria-hidden="true">🎯</span> Placement test <small>optional</small></h2>
