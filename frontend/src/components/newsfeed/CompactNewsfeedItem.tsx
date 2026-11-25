@@ -97,12 +97,29 @@ export function CompactNewsfeedItem({
 
     const isGraduation = entry.requirementId === TimelineSpecialRequirementId.Graduation;
     const isGame = entry.requirementId === TimelineSpecialRequirementId.GameSubmission;
+    // What the member wrote leads the entry, as on a social feed. The sidebar's
+    // simple entry keeps task notes under the task, where there's room for them.
+    const postText = isGraduation
+        ? entry.graduationInfo?.comments
+        : simple || isGame
+          ? ''
+          : entry.notes;
 
     return (
         <Stack sx={{ gap: 1.5, minWidth: 0 }} data-testid='compact-newsfeed-item'>
             <CompactEntryHeader entry={entry} />
 
             <Stack sx={{ gap: 1, minWidth: 0 }}>
+                {postText && (
+                    <Typography
+                        variant='body2'
+                        sx={{ whiteSpace: 'pre-line', lineHeight: 1.55, mb: 0.25 }}
+                        data-testid='entry-post-text'
+                    >
+                        {postText}
+                    </Typography>
+                )}
+
                 {isGraduation ? (
                     <GraduationNewsfeedItem entry={entry} />
                 ) : isGame ? (
@@ -118,6 +135,9 @@ export function CompactNewsfeedItem({
                     sx={{
                         alignItems: 'center',
                         gap: 0.5,
+                        // The comment box drops to its own line when the reactions
+                        // leave it too little room.
+                        flexWrap: 'wrap',
                         ml: '-8px',
                         // The add-reaction button stays quiet beside the content.
                         '& .MuiIconButton-colorPrimary': { color: 'text.secondary' },
@@ -130,7 +150,7 @@ export function CompactNewsfeedItem({
                         onEdit={onEdit}
                     />
                     {commentBox ? (
-                        <Box sx={{ flexGrow: 1, minWidth: 0 }}>{commentBox}</Box>
+                        <Box sx={{ flexGrow: 1, minWidth: 200 }}>{commentBox}</Box>
                     ) : (
                         <Button
                             href={link}
@@ -170,6 +190,7 @@ export function CompactNewsfeedItem({
                         comments={entry.comments}
                         maxComments={maxComments}
                         viewCommentsLink={link}
+                        compact
                     />
                 )}
             </Stack>
@@ -386,12 +407,6 @@ function ProgressBody({ entry, simple }: { entry: TimelineEntry; simple?: boolea
                     {entry.dojoPoints > 0 && <DojoPointsChange entry={entry} />}
                 </Stack>
             </ActivityPanel>
-
-            {entry.notes && (
-                <Typography variant='body2' sx={{ whiteSpace: 'pre-line' }}>
-                    {entry.notes}
-                </Typography>
-            )}
         </Stack>
     );
 }
