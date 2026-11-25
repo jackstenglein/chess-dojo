@@ -58,6 +58,7 @@ import {
     ToggleButtonGroup,
     Tooltip,
     Typography,
+    useMediaQuery,
 } from '@mui/material';
 import { isAxiosError } from 'axios';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -67,8 +68,9 @@ import { AdminView } from './AdminView';
 import { useAnalysis } from './analysisClient';
 import { BoardThemeButton } from './BoardThemeButton';
 import { ClockText } from './ClockText';
-import { useCrosstable } from './crosstable';
+import { formatResult, useCrosstable } from './crosstable';
 import { CrosstableView } from './CrosstableView';
+import { GamePicker } from './GamePicker';
 import { GuessPanel, GuessState, Leaderboard } from './GuessTheMove';
 import { useGuestAccess } from './guestAccess';
 import {
@@ -85,11 +87,11 @@ import {
 import { LiveBoard } from './LiveBoard';
 import {
     FAN_LANDSCAPE_BOARD,
-    FAN_LANDSCAPE_TABS,
     fanLandscapeGrid,
     FanPart,
     fanPartSx,
     fanUnwrapSx,
+    HANDSET,
     parseLayout,
     PHONE,
     PHONE_LANDSCAPE,
@@ -403,6 +405,10 @@ export function LiveMatchPage() {
     };
     const streamView = layout === 'stream';
     const playerColumn = layout === 'analysis2';
+    // The games show only once the browser has loaded them, so the server never
+    // renders them. That makes it safe to ask for the screen's real size on the
+    // first render.
+    const handset = useMediaQuery(HANDSET, { noSsr: true });
     /** Only the fan view rearranges its parts on a phone. */
     const fan = (part: FanPart) => (streamView ? fanPartSx(part) : {});
 
@@ -752,6 +758,25 @@ export function LiveMatchPage() {
         />
     );
 
+    /** How each finished game ended, for the game picker on a phone. */
+    const results = useMemo(() => {
+        const byId: Record<string, string> = {};
+        for (const r of rounds) {
+            const inMatch = !r.pgnUrl && crosstable?.games.find((g) => g.number === r.number);
+            const result =
+                r.id === roundId && feed.result !== '*'
+                    ? feed.result
+                    : inMatch
+                      ? inMatch.result
+                      : '*';
+            const shown = formatResult(result);
+            if (shown) {
+                byId[r.id] = shown;
+            }
+        }
+        return byId;
+    }, [rounds, roundId, feed.result, crosstable]);
+
     const notation = (
         <Notation
             root={tree}
@@ -827,77 +852,77 @@ export function LiveMatchPage() {
             {rounds.length > 0 && (
                 <Stack
                     direction='row'
-                    sx={{
-                        alignItems: 'center',
-                        mb: 2,
-                        minWidth: 0,
-                        // A phone on its side has no height to spare. The tabs are
-                        // lower there, so the whole board fits under them.
-                        ...(streamView && {
-                            [PHONE_LANDSCAPE]: {
-                                mb: 1,
-                                '& .MuiTabs-root, & .MuiTab-root': {
-                                    minHeight: FAN_LANDSCAPE_TABS,
-                                    py: 0,
-                                },
-                            },
-                        }),
-                    }}
+                    sx={{ alignItems: 'center', mb: handset ? 1 : 2, minWidth: 0 }}
                 >
-                    <Tabs
-                        value={adminOpen ? ADMIN_TAB : (roundId ?? false)}
-                        onChange={(_, id: string) =>
-                            id === ADMIN_TAB ? setAdminOpen(true) : selectRound(id)
-                        }
-                        variant='scrollable'
-                        scrollButtons='auto'
-                        sx={{ flexGrow: 1, minWidth: 0 }}
-                    >
-                        {canAdmin && (
-                            <Tab
-                                value={ADMIN_TAB}
-                                label='Admin'
-                                sx={{ textTransform: 'none', fontWeight: 700 }}
-                            />
-                        )}
-                        {rounds.map((r) => (
-                            <Tab
-                                key={r.id}
-                                value={r.id}
-                                sx={{ textTransform: 'none' }}
-                                label={
-                                    r.pgnUrl && isSensei ? (
-                                        <Stack direction='row' sx={{ alignItems: 'center' }}>
-                                            {r.name}
-                                            <Box
-                                                component='span'
-                                                role='button'
-                                                aria-label={`Remove ${r.name}`}
-                                                title='Remove this game'
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    void removeGame(r.id);
-                                                }}
-                                                sx={{
-                                                    ml: 0.75,
-                                                    px: 0.5,
-                                                    borderRadius: 0.5,
-                                                    color: 'text.secondary',
-                                                    '&:hover': { bgcolor: 'action.hover' },
-                                                }}
-                                            >
-                                                ×
-                                            </Box>
-                                        </Stack>
-                                    ) : r.ongoing ? (
-                                        `${r.name} · live`
-                                    ) : (
-                                        r.name
-                                    )
-                                }
-                            />
-                        ))}
-                    </Tabs>
+                    {handset ? (
+                        <GamePicker
+                            rounds={rounds}
+                            roundId={roundId}
+                            onSelect={selectRound}
+                            admin={
+                                canAdmin
+                                    ? { open: adminOpen, onOpen: () => setAdminOpen(true) }
+                                    : undefined
+                            }
+                            onRemove={isSensei ? (id) => void removeGame(id) : undefined}
+                            results={results}
+                        />
+                    ) : (
+                        <Tabs
+                            value={adminOpen ? ADMIN_TAB : (roundId ?? false)}
+                            onChange={(_, id: string) =>
+                                id === ADMIN_TAB ? setAdminOpen(true) : selectRound(id)
+                            }
+                            variant='scrollable'
+                            scrollButtons='auto'
+                            sx={{ flexGrow: 1, minWidth: 0 }}
+                        >
+                            {canAdmin && (
+                                <Tab
+                                    value={ADMIN_TAB}
+                                    label='Admin'
+                                    sx={{ textTransform: 'none', fontWeight: 700 }}
+                                />
+                            )}
+                            {rounds.map((r) => (
+                                <Tab
+                                    key={r.id}
+                                    value={r.id}
+                                    sx={{ textTransform: 'none' }}
+                                    label={
+                                        r.pgnUrl && isSensei ? (
+                                            <Stack direction='row' sx={{ alignItems: 'center' }}>
+                                                {r.name}
+                                                <Box
+                                                    component='span'
+                                                    role='button'
+                                                    aria-label={`Remove ${r.name}`}
+                                                    title='Remove this game'
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        void removeGame(r.id);
+                                                    }}
+                                                    sx={{
+                                                        ml: 0.75,
+                                                        px: 0.5,
+                                                        borderRadius: 0.5,
+                                                        color: 'text.secondary',
+                                                        '&:hover': { bgcolor: 'action.hover' },
+                                                    }}
+                                                >
+                                                    ×
+                                                </Box>
+                                            </Stack>
+                                        ) : r.ongoing ? (
+                                            `${r.name} · live`
+                                        ) : (
+                                            r.name
+                                        )
+                                    }
+                                />
+                            ))}
+                        </Tabs>
+                    )}
                     {canAnalyze && (
                         <ToggleButtonGroup
                             size='small'
@@ -1222,7 +1247,8 @@ export function LiveMatchPage() {
                             Could not load this game from Lichess.
                         </Alert>
                     )}
-                    {gameOver && (
+                    {/* A phone shows the result beside the game's name, in the game picker. */}
+                    {gameOver && !handset && (
                         <Alert severity='info' sx={fan('notice')}>
                             {round?.name ?? 'This game'} ended {feed.result.replace('1/2', '½')}.
                         </Alert>
