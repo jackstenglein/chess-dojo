@@ -3746,7 +3746,8 @@ async function sendTrainingTime(final = false) {
   trainingTime.puzzles = 0;
   trainingTime.sending = true;
   try {
-    const res = await askHost('logTime', { minutes, puzzles });
+    const s = currentSession(false);
+    const res = await askHost('logTime', { minutes, puzzles, session: s?.id ?? null });
     if (!res?.ok) throw new Error('logTime failed');
   } catch {
     // Keep it for the next try (e.g. offline).
@@ -3757,6 +3758,32 @@ async function sendTrainingTime(final = false) {
   }
 }
 document.addEventListener('visibilitychange', () => document.visibilityState === 'hidden' && sendTrainingTime(true));
+// Past play: sessions from before live logging reached the site (TRAINING_LIVE_FROM) are added
+// once per account, one entry per session on the day it was played. progress.trainingBackfill
+// is the start of the last session added, so an interrupted run picks up where it stopped.
+const TRAINING_LIVE_FROM = Date.parse('2026-11-25T04:20:08Z');
+async function backfillTrainingTime() {
+  if (!HOSTED || !cloud.username || progress.trainingBackfill === -1) return;
+  const done = progress.trainingBackfill ?? 0;
+  const past = [];
+  for (const s of progress.sessions ?? []) {
+    if (s.start <= done) continue;
+    const before = s.attempts.filter((a) => (a[5]?.at ?? s.start) < TRAINING_LIVE_FROM);
+    if (!before.length) continue;
+    const minutes = Math.round(sum(before.map((a) => a[5]?.total ?? a[3] ?? 0)) / 60e3);
+    if (minutes >= 1) past.push({ start: s.start, minutes, puzzles: before.length });
+  }
+  for (let i = 0; i < past.length; i += 10) {
+    const batch = past.slice(i, i + 10);
+    const res = await askHost('backfill', { sessions: batch }, 120000).catch(() => null);
+    if (!res?.ok) return; // try again next time
+    progress.trainingBackfill = batch.at(-1).start;
+    saveProgress();
+  }
+  progress.trainingBackfill = -1; // all done
+  saveProgress();
+}
+
 
 // ---- Saving to your Dojo account (only inside chessdojo.club) --------------------------------
 // The page around the frame (TacticsForgerFrame on the site) makes the signed-in API calls; the app
@@ -3764,7 +3791,7 @@ document.addEventListener('visibilitychange', () => document.visibilityState ===
 // saved a few seconds after each change. If another device saved in between (409), the app loads
 // that copy, merges and saves again.
 let hostSeq = 0;
-function askHost(type, body) {
+function askHost(type, body, timeoutMs = 20000) {
   return new Promise((resolve, reject) => {
     const id = ++hostSeq;
     const done = (e) => {
@@ -3777,7 +3804,7 @@ function askHost(type, body) {
     const timer = setTimeout(() => {
       window.removeEventListener('message', done);
       reject(new Error(`host ${type} timed out`));
-    }, 20000);
+    }, timeoutMs);
     window.addEventListener('message', done);
     window.parent.postMessage({ source: 'tactics-forger', id, type, body }, location.origin);
   });
@@ -3791,6 +3818,10 @@ function mergeProgress(a, b) {
   const older = newer === a ? b : a;
   const out = { ...older, ...newer };
   out.xp = Math.max(a.xp ?? 0, b.xp ?? 0);
+  // Past sessions already added to the training plan: the furthest either copy got.
+  const reach = (v) => (v === -1 ? Infinity : v ?? 0); // -1 = all done
+  const bf = Math.max(reach(a.trainingBackfill), reach(b.trainingBackfill));
+  if (bf) out.trainingBackfill = bf === Infinity ? -1 : bf;
   // The first cohort kept stays; the latest placement test counts.
   out.seed = older.seed ?? newer.seed;
   out.placement = [a.placement, b.placement].filter(Boolean).sort((x, y) => (y.at ?? 0) - (x.at ?? 0))[0];
@@ -4130,6 +4161,7 @@ function setupOffline() {
     if (ok) {
       renderStats();
       if (!location.hash.includes('/play/')) route(); // don't restart a puzzle already in progress
+      backfillTrainingTime();
     }
   };
   await connect();

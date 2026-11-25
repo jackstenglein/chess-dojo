@@ -18,6 +18,7 @@ import { ALL_COHORTS, dojoCohorts, User } from '@/database/user';
 import { SaveTacticsForgerProgressRequest } from '@jackstenglein/chess-dojo-common/src/tacticsTrainer/api';
 import { Box } from '@mui/material';
 import { AxiosError } from 'axios';
+import { DateTime } from 'luxon';
 import { useEffect, useRef, useState } from 'react';
 import { ForgerAnalysis, ForgerAnalysisDialog } from './ForgerAnalysisDialog';
 
@@ -32,8 +33,9 @@ type ForgerRequest =
           source: 'tactics-forger';
           id: number;
           type: 'logTime';
-          body: { minutes: number; puzzles: number };
-      };
+          body: { minutes: number; puzzles: number; session?: number | null };
+      }
+    | { source: 'tactics-forger'; id: number; type: 'backfill'; body: { sessions: PastSession[] } };
 
 /**
  * Shows the static Tactics Forger app in a full-height frame and lets it load and save the
@@ -57,11 +59,19 @@ function forgerTask(username: string): CustomTask {
     };
 }
 
-/** This visit's timeline entry for the task: it grows as more minutes come in. */
+/** The timeline entry of the Forger session being played: it grows as more minutes come in. */
 interface ForgerVisit {
     entry: TimelineEntry;
     progress: RequirementProgress;
+    session: number | null;
     day: string;
+}
+
+/** A past Forger session to add to the training plan. */
+interface PastSession {
+    start: number;
+    minutes: number;
+    puzzles: number;
 }
 
 export function TacticsForgerFrame({ src }: { src: string }) {
@@ -77,57 +87,48 @@ export function TacticsForgerFrame({ src }: { src: string }) {
         latest.current = { user, api };
     }, [user, api]);
     const visit = useRef<ForgerVisit | null>(null);
+    // The task's progress as of the last write (the user object can lag behind).
+    const lastProgress = useRef<RequirementProgress | null>(null);
+    const taskAdded = useRef(false);
+    // Training-plan writes go one at a time (live minutes and past sessions can overlap).
+    const queue = useRef<Promise<unknown>>(Promise.resolve());
+    const inTurn = <T,>(fn: () => Promise<T>): Promise<T> => {
+        const run = queue.current.then(fn, fn);
+        queue.current = run.catch(() => undefined);
+        return run;
+    };
+
+    /** Adds the Forger task to the user's plan the first time, and asks for a goal. */
+    const ensureTask = async (u: User, a: typeof api) => {
+        if (taskAdded.current || u.customTasks?.some((t) => t.id === TACTICS_FORGER_TASK_ID))
+            return;
+        await a.updateUser({ customTasks: [...(u.customTasks ?? []), forgerTask(u.username)] });
+        taskAdded.current = true;
+        setAskGoal(true);
+    };
 
     /**
-     * Adds minutes to the Forger task: adds the task the first time, starts one timeline entry per
-     * visit (and day), then grows it. Entries are saved as a normal task's, not a custom one's, so
-     * the time shows like any other training on the activity heatmap.
+     * Starts a timeline entry on the task (dated `date`, or now), saved as a normal task's entry
+     * rather than a custom one's so the time shows like any other training on the heatmap.
      */
-    const logTime = async (minutes: number, puzzles: number) => {
-        const { user: u, api: a } = latest.current;
-        if (!u || minutes < 1) throw new Error('not signed in');
-        if (!u.customTasks?.some((t) => t.id === TACTICS_FORGER_TASK_ID)) {
-            await a.updateUser({ customTasks: [...(u.customTasks ?? []), forgerTask(u.username)] });
-            setAskGoal(true);
-        }
-        const cohort = u.dojoCohort;
-        const today = new Date().toDateString();
-        const v = visit.current;
-        if (v?.day === today) {
-            const total = (v.progress.minutesSpent?.[cohort] ?? 0) + minutes;
-            const count = (v.progress.counts?.[ALL_COHORTS] ?? 0) + minutes;
-            const progress: RequirementProgress = {
-                ...v.progress,
-                minutesSpent: { ...v.progress.minutesSpent, [cohort]: total },
-                counts: { ...v.progress.counts, [ALL_COHORTS]: count },
-                updatedAt: new Date().toISOString(),
-            };
-            const entry: TimelineEntry = {
-                ...v.entry,
-                minutesSpent: v.entry.minutesSpent + minutes,
-                totalMinutesSpent: total,
-                newCount: count,
-                notes: forgerNotes(v.entry, puzzles),
-                isCustomRequirement: false,
-            };
-            await a.updateUserTimeline({
-                requirementId: TACTICS_FORGER_TASK_ID,
-                progress,
-                updated: [entry],
-                deleted: [],
-            });
-            visit.current = { entry, progress, day: today };
-            return;
-        }
-        const before = u.progress?.[TACTICS_FORGER_TASK_ID]?.counts?.[ALL_COHORTS] ?? 0;
+    const newEntry = async (
+        u: User,
+        a: typeof api,
+        minutes: number,
+        notes: string,
+        date: DateTime | null,
+    ) => {
+        const before =
+            (lastProgress.current ?? u.progress?.[TACTICS_FORGER_TASK_ID])?.counts?.[ALL_COHORTS] ??
+            0;
         const res = await a.updateUserProgress({
             requirementId: TACTICS_FORGER_TASK_ID,
-            cohort,
+            cohort: u.dojoCohort,
             previousCount: before,
             newCount: before + minutes,
             incrementalMinutesSpent: minutes,
-            date: null,
-            notes: forgerNotes(undefined, puzzles),
+            date,
+            notes,
         });
         const entry: TimelineEntry = { ...res.data.timelineEntry, isCustomRequirement: false };
         const progress = res.data.user.progress[TACTICS_FORGER_TASK_ID];
@@ -137,8 +138,67 @@ export function TacticsForgerFrame({ src }: { src: string }) {
             updated: [entry],
             deleted: [],
         });
-        visit.current = { entry, progress, day: today };
+        lastProgress.current = progress;
+        return { entry, progress };
     };
+
+    /** Live minutes: one timeline entry per Forger session (and day), growing as you play. */
+    const logTime = (minutes: number, puzzles: number, session: number | null) =>
+        inTurn(async () => {
+            const { user: u, api: a } = latest.current;
+            if (!u || minutes < 1) throw new Error('not signed in');
+            await ensureTask(u, a);
+            const cohort = u.dojoCohort;
+            const today = new Date().toDateString();
+            const v = visit.current;
+            if (v?.day === today && v.session === session) {
+                const total = (v.progress.minutesSpent?.[cohort] ?? 0) + minutes;
+                const count = (v.progress.counts?.[ALL_COHORTS] ?? 0) + minutes;
+                const progress: RequirementProgress = {
+                    ...v.progress,
+                    minutesSpent: { ...v.progress.minutesSpent, [cohort]: total },
+                    counts: { ...v.progress.counts, [ALL_COHORTS]: count },
+                    updatedAt: new Date().toISOString(),
+                };
+                const entry: TimelineEntry = {
+                    ...v.entry,
+                    minutesSpent: v.entry.minutesSpent + minutes,
+                    totalMinutesSpent: total,
+                    newCount: count,
+                    notes: forgerNotes(puzzlesIn(v.entry) + puzzles),
+                    isCustomRequirement: false,
+                };
+                await a.updateUserTimeline({
+                    requirementId: TACTICS_FORGER_TASK_ID,
+                    progress,
+                    updated: [entry],
+                    deleted: [],
+                });
+                lastProgress.current = progress;
+                visit.current = { entry, progress, session, day: today };
+                return;
+            }
+            const made = await newEntry(u, a, minutes, forgerNotes(puzzles), null);
+            visit.current = { ...made, session, day: today };
+        });
+
+    /** Past sessions (from before live logging): one entry each, dated when it was played. */
+    const backfill = (sessions: PastSession[]) =>
+        inTurn(async () => {
+            const { user: u, api: a } = latest.current;
+            if (!u) throw new Error('not signed in');
+            await ensureTask(u, a);
+            for (const s of sessions) {
+                if (s.minutes < 1) continue;
+                await newEntry(
+                    u,
+                    a,
+                    Math.round(s.minutes),
+                    forgerNotes(s.puzzles),
+                    DateTime.fromMillis(s.start),
+                );
+            }
+        });
 
     useEffect(() => {
         const onMessage = async (event: MessageEvent) => {
@@ -175,7 +235,15 @@ export function TacticsForgerFrame({ src }: { src: string }) {
                         break;
                     }
                     case 'logTime':
-                        await logTime(Math.round(msg.body.minutes), msg.body.puzzles);
+                        await logTime(
+                            Math.round(msg.body.minutes),
+                            msg.body.puzzles,
+                            msg.body.session ?? null,
+                        );
+                        reply({ ok: true });
+                        break;
+                    case 'backfill':
+                        await backfill(msg.body.sessions);
                         reply({ ok: true });
                         break;
                     case 'analyze':
@@ -220,9 +288,12 @@ export function TacticsForgerFrame({ src }: { src: string }) {
     );
 }
 
-/** "Solved 34 puzzles in the Dojo Tactics Forger", counting up over the visit. */
-function forgerNotes(entry: TimelineEntry | undefined, puzzles: number): string {
-    const before = Number(/Solved (\d+) puzzle/.exec(entry?.notes ?? '')?.[1] ?? 0);
-    const n = before + puzzles;
+/** How many puzzles an entry's notes say were solved ("Solved 34 puzzles ..."). */
+function puzzlesIn(entry: TimelineEntry): number {
+    return Number(/Solved (\d+) puzzle/.exec(entry.notes ?? '')?.[1] ?? 0);
+}
+
+/** "Solved 34 puzzles in the Dojo Tactics Forger". */
+function forgerNotes(n: number): string {
     return `Solved ${n} puzzle${n === 1 ? '' : 's'} in the Dojo Tactics Forger`;
 }
