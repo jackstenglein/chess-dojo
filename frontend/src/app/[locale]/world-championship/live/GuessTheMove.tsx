@@ -8,6 +8,7 @@ import InfoIcon from '@mui/icons-material/InfoOutlined';
 import { Alert, Box, Button, IconButton, Paper, Popover, Stack, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
+import { PHONE } from './liveLayout';
 
 export type GuessState =
     | { kind: 'signed-out' }
@@ -30,6 +31,14 @@ interface GuessPanelProps {
     score?: { correct: number; guessed: number };
 }
 
+/**
+ * On a phone the title and the guess share a line, which keeps the panel short
+ * enough to sit under the board or beside it. These are the lines after that
+ * one.
+ */
+const ownLine = { [PHONE]: { flexBasis: '100%' } };
+const lowerLine = { [PHONE]: { flexBasis: '100%', order: 1 } };
+
 export function GuessPanel({ state, onGoLive, score }: GuessPanelProps) {
     // Once hidden, the instructions stay hidden; the ⓘ by the leaderboard has them all.
     // Someone who has guessed once knows how it works, so a guess hides them too.
@@ -40,17 +49,55 @@ export function GuessPanel({ state, onGoLive, score }: GuessPanelProps) {
             setHideHowTo(true);
         }
     }, [hasGuessed, setHideHowTo]);
+    const hasScore = !!score && score.guessed > 0;
     return (
         <Paper
             elevation={8}
             data-testid='guess-panel'
-            sx={{ p: 2, border: 2, borderColor: 'primary.main', borderRadius: 2 }}
+            sx={{
+                p: 2,
+                border: 2,
+                borderColor: 'primary.main',
+                borderRadius: 2,
+                [PHONE]: {
+                    px: 1.5,
+                    py: 1,
+                    // The blue border is enough to find the panel on a phone.
+                    boxShadow: 'none',
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    alignItems: 'baseline',
+                    columnGap: 1,
+                },
+            }}
         >
-            <Typography variant='subtitle1' sx={{ fontWeight: 700 }}>
+            <Typography
+                variant='subtitle1'
+                sx={{
+                    fontWeight: 700,
+                    [PHONE]: { fontSize: '0.875rem', flexGrow: hasScore ? 0 : 1 },
+                }}
+            >
                 Guess the move
             </Typography>
+            {hasScore && (
+                // On a phone the score is short and shares the title's line.
+                <Typography
+                    variant='body2'
+                    color='text.secondary'
+                    title='Moves guessed right in this game'
+                    data-testid='guess-score-short'
+                    sx={{
+                        display: 'none',
+                        fontVariantNumeric: 'tabular-nums',
+                        [PHONE]: { display: 'block', flexGrow: 1 },
+                    }}
+                >
+                    {score.correct}/{score.guessed}
+                </Typography>
+            )}
             {state.kind === 'signed-out' && (
-                <Typography variant='body2' sx={{ mt: 1 }}>
+                <Typography variant='body2' sx={{ mt: 1, ...ownLine }}>
                     <Link
                         href={`/signin?redirectUri=${encodeURIComponent('/world-championship/live')}`}
                     >
@@ -60,12 +107,12 @@ export function GuessPanel({ state, onGoLive, score }: GuessPanelProps) {
                 </Typography>
             )}
             {state.kind === 'game-over' && (
-                <Typography variant='body2' sx={{ mt: 1 }}>
+                <Typography variant='body2' sx={{ mt: 1, ...ownLine }}>
                     This game is over. Guessing opens again for the next game.
                 </Typography>
             )}
             {state.kind === 'not-live' && (
-                <Stack direction='row' spacing={1} sx={{ mt: 1, alignItems: 'center' }}>
+                <Stack direction='row' spacing={1} sx={{ mt: 1, alignItems: 'center', ...ownLine }}>
                     <Typography variant='body2'>You can guess from the live position.</Typography>
                     <Button size='small' variant='contained' onClick={onGoLive}>
                         Go live
@@ -75,7 +122,10 @@ export function GuessPanel({ state, onGoLive, score }: GuessPanelProps) {
             {state.kind === 'open' && (
                 <>
                     {!hideHowTo && (
-                        <Stack direction='row' sx={{ mt: 1, alignItems: 'flex-start' }}>
+                        <Stack
+                            direction='row'
+                            sx={{ mt: 1, alignItems: 'flex-start', ...lowerLine }}
+                        >
                             <Typography variant='body2' sx={{ flexGrow: 1 }}>
                                 {state.altToGuess ? (
                                     <>
@@ -98,7 +148,14 @@ export function GuessPanel({ state, onGoLive, score }: GuessPanelProps) {
                             </IconButton>
                         </Stack>
                     )}
-                    <Typography sx={{ mt: 1, fontSize: '1.25rem', fontWeight: 800 }}>
+                    <Typography
+                        sx={{
+                            mt: 1,
+                            fontSize: '1.25rem',
+                            fontWeight: 800,
+                            [PHONE]: { mt: 0, fontSize: '1rem' },
+                        }}
+                    >
                         {state.saving
                             ? 'Saving…'
                             : state.guessSan
@@ -106,14 +163,18 @@ export function GuessPanel({ state, onGoLive, score }: GuessPanelProps) {
                               : 'No guess yet'}
                     </Typography>
                     {state.error && (
-                        <Alert severity='warning' sx={{ mt: 1 }}>
+                        <Alert severity='warning' sx={{ mt: 1, ...lowerLine }}>
                             {state.error}
                         </Alert>
                     )}
                 </>
             )}
-            {score && score.guessed > 0 && (
-                <Typography variant='body2' color='text.secondary' sx={{ mt: 1 }}>
+            {hasScore && (
+                <Typography
+                    variant='body2'
+                    color='text.secondary'
+                    sx={{ mt: 1, [PHONE]: { display: 'none' } }}
+                >
                     This game: {score.correct} of {score.guessed} guessed right
                 </Typography>
             )}
