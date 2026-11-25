@@ -910,7 +910,15 @@ export function LiveMatchPage() {
                           }
                         : {
                               xs: '1fr',
-                              md: 'minmax(0, 1fr) 340px',
+                              // On a tablet on its side, or in a short window, the fan view's
+                              // board is no taller than the screen has room for. The header,
+                              // the tabs, the player bars and the move buttons take the rest.
+                              // Besides the header that is 225px, less the 46px that the eval
+                              // bar adds to the column. The column beside the board takes the
+                              // width that frees up.
+                              md: streamView
+                                  ? 'minmax(0, max(406px, calc(100dvh - var(--navbar-height) - 179px))) minmax(340px, 1fr)'
+                                  : 'minmax(0, 1fr) 340px',
                               // The leaderboard needs no more than this; wider only spreads it out.
                               lg: 'minmax(0, 620px) 340px minmax(280px, 360px)',
                           },
