@@ -212,20 +212,25 @@ export function TacticsForgerFrame({ src }: { src: string }) {
                     { source: 'tactics-forger-host', id: msg.id, ...payload },
                     window.location.origin,
                 );
+            // The signed-in user as of now (the listener can outlive the render it was set up in).
+            const u = latest.current.user;
             try {
                 switch (msg.type) {
                     case 'hello':
-                        // The app says hello until this listener is up, then starts loading.
+                        // The app says hello until this listener is up and the user is signed in,
+                        // then starts loading. Answering before sign-in finishes would leave the app
+                        // without a username for the whole visit (no owner, no training-plan time).
                         // The cohort lets it suggest where to start.
-                        reply({ ok: true, username: user?.username, cohort: user?.dojoCohort });
+                        if (!u) return;
+                        reply({ ok: true, username: u.username, cohort: u.dojoCohort });
                         break;
                     case 'load': {
                         const res = await getTacticsForgerProgress();
                         reply({
                             ok: true,
                             data: res.data,
-                            username: user?.username,
-                            cohort: user?.dojoCohort,
+                            username: latest.current.user?.username,
+                            cohort: latest.current.user?.dojoCohort,
                         });
                         break;
                     }
@@ -253,7 +258,7 @@ export function TacticsForgerFrame({ src }: { src: string }) {
                         break;
                     case 'leaderboard': {
                         const res = await getTacticsForgerLeaderboard();
-                        reply({ ok: true, data: res.data, username: user?.username });
+                        reply({ ok: true, data: res.data, username: u?.username });
                         break;
                     }
                 }
@@ -264,7 +269,8 @@ export function TacticsForgerFrame({ src }: { src: string }) {
         const listener = (event: MessageEvent) => void onMessage(event);
         window.addEventListener('message', listener);
         return () => window.removeEventListener('message', listener);
-    }, [user?.username]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- reads the user and API through `latest`
+    }, []);
 
     return (
         <>
