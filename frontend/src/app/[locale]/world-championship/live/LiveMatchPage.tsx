@@ -1230,6 +1230,7 @@ function PlayerBar({
             <Stack
                 direction='row'
                 sx={{
+                    containerType: 'inline-size',
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     flexGrow: 1,
@@ -1242,7 +1243,18 @@ function PlayerBar({
             >
                 <Stack direction='row' spacing={1} sx={{ alignItems: 'center', minWidth: 0 }}>
                     <PlayerPhoto name={player?.name} size={36} />
-                    <Typography sx={{ fontWeight: 700 }} noWrap>
+                    <Typography
+                        sx={{
+                            fontWeight: 700,
+                            // On a narrow phone a long name fits beside the clock only
+                            // without the rating and a little smaller.
+                            '@container (max-width: 340px)': {
+                                fontSize: '0.9375rem',
+                                '& .rating': { display: 'none' },
+                            },
+                        }}
+                        noWrap
+                    >
                         {player?.title && (
                             <Box component='span' sx={{ color: 'warning.main', mr: 0.75 }}>
                                 {player.title}
@@ -1252,6 +1264,7 @@ function PlayerBar({
                         {player?.rating && (
                             <Box
                                 component='span'
+                                className='rating'
                                 sx={{ color: 'text.secondary', fontWeight: 400, ml: 0.75 }}
                             >
                                 {player.rating}
