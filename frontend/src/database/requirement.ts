@@ -262,6 +262,10 @@ export function getCurrentCount({
     ) {
         return getYearlyCount({ cohort, requirement, timeline, clamp });
     }
+    const period = goalPeriod(requirement);
+    if (period && timeline) {
+        return getPeriodMinutes(requirement, period, timeline);
+    }
 
     if (isExpired(requirement, progress)) {
         return 0;
@@ -304,6 +308,47 @@ export function getCurrentCount({
         cohort = Object.keys(requirement.counts)[0];
     }
     return clampCount(cohort, requirement, progress.counts?.[cohort] || 0, clamp);
+}
+
+/** How often a minutes goal resets: a "Minutes per day|week|month" task counts only that period. */
+export type GoalPeriod = 'day' | 'week' | 'month';
+
+/**
+ * The period of a minutes task's goal, kept in its unit label ("Minutes per week"), or null for
+ * a goal over all time.
+ */
+export function goalPeriod(requirement: Requirement | CustomTask): GoalPeriod | null {
+    if (requirement.scoreboardDisplay !== ScoreboardDisplay.Minutes) return null;
+    const m = /^Minutes per (day|week|month)$/.exec(requirement.progressBarSuffix || '');
+    return m ? (m[1] as GoalPeriod) : null;
+}
+
+/** "today", "this week" or "this month", to show after a period goal's progress. */
+export const goalPeriodLabel = (period: GoalPeriod) =>
+    period === 'day' ? 'today' : period === 'week' ? 'this week' : 'this month';
+
+/** When the current period started: today at midnight, this Monday, or the 1st of this month. */
+export function goalPeriodStart(period: GoalPeriod, now = new Date()): Date {
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    if (period === 'week') d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+    if (period === 'month') d.setDate(1);
+    return d;
+}
+
+/** Minutes logged on the task since the current period started. */
+function getPeriodMinutes(
+    requirement: Requirement | CustomTask,
+    period: GoalPeriod,
+    timeline: TimelineEntry[],
+): number {
+    const start = goalPeriodStart(period).getTime();
+    let minutes = 0;
+    for (const entry of timeline) {
+        if (entry.requirementId !== requirement.id) continue;
+        const at = new Date(entry.date || entry.createdAt).getTime();
+        if (at >= start) minutes += entry.minutesSpent || 0;
+    }
+    return minutes;
 }
 
 function getYearlyCount({

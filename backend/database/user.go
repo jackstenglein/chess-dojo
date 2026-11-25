@@ -253,6 +253,10 @@ type User struct {
 	// Whether to enable zen mode on the site
 	EnableZenMode bool `dynamodbav:"enableZenMode,omitempty" json:"enableZenMode"`
 
+	// The layout the user last picked on the World Championship live page:
+	// stream, analysis or analysis2. Empty until they pick one.
+	WcLiveLayout string `dynamodbav:"wcLiveLayout,omitempty" json:"wcLiveLayout,omitempty"`
+
 	// The user's preferred timezone on the calendar
 	TimezoneOverride string `dynamodbav:"timezoneOverride" json:"timezoneOverride"`
 
@@ -922,6 +926,9 @@ type UserUpdate struct {
 
 	// Whether to enable zen mode on the site
 	EnableZenMode *bool `dynamodbav:"enableZenMode,omitempty" json:"enableZenMode,omitempty"`
+
+	// The layout the user last picked on the World Championship live page.
+	WcLiveLayout *string `dynamodbav:"wcLiveLayout,omitempty" json:"wcLiveLayout,omitempty"`
 
 	// The user's preferred timezone on the calendar
 	TimezoneOverride *string `dynamodbav:"timezoneOverride,omitempty" json:"timezoneOverride,omitempty"`

@@ -8,6 +8,8 @@ import {
     getCurrentCount,
     getTotalCount,
     getTotalTime,
+    goalPeriod,
+    goalPeriodLabel,
     isBlocked,
     isExpired,
     isPinnable,
@@ -85,6 +87,8 @@ export const FullTrainingPlanItem = ({
 
     const totalCount = getTotalCount(cohort, requirement, true);
     const currentCount = getCurrentCount({ cohort, requirement, progress, timeline: entries });
+    // A goal per day, week or month shows that period's minutes ("12m / 30m today").
+    const period = goalPeriod(requirement);
     const time = formatTime(getTotalTime(cohort, progress), tTime);
     // Counts start at the task's start (Polgar at #306), so progress means going past
     // it, or having logged time on the task.
@@ -248,6 +252,11 @@ export const FullTrainingPlanItem = ({
                                     <ProgressText
                                         value={currentCount}
                                         max={totalCount}
+                                        label={
+                                            period
+                                                ? `${formatTime(currentCount, tTime)} / ${formatTime(totalCount, tTime)} ${goalPeriodLabel(period)}`
+                                                : undefined
+                                        }
                                         min={requirement.startCount}
                                         suffix={isMinimumTask ? 'min.' : ''}
                                         isTime={

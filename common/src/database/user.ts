@@ -58,6 +58,11 @@ export interface User {
     enableLightMode: boolean;
     /** Whether to enable zen mode. */
     enableZenMode: boolean;
+    /**
+     * The layout the user last picked on the World Championship live page:
+     * stream, analysis or analysis2. Unset until they pick one.
+     */
+    wcLiveLayout?: string;
     timezoneOverride: string;
     timeFormat: TimeFormat;
 

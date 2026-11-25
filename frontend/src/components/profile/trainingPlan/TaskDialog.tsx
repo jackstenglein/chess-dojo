@@ -10,8 +10,10 @@ import { ProgressUpdater } from '@/components/profile/trainingPlan/ProgressUpdat
 import { TimerContext } from '@/components/timer/TimerContext';
 import {
     CustomTask,
+    getCurrentCount,
     getTotalCount,
     getUnitScore,
+    goalPeriod,
     isComplete,
     isRequirement,
     Requirement,
@@ -25,6 +27,7 @@ import { Box, Button, Chip, Dialog, DialogContent, Grid, Stack, Tooltip } from '
 import { useTranslations } from 'next-intl';
 import { use, useMemo, useState } from 'react';
 import CustomTaskEditor from './CustomTaskEditor';
+import { ForgerGoalDialog, TACTICS_FORGER_TASK_ID } from './ForgerGoalDialog';
 import { TaskDescription } from './TaskDescription';
 import { TaskDialogFooter, TaskDialogHeader, taskDialogPrimaryButtonSx } from './TaskDialogFrame';
 
@@ -203,6 +206,7 @@ function DetailsDialog({
     const { user } = useAuth();
     const { entries: timeline } = useTimelineContext();
     const [showEditor, setShowEditor] = useState(false);
+    const [showGoal, setShowGoal] = useState(false);
     const [showDeleter, setShowDeleter] = useState(false);
     const isFreeTier = useFreeTier();
     const {
@@ -274,8 +278,13 @@ function DetailsDialog({
     const progress = user?.progress[task.id];
 
     const totalCount = task.counts[selectedCohort] || task.counts[ALL_COHORTS] || 0;
-    const currentCount = progress?.counts?.[selectedCohort] || progress?.counts?.[ALL_COHORTS] || 0;
-    const isCompleted = currentCount >= totalCount;
+    // A goal per day, week or month counts only this period's minutes.
+    const currentCount = goalPeriod(task)
+        ? getCurrentCount({ cohort: selectedCohort, requirement: task, progress, timeline })
+        : progress?.counts?.[selectedCohort] || progress?.counts?.[ALL_COHORTS] || 0;
+    // Tasks with no goal (time only) are never "completed", like isComplete() says.
+    const isCompleted =
+        task.scoreboardDisplay !== ScoreboardDisplay.NonDojo && currentCount >= totalCount;
 
     const requirementName = starterMode?.title ?? getRequirementName(task, selectedCohort);
 
@@ -311,9 +320,28 @@ function DetailsDialog({
 
                         {isOwner && !isRequirement(task) && task.owner === user?.username && (
                             <>
-                                <Button variant='contained' onClick={() => setShowEditor(true)}>
-                                    {t('editTask')}
-                                </Button>
+                                {task.id === TACTICS_FORGER_TASK_ID ? (
+                                    // The Forger's task works like a normal task: its name and
+                                    // category are fixed, only the goal is the user's.
+                                    <>
+                                        <Button
+                                            variant='contained'
+                                            onClick={() => setShowGoal(true)}
+                                        >
+                                            Set goal
+                                        </Button>
+                                        {showGoal && (
+                                            <ForgerGoalDialog
+                                                open
+                                                onClose={() => setShowGoal(false)}
+                                            />
+                                        )}
+                                    </>
+                                ) : (
+                                    <Button variant='contained' onClick={() => setShowEditor(true)}>
+                                        {t('editTask')}
+                                    </Button>
+                                )}
                                 <Button
                                     variant='contained'
                                     color='error'
