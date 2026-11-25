@@ -1,5 +1,6 @@
 'use client';
 
+import { useApi } from '@/api/Api';
 import { AuthStatus, useAuth } from '@/auth/Auth';
 import { Chess } from '@/board/Board';
 import type { Square } from '@jackstenglein/chess';
@@ -37,6 +38,7 @@ import AddIcon from '@mui/icons-material/Add';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import FirstPageIcon from '@mui/icons-material/FirstPage';
+import HeadsetMicIcon from '@mui/icons-material/HeadsetMic';
 import LastPageIcon from '@mui/icons-material/LastPage';
 import SwapVertIcon from '@mui/icons-material/SwapVert';
 import VolumeOffIcon from '@mui/icons-material/VolumeOff';
@@ -46,6 +48,7 @@ import {
     Box,
     Button,
     Container,
+    GlobalStyles,
     IconButton,
     Paper,
     Stack,
@@ -62,6 +65,8 @@ import { useLocalStorage } from 'usehooks-ts';
 import { AddGameDialog } from './AddGameDialog';
 import { AdminView } from './AdminView';
 import { useAnalysis } from './analysisClient';
+import { BoardThemeButton } from './BoardThemeButton';
+import { ClockText } from './ClockText';
 import { useCrosstable } from './crosstable';
 import { CrosstableView } from './CrosstableView';
 import { GuessPanel, GuessState, Leaderboard } from './GuessTheMove';
@@ -78,13 +83,15 @@ import {
     useRoundFeed,
 } from './lichessFeed';
 import { LiveBoard } from './LiveBoard';
+import { parseLayout, resolveLayout, WcLayout } from './liveLayout';
 import { useActAs } from './localTesting';
 import { useMoveSounds } from './moveSounds';
 import { Notation } from './Notation';
+import { PLAYER_COLUMN_WIDTH, PlayerColumn } from './PlayerColumn';
 import { PlayerPhoto } from './PlayerPhoto';
 import { EVAL_BAR_WIDTH, EvalBar, SenseiStrip } from './SenseiEval';
 import { GuestLinks, SenseiPanel } from './SenseiPanel';
-import { TwitchEmbed } from './TwitchEmbed';
+import { StreamEmbed } from './StreamEmbed';
 import {
     addCustomGame,
     getLeaderboard,
@@ -128,6 +135,7 @@ const CUSTOM_NUMBER_BASE = 1000;
 
 export function LiveMatchPage() {
     const { user, status: authStatus } = useAuth();
+    const api = useApi();
     // On a local test run, ?as=<username> acts as that user. Never on the real site.
     const actAs = useActAs();
     const username = actAs ?? user?.username;
@@ -232,6 +240,8 @@ export function LiveMatchPage() {
     const mainSans = useMemo(() => moves.map((m) => m.san), [moves]);
     // A sensei's moves go on the analysis board. Holding Alt makes a move a guess instead.
     const altHeld = useRef(false);
+    // The board writes its drawn size here, so the player bars end where it ends.
+    const layoutRef = useRef<HTMLDivElement>(null);
     useEffect(() => {
         const onKey = (e: KeyboardEvent) => {
             if (e.key === 'Alt') {
@@ -360,14 +370,27 @@ export function LiveMatchPage() {
 
     // Two layouts. The stream view puts the ChessDojo stream beside the board and
     // the sensei evals under it; the analysis view keeps the evals by the notation
-    // and the stream below. Viewers start on the stream view, senseis on the
-    // analysis view, and a choice made with the switch is remembered.
-    const [savedLayout, setSavedLayout] = useLocalStorage<'stream' | 'analysis' | null>(
-        'wcLive.layout',
-        null,
-    );
-    const layout = savedLayout ?? (canAnalyze ? 'analysis' : 'stream');
+    // and the stream below. Viewers always have the stream view. Senseis start on
+    // the analysis view, and the browser remembers the view they pick with the switch.
+    // Analysis view 2 is analysis view 1 with the players and clocks in a column
+    // left of the board, the way chess.com shows a broadcast. A phone has no room
+    // for the column, so there it falls back to the player bars.
+    //
+    // The view someone picks is saved in this browser and on their account, so it
+    // follows them to other devices. The account's choice wins. A local test run
+    // acting as someone else (?as=) leaves the signed-in account alone.
+    const [savedLayout, setSavedLayout] = useLocalStorage<WcLayout | null>('wcLive.layout', null);
+    const accountLayout = actAs ? null : parseLayout(user?.wcLiveLayout);
+    const layout = resolveLayout(accountLayout ?? parseLayout(savedLayout), canAnalyze);
+    const chooseLayout = (next: WcLayout) => {
+        setSavedLayout(next);
+        if (!actAs && user && user.wcLiveLayout !== next) {
+            // The browser keeps the choice even if saving it to the account fails.
+            api.updateUser({ wcLiveLayout: next }).catch(() => undefined);
+        }
+    };
     const streamView = layout === 'stream';
+    const playerColumn = layout === 'analysis2';
 
     // The Admin tab. The page always opens on a game, never here.
     const canAdmin = !!user?.isAdmin || (!!actAs && isSensei);
@@ -698,6 +721,23 @@ export function LiveMatchPage() {
             <SenseiStrip roster={roster} pins={bar.pins} />
         );
 
+    const guessPanel = (
+        <GuessPanel state={guessState} onGoLive={() => goTo(null)} score={myScore} />
+    );
+    const crosstableView = (
+        <CrosstableView
+            table={crosstable}
+            currentNumber={round?.number}
+            liveNumber={rounds.find((r) => r.ongoing && r.number > 0)?.number}
+            onSelectGame={(n) => {
+                const r = rounds.find((x) => x.number === n);
+                if (r) {
+                    selectRound(r.id);
+                }
+            }}
+        />
+    );
+
     // ---- Layout ----------------------------------------------------------
     const topColor = orientation === 'white' ? 'black' : 'white';
     const bottomColor = orientation;
@@ -705,6 +745,9 @@ export function LiveMatchPage() {
 
     return (
         <Container maxWidth='xl' sx={{ py: { xs: 2, md: 3 } }}>
+            {/* The two views differ in height. Reserving room for the scrollbar stops
+                the page from shifting sideways when a switch adds or removes one. */}
+            <GlobalStyles styles={{ html: { scrollbarGutter: 'stable' } }} />
             {actAs && (
                 <Alert severity='warning' sx={{ mb: 2 }} data-testid='acting-as'>
                     Local test: acting as <b>{actAs}</b>
@@ -731,12 +774,12 @@ export function LiveMatchPage() {
                     {guestAccess.error}
                 </Alert>
             )}
-            <Stack spacing={0.5} sx={{ mb: 2 }}>
-                <Typography variant='h4' component='h1' sx={{ fontWeight: 800 }}>
-                    Gukesh vs Sindarov · Live
-                </Typography>
-                <Typography color='text.secondary'>2026 World Championship, Geneva.</Typography>
-            </Stack>
+            {/* Screen readers and search engines get the title. It is not shown on
+                screen, because its 86px would push the bottom of the page out of view
+                on a laptop. */}
+            <Typography component='h1' sx={visuallyHidden}>
+                Gukesh vs Sindarov · Live. 2026 World Championship, Geneva.
+            </Typography>
 
             {roundsError && rounds.length === 0 && (
                 <Alert severity='error' sx={{ mb: 2 }}>
@@ -800,21 +843,34 @@ export function LiveMatchPage() {
                             />
                         ))}
                     </Tabs>
-                    <ToggleButtonGroup
-                        size='small'
-                        exclusive
-                        value={layout}
-                        onChange={(_, v: 'stream' | 'analysis' | null) => v && setSavedLayout(v)}
-                        aria-label='Page layout'
-                        sx={{ flexShrink: 0, ml: 1, display: { xs: 'none', sm: 'flex' } }}
-                    >
-                        <ToggleButton value='stream' sx={{ textTransform: 'none', py: 0.25 }}>
-                            Stream view
-                        </ToggleButton>
-                        <ToggleButton value='analysis' sx={{ textTransform: 'none', py: 0.25 }}>
-                            Analysis view
-                        </ToggleButton>
-                    </ToggleButtonGroup>
+                    {canAnalyze && (
+                        <ToggleButtonGroup
+                            size='small'
+                            exclusive
+                            value={layout}
+                            onChange={(_, v: WcLayout | null) => v && chooseLayout(v)}
+                            aria-label='Page layout'
+                            sx={{ flexShrink: 0, ml: 1, display: { xs: 'none', sm: 'flex' } }}
+                        >
+                            <ToggleButton value='stream' sx={{ textTransform: 'none', py: 0.25 }}>
+                                Fan view
+                            </ToggleButton>
+                            {/* The two streamer views show a headset, numbered; the tooltip
+                                and the label still name them. */}
+                            {(['analysis', 'analysis2'] as const).map((value, i) => (
+                                <ToggleButton
+                                    key={value}
+                                    value={value}
+                                    aria-label={`Stream view ${i + 1}`}
+                                    title={`Stream view ${i + 1}`}
+                                    sx={{ textTransform: 'none', py: 0.25, gap: 0.5 }}
+                                >
+                                    <HeadsetMicIcon sx={{ fontSize: '1.1rem' }} />
+                                    {i + 1}
+                                </ToggleButton>
+                            ))}
+                        </ToggleButtonGroup>
+                    )}
                     {isSensei && (
                         <Button
                             size='small'
@@ -831,48 +887,106 @@ export function LiveMatchPage() {
             {adminOpen && canAdmin && <AdminView rounds={rounds} initialRoundId={roundId} />}
 
             <Box
+                ref={layoutRef}
                 sx={{
                     display: adminOpen && canAdmin ? 'none' : 'grid',
                     columnGap: 3,
                     rowGap: 1,
                     alignItems: 'start',
-                    // Board, then the notation, then the leaderboard, with the stream
-                    // under the notation and leaderboard so it plays beside the board.
-                    // The top player bar has a row of its own, so the board, the
-                    // notation and the leaderboard all start on the same line. On a
-                    // phone everything stacks, with the stream under the board.
-                    gridTemplateColumns: {
-                        xs: '1fr',
-                        md: 'minmax(0, 1fr) 340px',
-                        // The leaderboard needs no more than this; wider only spreads it out.
-                        lg: 'minmax(0, 620px) 340px minmax(280px, 360px)',
-                    },
+                    // Board, then the notation, then the leaderboard. In the stream view
+                    // on a wide screen the stream sits above the notation and leaderboard,
+                    // beside the board. In the analysis view it is under all three. The
+                    // top player bar has a row of its own, so everything beside the board
+                    // starts on the same line. On a phone everything stacks.
+                    gridTemplateColumns: playerColumn
+                        ? {
+                              xs: '1fr',
+                              md: `${PLAYER_COLUMN_WIDTH}px minmax(0, 1fr)`,
+                              // The notation and the leaderboard sit side by side right of the
+                              // board, a little narrower than in the other views so the board
+                              // keeps its size.
+                              lg: `${PLAYER_COLUMN_WIDTH}px minmax(0, 1fr) 260px 260px`,
+                              xl: `${PLAYER_COLUMN_WIDTH}px minmax(0, 1fr) 300px 300px`,
+                          }
+                        : {
+                              xs: '1fr',
+                              md: 'minmax(0, 1fr) 340px',
+                              // The leaderboard needs no more than this; wider only spreads it out.
+                              lg: 'minmax(0, 620px) 340px minmax(280px, 360px)',
+                          },
                     gridTemplateAreas: streamView
                         ? {
                               xs: '"top" "board" "twitch" "moves" "leaders"',
                               md: '"top ." "board moves" "twitch twitch" "leaders leaders"',
-                              lg: '"top . ." "board moves leaders" "board twitch twitch"',
+                              lg: '"top . ." "board twitch twitch" "board moves leaders"',
                           }
-                        : {
-                              xs: '"top" "board" "moves" "leaders" "twitch"',
-                              md: '"top ." "board moves" "leaders leaders" "twitch twitch"',
-                              lg: '"top . ." "board moves leaders" "twitch twitch twitch"',
-                          },
-                    // In the stream view the board spans the notation row and the stream row.
+                        : playerColumn
+                          ? {
+                                xs: '"top" "board" "moves" "leaders" "twitch"',
+                                md: '"players board" "moves moves" "leaders leaders" "twitch twitch"',
+                                lg: '"players board moves leaders" "twitch twitch twitch twitch"',
+                            }
+                          : {
+                                xs: '"top" "board" "moves" "leaders" "twitch"',
+                                md: '"top ." "board moves" "leaders leaders" "twitch twitch"',
+                                lg: '"top . ." "board moves leaders" "twitch twitch twitch"',
+                            },
+                    // In the stream view the board spans the stream row and the notation row.
                     gridTemplateRows: streamView ? { lg: 'auto auto 1fr' } : undefined,
                 }}
             >
-                <Box sx={{ minWidth: 0, gridArea: 'top' }}>
+                <Box
+                    sx={{
+                        minWidth: 0,
+                        gridArea: 'top',
+                        // In analysis view 2 the player column replaces the bars, except on a phone.
+                        display: playerColumn ? { xs: 'block', md: 'none' } : 'block',
+                    }}
+                >
                     <PlayerBar
                         player={player(topColor)}
                         seconds={clocks[topColor]}
                         running={clocks.running === topColor}
                     />
                 </Box>
+                {playerColumn && (
+                    <Box
+                        sx={{
+                            minWidth: 0,
+                            gridArea: 'players',
+                            display: { xs: 'none', md: 'block' },
+                        }}
+                    >
+                        <PlayerColumn
+                            top={{
+                                player: player(topColor),
+                                seconds: clocks[topColor],
+                                running: clocks.running === topColor,
+                            }}
+                            bottom={{
+                                player: player(bottomColor),
+                                seconds: clocks[bottomColor],
+                                running: clocks.running === bottomColor,
+                            }}
+                            crosstable={crosstable}
+                        />
+                    </Box>
+                )}
                 <Stack spacing={1} sx={{ minWidth: 0, gridArea: 'board' }}>
                     <Stack direction='row' spacing={1}>
                         <EvalBar average={bar.average} pins={bar.pins} orientation={orientation} />
-                        <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                        <Box
+                            sx={{
+                                flexGrow: 1,
+                                minWidth: 0,
+                                // In analysis view 2 the board fits the window's height, so
+                                // the bottom player card and the move buttons stay in view.
+                                // 230px is the header, the tabs and the move buttons.
+                                maxWidth: playerColumn
+                                    ? { md: 'max(360px, calc(100dvh - 230px))' }
+                                    : undefined,
+                            }}
+                        >
                             <LiveBoard
                                 fen={fen}
                                 lastMove={node.ply > 0 ? [node.from, node.to] : undefined}
@@ -895,14 +1009,17 @@ export function LiveMatchPage() {
                                           : undefined
                                 }
                                 guessUci={canGuess ? myGuesses[nextPly] : undefined}
+                                sizeVarsTo={layoutRef}
                             />
                         </Box>
                     </Stack>
-                    <PlayerBar
-                        player={player(bottomColor)}
-                        seconds={clocks[bottomColor]}
-                        running={clocks.running === bottomColor}
-                    />
+                    <Box sx={{ display: playerColumn ? { xs: 'block', md: 'none' } : 'block' }}>
+                        <PlayerBar
+                            player={player(bottomColor)}
+                            seconds={clocks[bottomColor]}
+                            running={clocks.running === bottomColor}
+                        />
+                    </Box>
                     <Stack direction='row' spacing={0.5} sx={{ alignItems: 'center' }}>
                         <Tooltip title='Start'>
                             <span>
@@ -999,6 +1116,7 @@ export function LiveMatchPage() {
                                 <SwapVertIcon />
                             </IconButton>
                         </Tooltip>
+                        <BoardThemeButton />
                     </Stack>
                     {canAnalyze && analysisApi.error && (
                         <Typography variant='caption' color='error'>
@@ -1006,17 +1124,7 @@ export function LiveMatchPage() {
                         </Typography>
                     )}
                     {streamView && senseiEvals}
-                    <CrosstableView
-                        table={crosstable}
-                        currentNumber={round?.number}
-                        liveNumber={rounds.find((r) => r.ongoing && r.number > 0)?.number}
-                        onSelectGame={(n) => {
-                            const r = rounds.find((x) => x.number === n);
-                            if (r) {
-                                selectRound(r.id);
-                            }
-                        }}
-                    />
+                    {crosstableView}
                     {feed.status === 'error' && (
                         <Alert severity='error'>Could not load this game from Lichess.</Alert>
                     )}
@@ -1027,7 +1135,20 @@ export function LiveMatchPage() {
                     )}
                 </Stack>
 
-                <Stack spacing={2} sx={{ minWidth: 0, gridArea: 'moves' }}>
+                {/* In the two sensei views the columns beside the board are exactly as
+                    tall as the board. The notation fills the top of its column and the
+                    sensei evals sit at the bottom, level with the board's bottom edge;
+                    next to them the guess panel sits under the leaderboard. */}
+                <Stack
+                    spacing={2}
+                    sx={{
+                        minWidth: 0,
+                        gridArea: 'moves',
+                        height: streamView ? undefined : { lg: 'var(---cg-height)' },
+                    }}
+                >
+                    {/* In the fan view the guess panel comes first, above the moves. */}
+                    {streamView && guessPanel}
                     <Notation
                         root={tree}
                         current={node}
@@ -1040,28 +1161,49 @@ export function LiveMatchPage() {
                         // In the stream view the moves scroll in a short box, so the stream
                         // under them starts higher up, next to the board.
                         compact={streamView}
+                        fill={!streamView}
                     />
-                    <GuessPanel state={guessState} onGoLive={() => goTo(null)} score={myScore} />
                     {!streamView && senseiEvals}
                 </Stack>
 
-                <Stack spacing={2} sx={{ minWidth: 0, gridArea: 'leaders' }}>
+                <Stack
+                    spacing={2}
+                    sx={{
+                        minWidth: 0,
+                        gridArea: 'leaders',
+                        ...(!streamView && {
+                            minHeight: { lg: 'var(---cg-height)' },
+                            justifyContent: 'space-between',
+                        }),
+                    }}
+                >
                     <Leaderboard
                         gameName={round?.name ?? 'This game'}
                         leaderboard={shownLeaderboard}
                         username={username}
                         compact={streamView}
                     />
+                    {!streamView && guessPanel}
                 </Stack>
 
                 <Box sx={{ minWidth: 0, gridArea: 'twitch' }}>
-                    <TwitchEmbed />
+                    <StreamEmbed minimizable={streamView} />
                 </Box>
             </Box>
             <AddGameDialog open={addingGame} onClose={() => setAddingGame(false)} onAdd={addGame} />
         </Container>
     );
 }
+
+/** Keeps an element in the page for screen readers and search engines without showing it. */
+const visuallyHidden = {
+    position: 'absolute',
+    width: '1px',
+    height: '1px',
+    overflow: 'hidden',
+    clipPath: 'inset(50%)',
+    whiteSpace: 'nowrap',
+} as const;
 
 function PlayerBar({
     player,
@@ -1084,6 +1226,10 @@ function PlayerBar({
                     justifyContent: 'space-between',
                     flexGrow: 1,
                     minWidth: 0,
+                    // Chessground rounds each square down to whole device pixels, which can
+                    // leave the board up to 8 device pixels narrower than its box. This cap
+                    // ends the clock at the board's edge, not the box's.
+                    maxWidth: 'var(---cg-width)',
                 }}
             >
                 <Stack direction='row' spacing={1} sx={{ alignItems: 'center', minWidth: 0 }}>
@@ -1110,15 +1256,21 @@ function PlayerBar({
                     sx={{
                         px: 1.5,
                         py: 0.5,
-                        fontWeight: 800,
-                        fontSize: '1.15rem',
+                        // Trimming the line box to the digits centers them. The larger
+                        // padding makes up the height the trim removes.
+                        '@supports (text-box: trim-both cap alphabetic)': {
+                            textBox: 'trim-both cap alphabetic',
+                            py: '11px',
+                        },
+                        fontWeight: 600,
+                        fontSize: '1.35rem',
                         fontVariantNumeric: 'tabular-nums',
                         bgcolor: running ? 'text.primary' : 'action.hover',
                         color: running ? 'background.paper' : 'text.primary',
                     }}
                     data-testid='player-clock'
                 >
-                    {formatClock(seconds)}
+                    <ClockText text={formatClock(seconds)} />
                 </Paper>
             </Stack>
         </Stack>

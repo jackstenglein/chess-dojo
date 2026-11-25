@@ -16,7 +16,7 @@ import { Api as BoardApi } from '@lichess-org/chessground/api';
 import { DrawShape } from '@lichess-org/chessground/draw';
 import { Key } from '@lichess-org/chessground/types';
 import { Box } from '@mui/material';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { RefObject, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 
 interface LiveBoardProps {
@@ -31,13 +31,26 @@ interface LiveBoardProps {
     onGuess?: (uci: string) => boolean;
     /** The current guess, drawn as an arrow. */
     guessUci?: string;
+    /**
+     * Chessground writes the board's drawn size to this element, as ---cg-width
+     * and ---cg-height, so things outside the board can line up with it. It
+     * defaults to the board's own element.
+     */
+    sizeVarsTo?: RefObject<HTMLElement | null>;
 }
 
 /**
  * A board that shows one position. It never changes the position itself: a
  * dragged move is reported as a guess and the pieces go back where they were.
  */
-export function LiveBoard({ fen, lastMove, orientation, onGuess, guessUci }: LiveBoardProps) {
+export function LiveBoard({
+    fen,
+    lastMove,
+    orientation,
+    onGuess,
+    guessUci,
+    sizeVarsTo,
+}: LiveBoardProps) {
     const ref = useRef<HTMLDivElement>(null);
     const [board, setBoard] = useState<BoardApi>();
     const [boardStyle] = useLocalStorage<BoardStyle>(BoardStyleKey, BoardStyle.Standard);
@@ -58,7 +71,7 @@ export function LiveBoard({ fen, lastMove, orientation, onGuess, guessUci }: Liv
         }
         const el = ref.current;
         const api = Chessground(el, { coordinates: true });
-        api.set({ addDimensionsCssVarsTo: el });
+        api.set({ addDimensionsCssVarsTo: sizeVarsTo?.current ?? el });
         setBoard(api);
 
         // Chessground remembers where the board is and only measures again on
@@ -74,21 +87,34 @@ export function LiveBoard({ fen, lastMove, orientation, onGuess, guessUci }: Liv
             el.removeEventListener('touchstart', remeasure, { capture: true });
             api.destroy();
         };
-    }, []);
+    }, [sizeVarsTo]);
 
     const chess = useMemo(() => new Chess({ fen }), [fen]);
     const turnColor = chess.turn() === 'w' ? 'white' : 'black';
     const guessing = !!onGuess;
+    // The page passes a new lastMove array on every render, and it renders each
+    // second while a clock runs. Comparing it as text keeps the effect below from
+    // running every second.
+    const lastMoveKey = lastMove?.join('');
+    // Chessground clears the arrows and circles drawn with the right mouse button
+    // whenever it is given a position. The position is given only when it changes,
+    // so drawings stay until the next move, as on Lichess.
+    const shownFen = useRef<string>(undefined);
 
     useEffect(() => {
         if (!board) {
             return;
         }
+        const lastMoveKeys = lastMoveKey
+            ? ([lastMoveKey.slice(0, 2), lastMoveKey.slice(2, 4)] as Key[])
+            : undefined;
+        const newPosition = shownFen.current !== fen;
+        shownFen.current = fen;
         board.set({
-            fen,
+            ...(newPosition && { fen }),
             orientation,
             turnColor,
-            lastMove: lastMove as Key[] | undefined,
+            lastMove: lastMoveKeys,
             check: chess.isCheck() ? turnColor : false,
             movable: {
                 free: false,
@@ -104,7 +130,7 @@ export function LiveBoard({ fen, lastMove, orientation, onGuess, guessUci }: Liv
                         const keep = onGuessRef.current?.(`${orig}${dest}${promotion}`) === true;
                         if (!keep) {
                             // Put the pieces back: a guess is shown as an arrow.
-                            board.set({ fen, lastMove: lastMove as Key[] | undefined });
+                            board.set({ fen, lastMove: lastMoveKeys });
                         }
                     },
                 },
@@ -113,7 +139,7 @@ export function LiveBoard({ fen, lastMove, orientation, onGuess, guessUci }: Liv
             draggable: { enabled: guessing },
             selectable: { enabled: guessing },
         });
-    }, [board, fen, lastMove, orientation, turnColor, chess, guessing]);
+    }, [board, fen, lastMoveKey, orientation, turnColor, chess, guessing]);
 
     useEffect(() => {
         const shapes: DrawShape[] = guessUci
