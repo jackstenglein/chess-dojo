@@ -3603,7 +3603,10 @@ function playRun(run) {
     animation: { enabled: true, duration: 220 },
     highlight: { lastMove: true, check: true },
     movable: { free: false, showDests: true },
-    premovable: { enabled: false },
+    // You can pick up your next piece (click or drag) while the opponent's reply is still coming,
+    // and finish the move once it lands. These aren't premoves: a move made before the reply is
+    // dropped (the piece goes back), so every move is judged against the position you see.
+    premovable: { enabled: true, showDests: false, events: { set: () => cg.cancelPremove() } },
     draggable: { showGhost: true },
     trustAllEvents: new URLSearchParams(location.search).has('test'),
   });
@@ -3638,8 +3641,10 @@ function playRun(run) {
       turnColor: turn,
       check: chess.inCheck(),
       lastMove,
-      movable: { color: !done && turn === player ? player : undefined, dests: !done && turn === player ? dests(chess) : new Map(), events: { after: onUserMove } },
+      // Your pieces stay movable on the opponent's turn too, so you can pick one up early.
+      movable: { color: !done ? player : undefined, dests: !done && turn === player ? dests(chess) : new Map(), events: { after: onUserMove } },
     });
+    if (done) cg.cancelPremove();
   }
 
   function playComputer() {
@@ -3666,7 +3671,9 @@ function playRun(run) {
     sawSolution = false;
     solvedLine = false;
     player = chess.turn() === 'w' ? 'black' : 'white';
-    cg.set({ orientation: player, fen: p.fen, lastMove: undefined, check: false, movable: { color: undefined, dests: new Map() } });
+    cg.cancelPremove();
+    // You can pick up a piece before the opponent's first move too.
+    cg.set({ orientation: player, fen: p.fen, turnColor: colorName(chess.turn()), lastMove: undefined, check: false, movable: { color: player, dests: new Map(), events: { after: onUserMove } } });
     renderPips();
     const rec = puzzleRec(p.id);
     const seen = !rec ? '<span class="pz-tag new">New puzzle</span>'
