@@ -2500,9 +2500,24 @@ async function leaderboardSnapshot() {
   leaderboardSnapshot.at = slot;
   return snap;
 }
-// Puzzles a cohort solves together before everyone in it gets a proper cohort rating: until
-// then there isn't enough data to place people, so standings are provisional.
-const COMMUNITY_GOAL = 10000;
+// How sure cohort ratings can be. A rating estimate gets tighter with the puzzles each person
+// plays (about +-60 points after 30, +-35 after 100, +-20 after 300), and a cohort ranking
+// needs enough people in it (READY_PLAYERS). Each tier asks every Dojo cohort for READY_PLAYERS
+// players with tier.per puzzles; progress counts only puzzles that help: each player's up to
+// tier.per, from a cohort's READY_PLAYERS most active players.
+const DOJO_COHORTS = ['0-300', '300-400', '400-500', '500-600', '600-700', '700-800', '800-900', '900-1000',
+  '1000-1100', '1100-1200', '1200-1300', '1300-1400', '1400-1500', '1500-1600', '1600-1700', '1700-1800',
+  '1800-1900', '1900-2000', '2000-2100', '2100-2200', '2200-2300', '2300-2400', '2400+'];
+const READY_PLAYERS = 30;
+const RATING_TIERS = [
+  { name: 'Rough', per: 30, pm: 60 },
+  { name: 'Solid', per: 100, pm: 35 },
+  { name: 'Precise', per: 300, pm: 20 },
+];
+const READY_PER = RATING_TIERS[1].per; // a player counts as "ready" at this many puzzles
+const cohortTierProgress = (list, per) =>
+  sum(list.map((p) => p.attempts || 0).sort((x, y) => y - x).slice(0, READY_PLAYERS).map((n) => Math.min(n, per)));
+const cohortReady = (list) => list.filter((p) => (p.attempts || 0) >= READY_PER).length;
 const cohortOrder = (c) => Number(String(c).match(/\d+/)?.[0] ?? 9999);
 function communityStats(players) {
   const tot = (list) => {
@@ -2533,9 +2548,17 @@ const fmtHours = (ms) => {
 function communitySection(players, myCohort) {
   const st = communityStats(players);
   const mine = st.cohorts.find((c) => c.cohort === myCohort);
-  const bar = (solved, goal) => `<div class="cm-bar"><div style="width:${Math.min(100, (solved / goal) * 100)}%"></div></div>`;
-  const allGoal = COMMUNITY_GOAL * Math.max(1, st.cohorts.length);
+  const bar = (v, goal) => `<div class="cm-bar"><div style="width:${goal ? Math.min(100, (v / goal) * 100) : 0}%"></div></div>`;
+  const inCohort = (c) => players.filter((p) => p.cohort === c);
   const when = leaderboardSnapshot.at ? new Date(leaderboardSnapshot.at).toLocaleString(undefined, { weekday: 'short', hour: 'numeric', minute: '2-digit' }) : null;
+  // Dojo-wide: one bar per tier, from every Dojo cohort (empty ones count as 0).
+  const tiers = RATING_TIERS.map((t) => {
+    const goal = DOJO_COHORTS.length * READY_PLAYERS * t.per;
+    const have = sum(DOJO_COHORTS.map((c) => cohortTierProgress(inCohort(c), t.per)));
+    return { ...t, goal, have, done: have >= goal };
+  });
+  const myReady = mine ? cohortReady(inCohort(myCohort)) : 0;
+  const myTier = mine ? [...RATING_TIERS].reverse().find((t) => inCohort(myCohort).filter((p) => (p.attempts || 0) >= t.per).length >= READY_PLAYERS) : null;
   return `<section class="panel community">
     <h2>Community <span class="h2-meta">${when ? `updated ${when} · next update at 8 AM / 8 PM` : 'everyone in the Tactics Forger'}</span></h2>
     <div class="cm-totals">
@@ -2544,22 +2567,28 @@ function communitySection(players, myCohort) {
       <div><b>${fmtHours(st.all.ms)}</b><small>time spent</small></div>
       <div><b>${st.all.accuracy == null ? '–' : `${Math.round(st.all.accuracy * 100)}%`}</b><small>first-try accuracy</small></div>
     </div>
-    ${mine ? `<div class="cm-goal ${mine.solved >= COMMUNITY_GOAL ? 'done' : ''}">
-      <div class="cm-goal-top"><b>${esc(myCohort)} community goal</b><span>${mine.solved.toLocaleString()} / ${COMMUNITY_GOAL.toLocaleString()} puzzles</span></div>
-      ${bar(mine.solved, COMMUNITY_GOAL)}
-      <p>${mine.solved >= COMMUNITY_GOAL
-        ? `Reached! There's enough data to give everyone in ${esc(myCohort)} a proper cohort rating.`
-        : `Every puzzle anyone in your cohort solves fills this bar. At ${COMMUNITY_GOAL.toLocaleString()}, there's enough data to give everyone in ${esc(myCohort)} a proper cohort rating — until then, standings are provisional.`}</p>
-    </div>` : ''}
     <div class="cm-goal all">
-      <div class="cm-goal-top"><b>Everyone</b><span>${st.all.solved.toLocaleString()} / ${allGoal.toLocaleString()} puzzles</span></div>
-      ${bar(st.all.solved, allGoal)}
+      <div class="cm-goal-top"><b>Dojo-wide rating accuracy</b><span>puzzles played that count</span></div>
+      <p>The more puzzles everyone plays, the more accurate everyone's cohort rating gets. Each tier needs ${READY_PLAYERS} players in every one of the ${DOJO_COHORTS.length} cohorts with enough puzzles.</p>
+      ${tiers.map((t) => `<div class="cm-tier ${t.done ? 'done' : ''}">
+        <div class="cm-goal-top"><span><b>${t.name}</b> · ratings within ±${t.pm} · ${t.per} puzzles each</span><span>${t.done ? '✓ ' : ''}${t.have.toLocaleString()} / ${t.goal.toLocaleString()}</span></div>
+        ${bar(t.have, t.goal)}</div>`).join('')}
     </div>
-    ${st.cohorts.length ? `<table class="theme-table cm-table"><thead><tr><th>Cohort</th><th>Dojoers</th><th>Community goal</th><th>Avg solved</th><th>Avg tactics</th><th>Accuracy</th><th>Time</th></tr></thead><tbody>
-      ${st.cohorts.map((c) => `<tr class="${c.cohort === myCohort ? 'me' : ''}"><td>${esc(c.cohort)}</td><td>${c.players.toLocaleString()}</td>
-        <td class="cm-cell">${bar(c.solved, COMMUNITY_GOAL)}<small>${Math.round(Math.min(1, c.solved / COMMUNITY_GOAL) * 100)}%</small></td>
+    ${mine ? `<div class="cm-goal ${myReady >= READY_PLAYERS ? 'done' : ''}">
+      <div class="cm-goal-top"><b>${esc(myCohort)}</b><span>${myReady.toLocaleString()} / ${READY_PLAYERS} players ready</span></div>
+      ${bar(myReady, READY_PLAYERS)}
+      <p>${myTier
+        ? `Your cohort is at the <b>${myTier.name}</b> tier: cohort ratings are within about ±${myTier.pm} points.`
+        : `A player is ready at ${READY_PER} puzzles played. Once ${READY_PLAYERS} players in ${esc(myCohort)} are ready, cohort standings stop being provisional.`}</p>
+    </div>` : ''}
+    ${st.cohorts.length ? `<table class="theme-table cm-table"><thead><tr><th>Cohort</th><th>Dojoers</th><th>Players ready</th><th>Avg solved</th><th>Avg tactics</th><th>Accuracy</th><th>Time</th></tr></thead><tbody>
+      ${st.cohorts.map((c) => {
+        const ready = cohortReady(inCohort(c.cohort));
+        return `<tr class="${c.cohort === myCohort ? 'me' : ''}"><td>${esc(c.cohort)}</td><td>${c.players.toLocaleString()}</td>
+        <td class="cm-cell">${bar(ready, READY_PLAYERS)}<small>${ready}/${READY_PLAYERS}</small></td>
         <td>${Math.round(c.solved / Math.max(1, c.players)).toLocaleString()}</td><td>${c.rating ?? '–'}</td>
-        <td>${c.accuracy == null ? '–' : `${Math.round(c.accuracy * 100)}%`}</td><td>${fmtHours(c.ms)}</td></tr>`).join('')}
+        <td>${c.accuracy == null ? '–' : `${Math.round(c.accuracy * 100)}%`}</td><td>${fmtHours(c.ms)}</td></tr>`;
+      }).join('')}
     </tbody></table>` : ''}
   </section>`;
 }
@@ -2631,7 +2660,7 @@ async function showStanding() {
       <div class="sh-rank"><small>Puzzles solved</small><b>#${main.rank}</b><span>of ${main.n.toLocaleString()} Dojoer${main.n === 1 ? '' : 's'}</span></div>
       <div class="sh-text">
         ${others
-          ? `<h2>You've solved more puzzles than <b>${Math.round(main.pctAhead * 100)}%</b> of ${cohortOnly ? `your cohort${communityStats(cohort).all.solved < COMMUNITY_GOAL ? ' <small class="prov-tag">provisional</small>' : ''}` : 'Dojoers'}</h2>
+          ? `<h2>You've solved more puzzles than <b>${Math.round(main.pctAhead * 100)}%</b> of ${cohortOnly ? `your cohort${(me.attempts || 0) < READY_PER || cohortReady(cohort) < READY_PLAYERS ? ' <small class="prov-tag" title="Until you and ${READY_PLAYERS} players in your cohort have played ${READY_PER} puzzles">provisional</small>' : ''}` : 'Dojoers'}</h2>
              <p>${topLabel(main)} — ahead of ${main.behind.toLocaleString()} of ${others.toLocaleString()} others.</p>`
           : HOSTED
             ? `<h2>You're out in front — no other Dojoer${cohortOnly ? ' in your cohort' : ''} has saved Tactics Forger progress yet.</h2>

@@ -1254,3 +1254,7 @@ html.embed .nav { margin-left: 0; }
   .community .cm-totals { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .cm-table { display: block; overflow-x: auto; }
 }
+.cm-tier { margin-top: 8px; }
+.cm-tier.done .cm-bar div { background: var(--good); }
+.cm-tier .cm-goal-top span:first-child { color: var(--muted); }
+.cm-tier .cm-goal-top b { color: var(--text); }
