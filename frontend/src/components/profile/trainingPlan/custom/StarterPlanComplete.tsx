@@ -13,6 +13,7 @@ import {
 import { alpha, Box, Button, Card, Chip, Grid, Stack, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { ReactNode } from 'react';
+import { FreePlanSwitch } from './FreePlanSwitch';
 import { useFreePlanEditor } from './useFreePlanEditor';
 
 /**
@@ -72,13 +73,24 @@ export function StarterPlanComplete({
         >
             <Stack spacing={3}>
                 <Stack spacing={1.5} sx={{ alignItems: 'start' }}>
-                    <Chip
-                        icon={<CheckCircle />}
-                        label={t('completeEyebrow')}
-                        color='success'
-                        variant='outlined'
-                        size='small'
-                    />
+                    <Stack
+                        direction='row'
+                        sx={{
+                            width: 1,
+                            alignItems: 'center',
+                            flexWrap: 'wrap',
+                            gap: 1,
+                        }}
+                    >
+                        <Chip
+                            icon={<CheckCircle />}
+                            label={t('completeEyebrow')}
+                            color='success'
+                            variant='outlined'
+                            size='small'
+                        />
+                        <FreePlanSwitch />
+                    </Stack>
                     <Stack direction='row' spacing={1.5} sx={{ alignItems: 'center' }}>
                         <ChessDojoIcon
                             sx={{ fontSize: { xs: '2rem', sm: '2.5rem' }, color: 'primary.main' }}
