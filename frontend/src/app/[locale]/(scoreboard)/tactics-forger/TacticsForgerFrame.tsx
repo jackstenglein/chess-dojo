@@ -9,14 +9,16 @@ import { useAuth } from '@/auth/Auth';
 import { SaveTacticsForgerProgressRequest } from '@jackstenglein/chess-dojo-common/src/tacticsTrainer/api';
 import { Box } from '@mui/material';
 import { AxiosError } from 'axios';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { ForgerAnalysis, ForgerAnalysisDialog } from './ForgerAnalysisDialog';
 
 /** Messages the embedded app sends. Each one gets a reply with the same id. */
 type ForgerRequest =
     | { source: 'tactics-forger'; id: number; type: 'hello' }
     | { source: 'tactics-forger'; id: number; type: 'load' }
     | { source: 'tactics-forger'; id: number; type: 'save'; body: SaveTacticsForgerProgressRequest }
-    | { source: 'tactics-forger'; id: number; type: 'leaderboard' };
+    | { source: 'tactics-forger'; id: number; type: 'leaderboard' }
+    | { source: 'tactics-forger'; id: number; type: 'analyze'; body: ForgerAnalysis };
 
 /**
  * Shows the static Tactics Forger app in a full-height frame and lets it load and save the
@@ -27,6 +29,7 @@ type ForgerRequest =
 export function TacticsForgerFrame({ src }: { src: string }) {
     const frame = useRef<HTMLIFrameElement>(null);
     const { user } = useAuth();
+    const [analysis, setAnalysis] = useState<ForgerAnalysis | null>(null);
 
     useEffect(() => {
         const onMessage = async (event: MessageEvent) => {
@@ -62,6 +65,11 @@ export function TacticsForgerFrame({ src }: { src: string }) {
                         reply({ ok: true, data: res.data });
                         break;
                     }
+                    case 'analyze':
+                        // Open the puzzle on the analysis board (Stockfish) over the frame.
+                        setAnalysis(msg.body);
+                        reply({ ok: true });
+                        break;
                     case 'leaderboard': {
                         const res = await getTacticsForgerLeaderboard();
                         reply({ ok: true, data: res.data, username: user?.username });
@@ -78,17 +86,22 @@ export function TacticsForgerFrame({ src }: { src: string }) {
     }, [user?.username]);
 
     return (
-        <Box
-            component='iframe'
-            ref={frame}
-            title='Dojo Tactics Forger'
-            src={src}
-            sx={{
-                display: 'block',
-                width: 1,
-                height: 'calc(100dvh - var(--navbar-height))',
-                border: 0,
-            }}
-        />
+        <>
+            <Box
+                component='iframe'
+                ref={frame}
+                title='Dojo Tactics Forger'
+                src={src}
+                sx={{
+                    display: 'block',
+                    width: 1,
+                    height: 'calc(100dvh - var(--navbar-height))',
+                    border: 0,
+                }}
+            />
+            {analysis && (
+                <ForgerAnalysisDialog analysis={analysis} onClose={() => setAnalysis(null)} />
+            )}
+        </>
     );
 }

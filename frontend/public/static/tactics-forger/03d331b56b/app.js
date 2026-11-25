@@ -1865,13 +1865,14 @@ function practiceScopes() {
     const ms = keys.map((k) => catalog(tr).themes.find((t) => t.key === k));
     return [Math.min(...ms.map((t) => t.min)), Math.max(...ms.map((t) => t.max))];
   };
-  // Everything: every puzzle in every tab. Its "themes" are the tabs themselves.
+  // Everything: every puzzle in every tab. Picks are a whole tab ('openings') or one theme in a
+  // tab ('openings|b_sicilian'), so you can mix e.g. Sicilian + Benoni + Fork + Knight endgames.
   const parts = [['tactics', tac.themes], ['openings', catalogs.openings?.themes], ['endgames', indexes.endgames?.themes]]
     .filter(([, ts]) => ts?.length).map(([tr, ts]) => ({ track: tr, keys: ts.map((t) => t.key) }));
   const allRanges = parts.map((pt) => range(pt.track, pt.keys));
   out.push({
     id: 'all', label: 'All puzzles (tactics, openings, endgames)', mixed: true, track: null, parts,
-    keys: parts.map((pt) => pt.track), range: [Math.min(...allRanges.map((r) => r[0])), Math.max(...allRanges.map((r) => r[1]))],
+    keys: parts.flatMap((pt) => [pt.track, ...pt.keys.map((k) => `${pt.track}|${k}`)]), range: [Math.min(...allRanges.map((r) => r[0])), Math.max(...allRanges.map((r) => r[1]))],
   });
   TACTIC_STAGES.forEach((st, si) => {
     const keys = tacKeys(si);
@@ -1912,9 +1913,11 @@ function scopeOptions(scopes) {
 }
 async function loadPool(scope, picked = []) {
   if (scope.mixed) {
-    // Everything: picked = the tabs to include (none = all of them).
-    const parts = scope.parts.filter((pt) => !picked.length || picked.includes(pt.track));
-    const lists = await Promise.all(parts.map((pt) => loadPool({ track: pt.track, keys: pt.keys })));
+    // Everything: picked = whole tabs and/or single themes (none = all of them).
+    const lists = await Promise.all(scope.parts.map((pt) => {
+      const keys = !picked.length || picked.includes(pt.track) ? pt.keys : pt.keys.filter((k) => picked.includes(`${pt.track}|${k}`));
+      return keys.length ? loadPool({ track: pt.track, keys }) : [];
+    }));
     return lists.flat();
   }
   const keys = picked.length ? picked : scope.keys;
@@ -1963,7 +1966,8 @@ async function showPractice() {
   let token = 0;
   const fillThemes = () => {
     const sc = scopeOf();
-    page.querySelector('#pPickLabel').textContent = sc.mixed ? 'Tabs' : 'Themes';
+    page.querySelector('#pPickLabel').textContent = 'Themes';
+    if (sc.mixed) return fillMixed(sc);
     const chipName = (k) => (sc.mixed ? TRACKS[k].label : shortName(catalog(sc.track).themes.find((t) => t.key === k)));
     $themes.innerHTML = `<button type="button" class="chip-btn ${chosen.size ? '' : 'on'}" data-k="">All ${sc.mixed ? 'tabs' : sc.keys.length}</button>` +
       sc.keys.map((k) => `<button type="button" class="chip-btn ${chosen.has(k) ? 'on' : ''}" data-k="${k}">${esc(chipName(k))}</button>`).join('');
@@ -1972,6 +1976,35 @@ async function showPractice() {
         if (!b.dataset.k) chosen.clear();
         else if (chosen.has(b.dataset.k)) chosen.delete(b.dataset.k);
         else chosen.add(b.dataset.k);
+        fillThemes();
+        reload();
+      };
+    });
+  };
+  // All puzzles: one row per tab, with its own "All ..." chip; mix any themes from any tab.
+  const fillMixed = (sc) => {
+    const chip = (k, label, on) => `<button type="button" class="chip-btn ${on ? 'on' : ''}" data-k="${esc(k)}">${esc(label)}</button>`;
+    $themes.innerHTML = `<div class="mix-row">${chip('', 'Everything', !chosen.size)}</div>` + sc.parts.map((pt) => {
+      const whole = chosen.has(pt.track);
+      const names = catalog(pt.track).themes;
+      return `<div class="mix-row"><span class="mix-tab">${TRACKS[pt.track].label}</span>${chip(pt.track, `All ${TRACKS[pt.track].label.toLowerCase()}`, whole)}${
+        pt.keys.map((k) => chip(`${pt.track}|${k}`, shortName(names.find((t) => t.key === k)), !whole && chosen.has(`${pt.track}|${k}`))).join('')}</div>`;
+    }).join('');
+    $themes.querySelectorAll('button').forEach((b) => {
+      b.onclick = () => {
+        const k = b.dataset.k;
+        if (!k) chosen.clear();
+        else if (!k.includes('|')) {
+          // A whole tab replaces its single themes, and the other way round.
+          const had = chosen.has(k);
+          for (const x of [...chosen]) if (x.startsWith(`${k}|`)) chosen.delete(x);
+          if (had) chosen.delete(k);
+          else chosen.add(k);
+        } else {
+          chosen.delete(k.split('|')[0]);
+          if (chosen.has(k)) chosen.delete(k);
+          else chosen.add(k);
+        }
         fillThemes();
         reload();
       };
@@ -2016,6 +2049,11 @@ async function showPractice() {
   $start.onclick = () => startPracticeRun(scopeOf(), filtered);
   reload();
 }
+// A pick in All puzzles: 'tactics' -> "All tactics", 'endgames|knightEndgame' -> "Knight Endgames".
+function mixName(k) {
+  const [tr, key] = k.split('|');
+  return key ? themeName(sessionKey(key, tr)) : `All ${TRACKS[tr]?.label.toLowerCase() ?? tr}`;
+}
 function startPracticeRun(scope, candidates) {
   const ps = progress.settings.practice;
   const pick = shuffle(candidates.slice()).slice(0, SET_SIZE).sort((a, b) => a.rating - b.rating);
@@ -2025,7 +2063,7 @@ function startPracticeRun(scope, candidates) {
     puzzles: pick,
     backHref: '#/custom',
     backLabel: 'Custom settings',
-    head: `<h2>Custom</h2><div class="set-sub">${esc(scope.label)}${ps.themes.length ? ` · ${ps.themes.slice(0, 3).map((k) => esc(scope.mixed ? TRACKS[k].label : themeName(sessionKey(k, scope.track)))).join(', ')}${ps.themes.length > 3 ? ` +${ps.themes.length - 3} more` : ''}` : ''} · ${ps.min}–${ps.max}${ps.unsolved ? ' · unsolved only' : ''}</div>`,
+    head: `<h2>Custom</h2><div class="set-sub">${esc(scope.label)}${ps.themes.length ? ` · ${ps.themes.slice(0, 3).map((k) => esc(scope.mixed ? mixName(k) : themeName(sessionKey(k, scope.track)))).join(', ')}${ps.themes.length > 3 ? ` +${ps.themes.length - 3} more` : ''}` : ''} · ${ps.min}–${ps.max}${ps.unsolved ? ' · unsolved only' : ''}</div>`,
     rule: 'Random puzzles. Solving one marks it done in its ladder set too.',
     finish: (sum) => runResult(sum, pick, {
       title: 'Custom run done',
@@ -2967,7 +3005,89 @@ let cg = null;
 let timers = [];
 const later = (fn, ms) => timers.push(setTimeout(fn, ms));
 let ticker = null;
+// ---- Reviewing a puzzle --------------------------------------------------------------
+// A window over the puzzle page: the puzzle on its own board, the solution to step through
+// (buttons, arrow keys or the move list), and a link to analyse it with an engine. On
+// chessdojo.club that opens the site's analysis board with Stockfish; elsewhere, Lichess.
+let review = null;
+function closeReview() {
+  if (!review) return;
+  review.cg.destroy();
+  review.node.remove();
+  document.removeEventListener('keydown', review.keys, true);
+  review = null;
+}
+function openReview(p, n) {
+  closeReview();
+  const c = new Chess(p.fen);
+  const solver = c.turn() === 'w' ? 'black' : 'white';
+  const fens = [p.fen];
+  const sans = [];
+  const lasts = [undefined];
+  for (const u of p.moves) {
+    try {
+      sans.push(c.move(uciToMove(u)).san);
+      fens.push(c.fen());
+      lasts.push([u.slice(0, 2), u.slice(2, 4)]);
+    } catch {
+      break;
+    }
+  }
+  const node = el(`<div class="review-modal" role="dialog" aria-label="Review puzzle">
+    <div class="rv-card">
+      <div class="rv-head"><div><b>Puzzle ${n}</b> · rated ${p.rating}${p.key ? ` · ${esc(themeName(sessionKey(p.key, p.track)))}` : ''}
+        <small>${solver === 'white' ? 'White' : 'Black'} to play</small></div>
+        <button type="button" class="rv-x" aria-label="Close">✕</button></div>
+      <div class="rv-board cg-board-wrap dojo-board"></div>
+      <div class="rv-nav">
+        <button type="button" class="btn ghost small" data-go="first" aria-label="Start">⏮</button>
+        <button type="button" class="btn ghost small" data-go="prev" aria-label="Back">◀</button>
+        <button type="button" class="btn ghost small" data-go="next" aria-label="Forward">▶</button>
+        <button type="button" class="btn ghost small" data-go="last" aria-label="End">⏭</button>
+      </div>
+      <div class="rv-moves">${sans.map((san, i) => `<button type="button" class="rv-mv ${i === 0 ? 'opp' : ''}" data-i="${i + 1}" title="${i === 0 ? 'Their move' : ''}">${esc(san)}</button>`).join('')}</div>
+      <div class="rv-actions">
+        ${HOSTED ? '<button type="button" class="btn primary" id="rvAnalyze">Analyze with Stockfish</button>' : ''}
+        <a class="btn ghost" href="https://lichess.org/training/${esc(p.id)}" target="_blank" rel="noopener">Open on Lichess</a>
+        <button type="button" class="btn ghost rv-close">Close</button>
+      </div>
+    </div>
+  </div>`);
+  document.body.append(node);
+  const boardEl = node.querySelector('.rv-board');
+  applyBoardLook(boardEl);
+  let at = Math.min(1, fens.length - 1); // just after their move: the position you solved
+  const rcg = Chessground(boardEl, { viewOnly: true, orientation: solver, coordinates: true, animation: { enabled: true, duration: 180 } });
+  const show = (i) => {
+    at = Math.max(0, Math.min(fens.length - 1, i));
+    rcg.set({ fen: fens[at], lastMove: lasts[at], check: new Chess(fens[at]).inCheck() });
+    node.querySelectorAll('.rv-mv').forEach((b) => b.classList.toggle('on', Number(b.dataset.i) === at));
+  };
+  const go = { first: () => show(0), prev: () => show(at - 1), next: () => show(at + 1), last: () => show(fens.length - 1) };
+  node.querySelectorAll('[data-go]').forEach((b) => (b.onclick = go[b.dataset.go]));
+  node.querySelectorAll('.rv-mv').forEach((b) => (b.onclick = () => show(Number(b.dataset.i))));
+  node.querySelector('.rv-x').onclick = closeReview;
+  node.querySelector('.rv-close').onclick = closeReview;
+  node.onclick = (e) => e.target === node && closeReview();
+  node.querySelector('#rvAnalyze')?.addEventListener('click', () => {
+    askHost('analyze', { fen: p.fen, moves: p.moves, orientation: solver, title: `Puzzle ${p.id} · ${p.rating}` }).catch(() => toast('Couldn’t open the analysis board'));
+  });
+  const keys = (e) => {
+    if (e.key === 'Escape') closeReview();
+    else if (e.key === 'ArrowLeft') go.prev();
+    else if (e.key === 'ArrowRight') go.next();
+    else if (e.key === 'ArrowUp' || e.key === 'Home') go.first();
+    else if (e.key === 'ArrowDown' || e.key === 'End') go.last();
+    else return;
+    e.preventDefault();
+    e.stopPropagation();
+  };
+  document.addEventListener('keydown', keys, true);
+  review = { cg: rcg, node, keys };
+  show(at);
+}
 function cleanupBoard() {
+  closeReview();
   clearInterval(ticker);
   ticker = null;
   timers.forEach(clearTimeout);
@@ -3201,6 +3321,7 @@ function playRun(run) {
         <label>Board <select id="setBoard">${Object.entries(BOARDS).map(([k, [n]]) => `<option value="${k}">${n}</option>`).join('')}</select></label>
         <label>Pieces <select id="setPieces">${Object.entries(PIECES).map(([k, [n]]) => `<option value="${k}">${n}</option>`).join('')}</select></label>
         <button class="btn ghost small" id="setSound" type="button"></button>
+        <button class="btn ghost small" id="setPause" type="button" title="Stop after each puzzle so you can review it before the next one"></button>
       </div>
     </div>
     <aside class="play-side">
@@ -3236,6 +3357,13 @@ function playRun(run) {
   $setBoard.onchange = () => { progress.settings.board = $setBoard.value; saveProgress(); applyBoardLook($board); checkOfflineReady(); };
   $setPieces.onchange = () => { progress.settings.pieces = $setPieces.value; saveProgress(); applyBoardLook($board); checkOfflineReady(); };
   $setSound.onclick = () => { progress.settings.sound = !progress.settings.sound; saveProgress(); soundLabel(); };
+  const $setPause = page.querySelector('#setPause');
+  const pauseLabel = () => {
+    $setPause.textContent = progress.settings.pauseAfter ? '⏸ Pause after each puzzle: on' : '⏵ Pause after each puzzle: off';
+    $setPause.classList.toggle('on', !!progress.settings.pauseAfter);
+  };
+  pauseLabel();
+  $setPause.onclick = () => { progress.settings.pauseAfter = !progress.settings.pauseAfter; saveProgress(); pauseLabel(); };
 
   const $live = page.querySelector('#liveSession');
   const renderLive = () => {
@@ -3267,9 +3395,17 @@ function playRun(run) {
   };
   const renderPips = () => {
     renderCombo();
+    // A finished puzzle's pip opens it for review (the current puzzle stays as it is).
+    const canReview = (i) => i < idx || (i === idx && done);
     $pips.innerHTML = results
-      .map((r, i) => `<span class="pip ${r === true ? 'ok' : r === false ? 'bad' : ''} ${i === idx ? 'cur' : ''} ${r === null && isSolved(run.puzzles[i].id) ? 'known' : ''}" title="${isSolved(run.puzzles[i].id) ? 'Solved before' : 'New puzzle'}">${i + 1}</span>`)
+      .map((r, i) => `<span class="pip ${r === true ? 'ok' : r === false ? 'bad' : ''} ${i === idx ? 'cur' : ''} ${r === null && isSolved(run.puzzles[i].id) ? 'known' : ''} ${canReview(i) ? 'rv' : ''}" data-i="${i}" ${canReview(i) ? 'role="button" tabindex="0"' : ''}
+        title="${canReview(i) ? 'Review this puzzle' : isSolved(run.puzzles[i].id) ? 'Solved before' : 'New puzzle'}">${i + 1}</span>`)
       .join('');
+    $pips.querySelectorAll('.pip.rv').forEach((pip) => {
+      const go = () => openReview(run.puzzles[Number(pip.dataset.i)], Number(pip.dataset.i) + 1);
+      pip.onclick = go;
+      pip.onkeydown = (e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), go());
+    });
   };
   const status = (cls, html) => {
     $status.className = `status ${cls}`;
@@ -3429,7 +3565,13 @@ function playRun(run) {
       status('bad', '✓ Solved, but it counts as a miss.');
     }
     renderPips();
+    if (progress.settings.pauseAfter) return pauseHere();
     later(finishPuzzle, failed ? 1100 : 750);
+  }
+  // Pause after a puzzle (setting): it's saved now; the next one waits for you.
+  function pauseHere() {
+    recordResult();
+    controls([['Next puzzle →', finishPuzzle, 'primary'], ['Review', () => openReview(run.puzzles[idx], idx + 1)]]);
   }
 
   function showSolution() {
@@ -3447,7 +3589,7 @@ function playRun(run) {
     status('bad', 'Solution:');
     const step = () => {
       if (ply >= moves.length) {
-        controls([['Next puzzle →', finishPuzzle, 'primary']]);
+        controls([['Next puzzle →', finishPuzzle, 'primary'], ['Review', () => openReview(run.puzzles[idx], idx + 1)]]);
         return;
       }
       playComputer();
@@ -3460,6 +3602,21 @@ function playRun(run) {
   function finishPuzzle() {
     timers.forEach(clearTimeout);
     timers = [];
+    closeReview();
+    recordResult();
+    idx++;
+    if (idx < N) {
+      // An adaptive run (the placement test) picks each next puzzle from the answers so far.
+      if (run.pick) run.puzzles[idx] = run.pick(idx, results.slice(0, idx), run.puzzles.slice(0, idx));
+      return startPuzzle();
+    }
+    run.finish({
+      results, puzzleMs, runId, runStart, runMs: Date.now() - runStart,
+      snapAtStart, newlySolved, newBests, solvedAtStart,
+    });
+  }
+  // Saves the current puzzle's result once (on finishing it, or when pausing after it).
+  function recordResult() {
     if (results[idx] === null) {
       results[idx] = false;
       combo = 0;
@@ -3482,16 +3639,6 @@ function playRun(run) {
       renderStats();
       renderLive();
     }
-    idx++;
-    if (idx < N) {
-      // An adaptive run (the placement test) picks each next puzzle from the answers so far.
-      if (run.pick) run.puzzles[idx] = run.pick(idx, results.slice(0, idx), run.puzzles.slice(0, idx));
-      return startPuzzle();
-    }
-    run.finish({
-      results, puzzleMs, runId, runStart, runMs: Date.now() - runStart,
-      snapAtStart, newlySolved, newBests, solvedAtStart,
-    });
   }
 
 
