@@ -7,6 +7,8 @@ import {
     parseGamePgn,
     pickDefaultRound,
     RoundFeed,
+    sameUci,
+    thinkingSinceFromRound,
 } from './lichessFeed';
 
 /** The shape of a Lichess broadcast PGN, with engine evals and clocks in the comments. */
@@ -108,5 +110,45 @@ describe('time spent', () => {
         expect(formatSpent(30)).toBe('0:30');
         expect(formatSpent(263)).toBe('4:23');
         expect(formatSpent(3725)).toBe('1:02:05');
+    });
+});
+
+describe('sameUci', () => {
+    it('matches the same move', () => {
+        expect(sameUci('e2e4', 'e2e4')).toBe(true);
+        expect(sameUci('e2e4', 'd2d4')).toBe(false);
+        expect(sameUci(undefined, 'e2e4')).toBe(false);
+    });
+
+    it('treats both ways of writing castling as one move', () => {
+        expect(sameUci('e1h1', 'e1g1')).toBe(true);
+        expect(sameUci('e8a8', 'e8c8')).toBe(true);
+        expect(sameUci('e1g1', 'e1h1')).toBe(true);
+    });
+});
+
+describe('thinkingSinceFromRound', () => {
+    const now = 1_000_000;
+
+    it('starts the clock from the think time when the JSON is on the latest move', () => {
+        const game = { thinkTime: 40, lastMove: 'g1f3', status: '*' };
+        expect(thinkingSinceFromRound(game, 'g1f3', now)).toBe(now - 40_000);
+    });
+
+    it("ignores a JSON still on the move before, whose think time is the other player's", () => {
+        // Black has just played Nc6, but the JSON still shows White's Nf3 and
+        // five minutes of Black thinking. Using it would take those five
+        // minutes off White's clock.
+        const game = { thinkTime: 300, lastMove: 'g1f3', status: '*' };
+        expect(thinkingSinceFromRound(game, 'b8c6', now)).toBeUndefined();
+    });
+
+    it('ignores a finished game and a JSON with no think time', () => {
+        expect(
+            thinkingSinceFromRound({ thinkTime: 5, lastMove: 'a2a3', status: '1-0' }, 'a2a3', now),
+        ).toBeUndefined();
+        expect(
+            thinkingSinceFromRound({ lastMove: 'a2a3', status: '*' }, 'a2a3', now),
+        ).toBeUndefined();
     });
 });

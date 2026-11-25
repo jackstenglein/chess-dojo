@@ -224,6 +224,49 @@ const CUSTOM_POLL_MS = 3000;
 /** A broadcast PGN ends with its result. Until then the stream is mid-game. */
 const COMPLETE_PGN = /(\*|1-0|0-1|1\/2-1\/2)\s*$/;
 
+/** How often the round JSON is read again while a player thinks, to correct drift. */
+const CLOCK_REFRESH_MS = 30_000;
+/** How soon the round JSON is read again when it still describes the move before. */
+const CLOCK_RETRY_MS = 3000;
+const CLOCK_RETRIES = 5;
+
+/** Lichess may write castling as the king taking its rook (e1h1); chess.js writes e1g1. */
+const CASTLING: Record<string, string> = {
+    e1h1: 'e1g1',
+    e1a1: 'e1c1',
+    e8h8: 'e8g8',
+    e8a8: 'e8c8',
+};
+
+/** Whether two UCI moves are the same move, whichever way castling is written. */
+export function sameUci(a: string | undefined, b: string | undefined): boolean {
+    if (!a || !b) {
+        return false;
+    }
+    return (CASTLING[a] ?? a) === (CASTLING[b] ?? b);
+}
+
+/**
+ * When the side to move started thinking, from the Lichess round JSON. The
+ * JSON can lag behind the PGN stream. While it still describes the move before
+ * the latest one, its think time is the other player's, so it is not used:
+ * that made the running clock show minutes the player had not spent.
+ * @returns The start time in ms, or undefined when the JSON cannot be trusted.
+ */
+export function thinkingSinceFromRound(
+    game: { thinkTime?: number; lastMove?: string; status?: string },
+    latestUci: string | undefined,
+    now: number,
+): number | undefined {
+    if (game.thinkTime === undefined || game.status !== '*') {
+        return undefined;
+    }
+    if (!sameUci(game.lastMove, latestUci)) {
+        return undefined;
+    }
+    return now - game.thinkTime * 1000;
+}
+
 /**
  * Follows one round of the match: moves and clocks from the Lichess PGN
  * stream, and the think time of the side to move from the round JSON, so the
@@ -303,9 +346,13 @@ export function useRoundFeed(roundId: string | undefined, pgnUrl?: string): Roun
         let cancelled = false;
         const controller = new AbortController();
         let lastPgn = '';
+        // The last move of the PGN, so the round JSON can be checked against it.
+        let latestUci: string | undefined;
+        let retryTimer: ReturnType<typeof setTimeout> | undefined;
         setFeed({ status: 'loading', moves: [], result: '*' });
 
-        const loadClocks = async () => {
+        const loadClocks = async (retriesLeft = CLOCK_RETRIES) => {
+            clearTimeout(retryTimer);
             try {
                 const resp = await fetch(`${LICHESS}/api/broadcast/-/-/${roundId}`, {
                     signal: controller.signal,
@@ -323,6 +370,7 @@ export function useRoundFeed(roundId: string | undefined, pgnUrl?: string): Roun
                     return;
                 }
                 const [white, black] = game.players ?? [];
+                const since = thinkingSinceFromRound(game, latestUci, Date.now());
                 setFeed((f) => ({
                     ...f,
                     liveClocks:
@@ -333,11 +381,19 @@ export function useRoundFeed(roundId: string | undefined, pgnUrl?: string): Roun
                                   lastMove: game.lastMove,
                               }
                             : f.liveClocks,
-                    thinkingSince:
-                        game.thinkTime !== undefined && game.status === '*'
-                            ? Date.now() - game.thinkTime * 1000
-                            : f.thinkingSince,
+                    thinkingSince: since ?? f.thinkingSince,
                 }));
+                if (game.status !== '*') {
+                    return;
+                }
+                // Still on the move before: ask again soon. Otherwise check again
+                // now and then, so the running clock does not drift.
+                const stale = !sameUci(game.lastMove, latestUci);
+                if (stale && retriesLeft > 0) {
+                    retryTimer = setTimeout(() => void loadClocks(retriesLeft - 1), CLOCK_RETRY_MS);
+                } else if (!stale) {
+                    retryTimer = setTimeout(() => void loadClocks(), CLOCK_REFRESH_MS);
+                }
             } catch {
                 // The PGN clocks are enough without it.
             }
@@ -350,6 +406,7 @@ export function useRoundFeed(roundId: string | undefined, pgnUrl?: string): Roun
             lastPgn = pgn;
             try {
                 const parsed = parseGamePgn(pgn);
+                latestUci = parsed.moves[parsed.moves.length - 1]?.uci;
                 setFeed((f) => {
                     // On the first load this starts the clock now. The round JSON
                     // then corrects it with the real think time.
@@ -426,6 +483,7 @@ export function useRoundFeed(roundId: string | undefined, pgnUrl?: string): Roun
         void run();
         return () => {
             cancelled = true;
+            clearTimeout(retryTimer);
             controller.abort();
         };
     }, [roundId, pgnUrl]);
@@ -473,7 +531,7 @@ export function clocksAt(
 
     const lastUci = feed.moves[feed.moves.length - 1]?.uci;
     const live = feed.liveClocks;
-    if (lastUci && live?.lastMove === lastUci) {
+    if (live && sameUci(live.lastMove, lastUci)) {
         white = live.white;
         black = live.black;
     }
