@@ -9,6 +9,7 @@ import {
     WcSensei,
 } from '@jackstenglein/chess-dojo-common/src/wcLive/api';
 import { Box, Stack, Tooltip, Typography } from '@mui/material';
+import { PHONE_LANDSCAPE } from './liveLayout';
 
 // ---------------------------------------------------------------------------
 // Pins
@@ -91,7 +92,10 @@ function BeltIcon() {
 
 /** Ticks on both sides of equal, on the same curve as the fill. */
 /** The eval bar's width. The player bars leave the same space, so they line up with the board. */
-export const EVAL_BAR_WIDTH = { xs: 28, sm: 38 };
+export const EVAL_BAR_WIDTH = { xs: 20, sm: 38 };
+
+/** The space between the eval bar and the board, in the theme's spacing units. */
+export const EVAL_BAR_GAP = { xs: 0.75, sm: 1 };
 
 /** ±10 is not marked: it sits right at the ends of the bar. */
 const TICKS = [1, 2, 3, 5].flatMap((v) => [v, -v]);
@@ -213,7 +217,13 @@ export function EvalBar({ average, pins, orientation }: EvalBarProps) {
                         sx={{
                             position: 'absolute',
                             top: `${p.share * 100}%`,
-                            left: `calc(50% + ${(p.column - (p.columns - 1) / 2) * 20}px)`,
+                            // A phone's bar is narrower and close to the edge of the screen.
+                            // Pins with the same eval overlap there, and sit a little to
+                            // the right, toward the board.
+                            left: {
+                                xs: `calc(50% + ${4 + (p.column - (p.columns - 1) / 2) * 12}px)`,
+                                sm: `calc(50% + ${(p.column - (p.columns - 1) / 2) * 20}px)`,
+                            },
                             transform: 'translate(-50%, -50%)',
                             transition: 'top 0.6s ease',
                             zIndex: 2,
@@ -250,10 +260,40 @@ export function EvalBar({ average, pins, orientation }: EvalBarProps) {
                     fontVariantNumeric: 'tabular-nums',
                     zIndex: 3,
                     pointerEvents: 'none',
+                    // A phone's bar is too narrow for the number, which EvalAverage
+                    // shows under the bar. On its side the phone has nothing under
+                    // the bar, so the number stays here.
+                    display: { xs: 'none', sm: 'block' },
+                    [PHONE_LANDSCAPE]: { display: 'block', left: 0, right: 0 },
                 }}
             >
                 {formatEval(average)}
             </Box>
+        </Box>
+    );
+}
+
+/**
+ * The average on a phone held upright, where the bar is too narrow to hold it.
+ * It goes under the bar, beside the bottom player.
+ */
+export function EvalAverage({ average }: { average: number }) {
+    return (
+        <Box
+            data-testid='eval-average'
+            sx={{
+                display: { xs: 'block', sm: 'none' },
+                [PHONE_LANDSCAPE]: { display: 'none' },
+                textAlign: 'center',
+                fontSize: '0.7rem',
+                fontWeight: 800,
+                fontVariantNumeric: 'tabular-nums',
+                letterSpacing: '-0.03em',
+                lineHeight: 1,
+                whiteSpace: 'nowrap',
+            }}
+        >
+            {formatEval(average)}
         </Box>
     );
 }
