@@ -123,6 +123,7 @@ export function StarterPlanComplete({
                                 t('fullProgramBullet1'),
                                 t('fullProgramBullet2'),
                                 t('fullProgramBullet3'),
+                                t('fullProgramBullet4'),
                             ]}
                             action={
                                 <Button
