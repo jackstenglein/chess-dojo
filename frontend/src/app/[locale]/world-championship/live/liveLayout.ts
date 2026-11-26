@@ -144,10 +144,100 @@ export const ANALYSIS_PHONE_LANDSCAPE =
 export const ANALYSIS_LANDSCAPE_BOARD = 'max(240px, calc(100dvh - var(--navbar-height) - 16px))';
 
 /**
- * On a phone the two columns of the fan view have no box of their own, so the
- * page can place their parts one by one.
+ * Below the lg breakpoint the two columns of the fan view have no box of their
+ * own, so the page can place their parts one by one.
  */
-export const fanUnwrapSx = { [PHONE]: { display: 'contents' } };
+export const fanUnwrapSx = {
+    display: { xs: 'contents', lg: 'flex' },
+    [PHONE_LANDSCAPE]: { display: 'contents' },
+};
+
+/**
+ * The fan view has two columns from the theme's md breakpoint up to lg, on a
+ * screen taller than a phone on its side. That is a tablet on its side, or a
+ * narrow window.
+ */
+export const TWO_COLUMNS =
+    '@media (min-width: 900px) and (max-width: 1199.95px) and (min-height: 500.05px)';
+
+/** A player's bar, with the clock. */
+const PLAYER_BAR_HEIGHT = 37;
+
+/**
+ * The rows of the fan view in two columns. The board has the left column to
+ * itself, and everything else is beside it. The first screen shows what a fan
+ * wants to see all the time: the board, and beside it the game picker, the
+ * guess, the stream and the leaderboard.
+ *
+ * The dots on the left are where the top player's bar and the board with its
+ * buttons go. They span every row, so each row is as tall as the part on its
+ * right. The row of two dots takes the height that is left over when the
+ * board's column is the taller of the two.
+ */
+const FAN_TWO_COLUMN_ROWS = [
+    ['.', 'games'],
+    ['.', 'guess'],
+    ['.', 'twitch'],
+    ['.', 'leaders'],
+    ['.', 'evals'],
+    ['.', 'moves'],
+    ['.', 'cross'],
+    ['.', 'notice'],
+    ['.', '.'],
+] as const;
+
+/** The grid line under the last row. */
+const LAST_LINE = FAN_TWO_COLUMN_ROWS.length + 1;
+
+/** The grid of the fan view in two columns. */
+export const fanTwoColumnGrid = {
+    gridTemplateAreas: FAN_TWO_COLUMN_ROWS.map((row) => `"${row.join(' ')}"`).join(' '),
+    gridTemplateRows: FAN_TWO_COLUMN_ROWS.map(([left, right], i) => {
+        if (i === 0) {
+            // The top player's bar sits in the first row, on the left.
+            return `minmax(${PLAYER_BAR_HEIGHT}px, auto)`;
+        }
+        return left === '.' && right === '.' ? 'minmax(0, 1fr)' : 'auto';
+    }).join(' '),
+};
+
+/**
+ * The width of the board's column in two columns. The board is no taller than
+ * the screen has room for. The site's header, the player bars and the move
+ * buttons take 161px of the height, and the tabs 64px more where the page
+ * shows them. The eval bar adds 46px to the column's width.
+ */
+export function boardColumnWidth(tabs: boolean) {
+    return `minmax(0, max(406px, calc(100dvh - var(--navbar-height) - ${(tabs ? 225 : 161) - 46}px)))`;
+}
+
+/**
+ * In two columns the top player's bar and the board with its buttons span
+ * every row. Nothing is under them in their column.
+ */
+export const fanTopBarSx = {
+    [TWO_COLUMNS]: { gridArea: `1 / 1 / ${LAST_LINE} / 2`, alignSelf: 'start' },
+};
+export const fanBoardBlockSx = {
+    // Everywhere else the page places the board, the bottom player's bar and
+    // the buttons one by one.
+    display: 'contents',
+    [TWO_COLUMNS]: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 1,
+        minWidth: 0,
+        gridArea: `2 / 1 / ${LAST_LINE} / 2`,
+        alignSelf: 'start',
+    },
+};
+
+/**
+ * In two columns the stream leaves the leaderboard under it about 200px of the
+ * first screen, which is the title and three places. The header, the game
+ * picker, the guess, the stream's own header and the gaps take 236px more.
+ */
+export const FAN_STREAM_MAX_HEIGHT = 'max(150px, calc(100dvh - var(--navbar-height) - 436px))';
 
 /** Where a part of the fan view goes on a phone. A wide screen keeps the place it has. */
 export function fanPartSx(part: FanPart) {
@@ -157,6 +247,9 @@ export function fanPartSx(part: FanPart) {
         part !== 'board' &&
         FAN_LANDSCAPE_ROWS.some(([left, right]) => left === part && right !== part);
     return {
+        // A part goes to the place with its name wherever the page's grid has
+        // one. Inside a column, as on a wide screen, the name does nothing.
+        gridArea: part,
         // A part with nothing in it, such as the crosstable before it has loaded,
         // takes no room on any screen.
         '&:empty': { display: 'none' },
