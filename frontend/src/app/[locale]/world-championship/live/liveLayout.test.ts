@@ -7,6 +7,7 @@ import {
     fanPartSx,
     fanTopBarSx,
     fanTwoColumnGrid,
+    fanUprightWideGrid,
     parseLayout,
     PHONE,
     PHONE_LANDSCAPE,
@@ -113,6 +114,40 @@ describe('the fan view in two columns', () => {
         // than the number of rows.
         expect(fanTopBarSx[TWO_COLUMNS].gridArea).toBe(`1 / 1 / ${rows.length + 1} / 2`);
         expect(fanBoardBlockSx[TWO_COLUMNS].gridArea).toBe(`2 / 1 / ${rows.length + 1} / 2`);
+    });
+});
+
+describe('the fan view on a large tablet held upright', () => {
+    const rows = rowsOf(fanUprightWideGrid);
+
+    it('draws a grid the browser accepts', () => {
+        expect(rows.every((row) => row.length === 2)).toBe(true);
+        for (const name of new Set(rows.flat())) {
+            const at = rows.flatMap((row, y) =>
+                row.flatMap((cell, x) => (cell === name ? [`${x},${y}`] : [])),
+            );
+            // Every part is in one row, in one cell or in both.
+            expect(new Set(at.map((cell) => cell.split(',')[1])).size, name).toBe(1);
+        }
+    });
+
+    it('gives the board and everything up to the senseis the full width', () => {
+        for (const part of ['top', 'board', 'bottom', 'nav', 'guess', 'evals']) {
+            expect(rows).toContainEqual([part, part]);
+        }
+    });
+
+    it('shows the stream and the leaderboard side by side, then the moves and the crosstable', () => {
+        const stream = rows.findIndex(([left]) => left === 'twitch');
+        expect(rows[stream]).toEqual(['twitch', 'leaders']);
+        expect(rows[stream + 1]).toEqual(['moves', 'cross']);
+        expect(stream).toBeGreaterThan(rows.findIndex(([left]) => left === 'evals'));
+    });
+
+    it('has a place for every part', () => {
+        for (const part of FAN_PARTS) {
+            expect(rows.flat(), part).toContain(part);
+        }
     });
 });
 

@@ -121,15 +121,6 @@ export const TABLET_UPRIGHT =
 export const FAN_TABLET_BOARD = 'max(360px, calc(100dvh - var(--navbar-height) - 325px))';
 
 /**
- * The room on each side of that board when it is narrower than the screen. The
- * board's row and the player bars take the same room, so the bars start and
- * end where the board does. 46px is the eval bar and the gap after it.
- */
-export const fanTabletSidesSx = {
-    [TABLET_UPRIGHT]: { px: `max(0px, calc((100% - ${FAN_TABLET_BOARD} - 46px) / 2))` },
-};
-
-/**
  * A phone on its side in the two analysis views, where it has the one column
  * of a phone held upright. A screen 900px wide or more has two columns there.
  */
@@ -154,14 +145,70 @@ export const fanUnwrapSx = {
 
 /**
  * The fan view has two columns from the theme's md breakpoint up to lg, on a
- * screen taller than a phone on its side. That is a tablet on its side, or a
- * narrow window.
+ * screen that is wider than tall and taller than a phone on its side. That is
+ * a tablet on its side, or a narrow window.
  */
 export const TWO_COLUMNS =
-    '@media (min-width: 900px) and (max-width: 1199.95px) and (min-height: 500.05px)';
+    '@media (min-width: 900px) and (max-width: 1199.95px) and (min-height: 500.05px) and (orientation: landscape)';
 
 /** Two columns on a screen tall enough for the board's column to fit under the site's header. */
-const BOARD_STAYS = '@media (min-width: 900px) and (max-width: 1199.95px) and (min-height: 600px)';
+const BOARD_STAYS =
+    '@media (min-width: 900px) and (max-width: 1199.95px) and (min-height: 600px) and (orientation: landscape)';
+
+/**
+ * A large tablet held upright, such as an iPad Pro 12.9. It is as wide as a
+ * screen with two columns, but taller than wide. In a column of its own the
+ * board would leave half of such a screen empty.
+ */
+export const UPRIGHT_WIDE =
+    '@media (min-width: 900px) and (max-width: 1199.95px) and (orientation: portrait)';
+
+/**
+ * The rows of the fan view on such a screen. The board has the full width, as
+ * on a smaller tablet held upright. Under it the stream and the leaderboard
+ * share a row, so the first screen shows both with the board. The moves and
+ * the crosstable share the row after that.
+ */
+const FAN_UPRIGHT_WIDE_ROWS: readonly (readonly [FanPart, FanPart])[] = [
+    ['top', 'top'],
+    ['board', 'board'],
+    ['bottom', 'bottom'],
+    ['nav', 'nav'],
+    ['error', 'error'],
+    ['notice', 'notice'],
+    ['guess', 'guess'],
+    ['evals', 'evals'],
+    ['twitch', 'leaders'],
+    ['moves', 'cross'],
+];
+
+/** The grid of the fan view on a large tablet held upright. */
+export const fanUprightWideGrid = {
+    gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
+    gridTemplateAreas: FAN_UPRIGHT_WIDE_ROWS.map((row) => `"${row.join(' ')}"`).join(' '),
+    gridTemplateRows: 'none',
+};
+
+/**
+ * On such a screen the board is short enough for the first screen to hold the
+ * row with the stream too. The site's header, the game picker, the player
+ * bars, the move buttons, the guess with its how-to line and the senseis take
+ * 451px with the stream's own header. The player is half the page wide, less
+ * 62px of margins, and nine sixteenths of that tall.
+ */
+export const FAN_UPRIGHT_WIDE_BOARD =
+    'max(360px, calc(100dvh - var(--navbar-height) - 451px - (100vw - 124px) * 0.28125))';
+
+/**
+ * The room on each side of the board on a tablet held upright, when the board
+ * is narrower than the screen. The board's row and the player bars take the
+ * same room, so the bars start and end where the board does. 46px is the eval
+ * bar and the gap after it.
+ */
+export const fanTabletSidesSx = {
+    [TABLET_UPRIGHT]: { px: `max(0px, calc((100% - ${FAN_TABLET_BOARD} - 46px) / 2))` },
+    [UPRIGHT_WIDE]: { px: `max(0px, calc((100% - ${FAN_UPRIGHT_WIDE_BOARD} - 46px) / 2))` },
+};
 
 /** A player's bar, with the clock. */
 const PLAYER_BAR_HEIGHT = 37;

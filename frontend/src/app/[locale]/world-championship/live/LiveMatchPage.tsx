@@ -92,6 +92,7 @@ import {
     FAN_LANDSCAPE_BOARD,
     FAN_STREAM_MAX_HEIGHT,
     FAN_TABLET_BOARD,
+    FAN_UPRIGHT_WIDE_BOARD,
     fanBoardBlockSx,
     fanLandscapeGrid,
     FanPart,
@@ -100,12 +101,14 @@ import {
     fanTopBarSx,
     fanTwoColumnGrid,
     fanUnwrapSx,
+    fanUprightWideGrid,
     parseLayout,
     PHONE,
     PHONE_LANDSCAPE,
     resolveLayout,
     TABLET_UPRIGHT,
     TWO_COLUMNS,
+    UPRIGHT_WIDE,
     WcLayout,
 } from './liveLayout';
 import { useActAs } from './localTesting';
@@ -418,8 +421,9 @@ export function LiveMatchPage() {
     // The games show only once the browser has loaded them, so the server never
     // renders them. That makes it safe to ask for the screen's real size on the
     // first render.
-    const picker = useMediaQuery(PHONE, { noSsr: true });
+    const phone = useMediaQuery(PHONE, { noSsr: true });
     const twoColumns = useMediaQuery(TWO_COLUMNS, { noSsr: true });
+    const uprightWide = useMediaQuery(UPRIGHT_WIDE, { noSsr: true });
     /** Only the fan view rearranges its parts on a phone. */
     const fan = (part: FanPart) => (streamView ? fanPartSx(part) : {});
 
@@ -432,6 +436,9 @@ export function LiveMatchPage() {
     // Admin view, which hides everything under the row.
     const fanWithoutTabs = streamView && !canAnalyze;
     const pickerBeside = fanWithoutTabs && twoColumns && !(adminOpen && canAdmin);
+    // One column has the game picker above the board. In the fan view so does a
+    // large tablet held upright.
+    const picker = phone || (streamView && uprightWide);
 
     const selectRound = (id: string) => {
         setAdminOpen(false);
@@ -1052,7 +1059,10 @@ export function LiveMatchPage() {
                     gridTemplateRows: streamView
                         ? { md: fanTwoColumnGrid.gridTemplateRows, lg: 'auto auto 1fr' }
                         : undefined,
-                    ...(streamView && { [PHONE_LANDSCAPE]: fanLandscapeGrid }),
+                    ...(streamView && {
+                        [UPRIGHT_WIDE]: fanUprightWideGrid,
+                        [PHONE_LANDSCAPE]: fanLandscapeGrid,
+                    }),
                 }}
             >
                 <Box
@@ -1127,6 +1137,9 @@ export function LiveMatchPage() {
                                     ...(streamView
                                         ? {
                                               [TABLET_UPRIGHT]: { maxWidth: FAN_TABLET_BOARD },
+                                              [UPRIGHT_WIDE]: {
+                                                  maxWidth: FAN_UPRIGHT_WIDE_BOARD,
+                                              },
                                               [PHONE_LANDSCAPE]: {
                                                   flexGrow: 0,
                                                   width: FAN_LANDSCAPE_BOARD,
