@@ -35,6 +35,14 @@ export const PHONE =
     '@media (max-width: 899.95px), (orientation: landscape) and (max-height: 500px)';
 
 /**
+ * Every screen narrower than the theme's lg breakpoint, and a phone on its
+ * side. Here the fan view has one column or two, and not the three of a wide
+ * screen.
+ */
+export const BELOW_THREE_COLUMNS =
+    '@media (max-width: 1199.95px), (orientation: landscape) and (max-height: 500px)';
+
+/**
  * The parts of the fan view, in the order a phone held upright stacks them.
  * The guess comes straight after the board and its buttons, so a guess made on
  * the board shows without scrolling. What changes during a game comes before
