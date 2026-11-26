@@ -7,6 +7,7 @@ export default function Page() {
             <Typography variant='h5'>Admin Tools</Typography>
             <Divider />
             <Stack sx={{ mt: 2 }} spacing={1}>
+                <Link href='/admin/stats'>Site Stats</Link>
                 <Link href='/admin/game-review'>Update Game Review Cohorts</Link>
                 <Link href='/admin/blog'>Blog posts</Link>
                 <Link href='/admin/blog/new'>Create Blog Post</Link>
