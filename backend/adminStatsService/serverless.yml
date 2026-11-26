@@ -1,0 +1,94 @@
+# Deploys the admin statistics page backend: account, activity and conversion
+# counts computed from the users table, plus a nightly history of the totals.
+# It only reads the users table and owns its own history table, so it deploys
+# on its own without touching the users service.
+
+service: chess-dojo-admin-stats
+
+plugins:
+  - serverless-plugin-custom-roles
+  - serverless-esbuild
+
+package:
+  individually: true
+
+provider:
+  name: aws
+  runtime: nodejs22.x
+  region: us-east-1
+  logRetentionInDays: 14
+  environment:
+    stage: ${sls:stage}
+  httpApi:
+    id: ${param:httpApiId}
+  deploymentMethod: direct
+
+functions:
+  getAdminStatistics:
+    handler: handlers.getHandler
+    timeout: 29
+    memorySize: 1024
+    events:
+      - httpApi:
+          path: /admin/site-stats
+          method: get
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource:
+          - Fn::Join:
+              - ''
+              - - ${param:UsersTableArn}
+                - '/index/CohortIdx'
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: !GetAtt AdminStatsHistoryTable.Arn
+
+  snapshotAdminStatistics:
+    handler: handlers.snapshotHandler
+    timeout: 300
+    memorySize: 1024
+    events:
+      - schedule:
+          rate: cron(50 23 * * ? *)
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource:
+          - Fn::Join:
+              - ''
+              - - ${param:UsersTableArn}
+                - '/index/CohortIdx'
+      - Effect: Allow
+        Action:
+          - dynamodb:PutItem
+        Resource: !GetAtt AdminStatsHistoryTable.Arn
+
+resources:
+  Resources:
+    AdminStatsHistoryTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${sls:stage}-admin-stats-history
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: type
+            AttributeType: S
+          - AttributeName: date
+            AttributeType: S
+        KeySchema:
+          - AttributeName: type
+            KeyType: HASH
+          - AttributeName: date
+            KeyType: RANGE
