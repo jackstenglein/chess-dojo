@@ -1,6 +1,5 @@
 import { ChessDojoIcon } from '@/style/ChessDojoIcon';
 import {
-    CheckCircle,
     Checklist,
     EditNote,
     Groups,
@@ -10,7 +9,7 @@ import {
     Whatshot,
     WorkspacePremium,
 } from '@mui/icons-material';
-import { alpha, Box, Button, Card, Chip, Grid, Stack, Typography } from '@mui/material';
+import { alpha, Box, Button, Card, Grid, Stack, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { ReactNode } from 'react';
 import { FreePlanSwitch } from './FreePlanSwitch';
@@ -68,49 +67,30 @@ export function StarterPlanComplete({
     return (
         <Card
             variant='outlined'
-            sx={{ width: 1, borderRadius: 3, p: { xs: 2.5, sm: 4 } }}
+            sx={{ width: 1, borderRadius: 3, p: { xs: 2.5, sm: 3 } }}
             data-testid='starter-plan-complete'
         >
-            <Stack spacing={3}>
-                <Stack spacing={1.5} sx={{ alignItems: 'start' }}>
+            <Stack spacing={2.5}>
+                <Stack spacing={1} sx={{ alignItems: 'start' }}>
                     <Stack
                         direction='row'
-                        sx={{
-                            width: 1,
-                            alignItems: 'center',
-                            flexWrap: 'wrap',
-                            gap: 1,
-                        }}
+                        sx={{ width: 1, alignItems: 'center', flexWrap: 'wrap', gap: 1.5 }}
                     >
-                        <Chip
-                            icon={<CheckCircle />}
-                            label={t('completeEyebrow')}
-                            color='success'
-                            variant='outlined'
-                            size='small'
-                        />
-                        <FreePlanSwitch />
-                    </Stack>
-                    <Stack direction='row' spacing={1.5} sx={{ alignItems: 'center' }}>
                         <ChessDojoIcon
-                            sx={{ fontSize: { xs: '2rem', sm: '2.5rem' }, color: 'primary.main' }}
+                            sx={{ fontSize: { xs: '2rem', sm: '2.25rem' }, color: 'primary.main' }}
                         />
-                        <Typography variant='h4' sx={{ fontWeight: 'bold' }}>
+                        <Typography
+                            variant='h4'
+                            sx={{ fontWeight: 'bold', fontSize: { xs: '1.6rem', md: '1.85rem' } }}
+                        >
                             {t('completeTitle')}
                         </Typography>
+                        <FreePlanSwitch />
                     </Stack>
                     <Typography sx={{ color: 'text.secondary', maxWidth: 640 }}>
                         {t('completeBody')}
                     </Typography>
                 </Stack>
-
-                <Grid container spacing={2}>
-                    {stats.map((stat) => (
-                        <Grid key={stat.label} size={{ xs: 12, sm: 4 }}>
-                            <StatTile {...stat} />
-                        </Grid>
-                    ))}
-                </Grid>
 
                 <Grid container spacing={2}>
                     <Grid size={{ xs: 12, md: 6 }}>
@@ -159,6 +139,15 @@ export function StarterPlanComplete({
                             }
                         />
                     </Grid>
+                </Grid>
+
+                {/* Below the options, so their buttons show without scrolling. */}
+                <Grid container spacing={2}>
+                    {stats.map((stat) => (
+                        <Grid key={stat.label} size={{ xs: 12, sm: 4 }}>
+                            <StatTile {...stat} />
+                        </Grid>
+                    ))}
                 </Grid>
             </Stack>
         </Card>
@@ -258,7 +247,7 @@ function OptionCard({
 }) {
     return (
         <Stack
-            spacing={2}
+            spacing={1.5}
             sx={{
                 height: 1,
                 p: 2.5,
