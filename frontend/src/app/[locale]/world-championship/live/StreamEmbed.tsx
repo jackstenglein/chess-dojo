@@ -130,6 +130,9 @@ export function StreamEmbed({ minimizable }: { minimizable?: boolean } = {}) {
                     width: 1,
 
                     aspectRatio: '16 / 9',
+                    // The page can cap the player's height. A lower player shows
+                    // the picture with bars at its sides.
+                    maxHeight: 'var(--wc-stream-max-height, none)',
                     bgcolor: 'black',
                     borderRadius: 1,
                     overflow: 'hidden',

@@ -1,13 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import {
     FAN_PARTS,
+    fanBoardBlockSx,
     fanLandscapeGrid,
     FanPart,
     fanPartSx,
+    fanTopBarSx,
+    fanTwoColumnGrid,
     parseLayout,
     PHONE,
     PHONE_LANDSCAPE,
     resolveLayout,
+    TWO_COLUMNS,
 } from './liveLayout';
 
 describe('parseLayout', () => {
@@ -65,24 +69,58 @@ describe('the fan view on a phone held upright', () => {
     });
 });
 
-describe('the fan view on a phone on its side', () => {
-    const rows = [...fanLandscapeGrid.gridTemplateAreas.matchAll(/"([^"]+)"/g)].map((m) =>
-        m[1].split(' '),
-    );
+/** The rows of a grid template, each a list of the names in it. */
+function rowsOf(grid: { gridTemplateAreas: string }): string[][] {
+    return [...grid.gridTemplateAreas.matchAll(/"([^"]+)"/g)].map((m) => m[1].split(' '));
+}
+
+/** Fails unless the browser would accept the grid. */
+function expectValidGrid(grid: { gridTemplateAreas: string; gridTemplateRows: string }) {
+    const rows = rowsOf(grid);
+    expect(rows.every((row) => row.length === 2)).toBe(true);
+    // An area that is not one rectangle makes the browser drop the whole grid.
+    for (const name of new Set(rows.flat().filter((cell) => cell !== '.'))) {
+        const cells = rows.flatMap((row, y) =>
+            row.flatMap((cell, x) => (cell === name ? [{ x, y }] : [])),
+        );
+        const width = Math.max(...cells.map((c) => c.x)) - Math.min(...cells.map((c) => c.x));
+        const height = Math.max(...cells.map((c) => c.y)) - Math.min(...cells.map((c) => c.y));
+        expect(cells, name).toHaveLength((width + 1) * (height + 1));
+    }
+    expect(grid.gridTemplateRows.match(/minmax\([^)]*\)|\S+/g)).toHaveLength(rows.length);
+}
+
+describe('the fan view in two columns', () => {
+    const rows = rowsOf(fanTwoColumnGrid);
+    /** The parts beside the board, from the top. */
+    const beside = rows.map(([, right]) => right).filter((part) => part !== '.');
 
     it('draws a grid the browser accepts', () => {
-        expect(rows.every((row) => row.length === 2)).toBe(true);
-        // An area that is not one rectangle makes the browser drop the whole grid.
-        for (const name of new Set(rows.flat().filter((cell) => cell !== '.'))) {
-            const cells = rows.flatMap((row, y) =>
-                row.flatMap((cell, x) => (cell === name ? [{ x, y }] : [])),
-            );
-            const width = Math.max(...cells.map((c) => c.x)) - Math.min(...cells.map((c) => c.x));
-            const height = Math.max(...cells.map((c) => c.y)) - Math.min(...cells.map((c) => c.y));
-            expect(cells, name).toHaveLength((width + 1) * (height + 1));
-        }
-        const tracks = fanLandscapeGrid.gridTemplateRows.match(/minmax\([^)]*\)|\S+/g);
-        expect(tracks).toHaveLength(rows.length);
+        expectValidGrid(fanTwoColumnGrid);
+    });
+
+    it('starts with the game picker, the guess, the stream and the leaderboard', () => {
+        expect(beside.slice(0, 4)).toEqual(['games', 'guess', 'twitch', 'leaders']);
+    });
+
+    it('puts every other part after those, beside the board', () => {
+        expect(beside.slice(4)).toEqual(['evals', 'moves', 'cross', 'notice']);
+    });
+
+    it('leaves nothing under the board, which spans every row', () => {
+        expect(rows.every(([left]) => left === '.')).toBe(true);
+        // Grid lines count from 1, so the line under the last row is one more
+        // than the number of rows.
+        expect(fanTopBarSx[TWO_COLUMNS].gridArea).toBe(`1 / 1 / ${rows.length + 1} / 2`);
+        expect(fanBoardBlockSx[TWO_COLUMNS].gridArea).toBe(`2 / 1 / ${rows.length + 1} / 2`);
+    });
+});
+
+describe('the fan view on a phone on its side', () => {
+    const rows = rowsOf(fanLandscapeGrid);
+
+    it('draws a grid the browser accepts', () => {
+        expectValidGrid(fanLandscapeGrid);
     });
 
     it('keeps the players, the guess and the move buttons beside the board', () => {
