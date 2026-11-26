@@ -258,7 +258,7 @@
                         "description": "Importa una delle tue partite e analizzala prima di usare un motore. Annota cosa pensavi, le decisioni chiave e i tuoi errori."
                     },
                     "dojoRush": {
-                        "title": "Prova l'allenatore Dojo Rush",
+                        "title": "Fai una partita a Dojo Rush",
                         "description": "Risolvi più problemi che puoi contro il tempo. Questo passo si spunta da solo dopo la tua prima sessione."
                     },
                     "masterGame": {
