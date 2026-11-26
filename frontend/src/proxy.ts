@@ -50,6 +50,7 @@ const publicPaths = [
     /^\/world-championship\/live$/,
     /^\/live-classes$/,
     /^\/class$/,
+    /^\/rush$/,
     /^\/privacy-policy$/,
 ];
 

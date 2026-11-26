@@ -17,6 +17,7 @@ export const STATIC_VIDEO_PAGE_SOURCES = [
     '/learn/sparring',
     '/live-classes',
     '/class',
+    '/rush', // No video. An ad landing page: require-corp blocks the Meta pixel beacon.
     // The ChessDojo Twitch stream under the live board.
     '/world-championship/live',
     '/admin/courses/:path*',
