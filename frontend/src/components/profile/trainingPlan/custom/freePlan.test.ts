@@ -15,6 +15,7 @@ import {
     getLockedTaskCount,
     getProgressResets,
     isFreeStarterPlanDone,
+    sortFreePlanBuckets,
 } from './freePlan';
 
 const cohort = '1000-1100';
@@ -122,6 +123,28 @@ describe('buildFreePlan', () => {
         expect(plan.buckets.map((b) => b.category)).toEqual(FREE_PLAN_CATEGORIES);
         expect(plan.buckets.map((b) => b.name)).toEqual(FREE_PLAN_CATEGORIES);
         plan.buckets.forEach((b) => expect(b.taskIds).toEqual([]));
+    });
+});
+
+describe('sortFreePlanBuckets', () => {
+    it('puts openings before middlegames and endgames, other buckets last', () => {
+        const bucket = (name: string, category?: RequirementCategory) => ({ name, category });
+        const sorted = sortFreePlanBuckets([
+            bucket('Extra'),
+            bucket('E', RequirementCategory.Endgame),
+            bucket('M', RequirementCategory.Middlegames),
+            bucket('O', RequirementCategory.Opening),
+            bucket(RequirementCategory.Tactics),
+            bucket('G', RequirementCategory.Games),
+        ]);
+        expect(sorted.map((b) => b.name)).toEqual([
+            'G',
+            RequirementCategory.Tactics,
+            'O',
+            'M',
+            'E',
+            'Extra',
+        ]);
     });
 });
 

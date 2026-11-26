@@ -12,6 +12,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { createCustomPlan } from '../customPlan';
 import { isStarterPlanFinished } from '../starter/starterProgress';
 import { MINIMUM_TASKS } from '../suggestedTasks';
+import { getBucketCategory } from './bucketColors';
 
 /** The number of tasks a free-tier user can put in each bucket of their plan. */
 export const FREE_PLAN_MAX_TASKS_PER_BUCKET = 3;
@@ -20,10 +21,28 @@ export const FREE_PLAN_MAX_TASKS_PER_BUCKET = 3;
 export const FREE_PLAN_CATEGORIES: CustomTaskCategory[] = [
     RequirementCategory.Games,
     RequirementCategory.Tactics,
+    RequirementCategory.Opening,
     RequirementCategory.Middlegames,
     RequirementCategory.Endgame,
-    RequirementCategory.Opening,
 ];
+
+/**
+ * Returns the plan's buckets in FREE_PLAN_CATEGORIES order, so plans saved with an
+ * older order show like new ones. Buckets of other categories go last, in their order.
+ */
+export function sortFreePlanBuckets<T extends Pick<CustomPlanBucket, 'name' | 'category'>>(
+    buckets: T[],
+): T[] {
+    const rank = (bucket: T) => {
+        const category = getBucketCategory(bucket);
+        const index = category ? FREE_PLAN_CATEGORIES.indexOf(category as CustomTaskCategory) : -1;
+        return index < 0 ? FREE_PLAN_CATEGORIES.length : index;
+    };
+    return buckets
+        .map((bucket, i) => ({ bucket, i }))
+        .sort((a, b) => rank(a.bucket) - rank(b.bucket) || a.i - b.i)
+        .map(({ bucket }) => bucket);
+}
 
 /** The unit a free-plan task measures its progress in. 'check' is a simple checkbox. */
 export const TASK_UNITS = [
