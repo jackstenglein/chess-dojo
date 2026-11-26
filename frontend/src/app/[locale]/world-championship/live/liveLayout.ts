@@ -45,8 +45,9 @@ export const BELOW_THREE_COLUMNS =
 /**
  * The parts of the fan view, in the order a phone held upright stacks them.
  * The guess comes straight after the board and its buttons, so a guess made on
- * the board shows without scrolling. What changes during a game comes before
- * what people look things up in, so the stream is above the moves.
+ * the board shows without scrolling. The stream and the leaderboard are what
+ * the show is about, so they come before the moves and the crosstable, which
+ * people look things up in.
  */
 export const FAN_PARTS = [
     'top',
@@ -58,8 +59,8 @@ export const FAN_PARTS = [
     'guess',
     'evals',
     'twitch',
-    'moves',
     'leaders',
+    'moves',
     'cross',
 ] as const;
 export type FanPart = (typeof FAN_PARTS)[number];
