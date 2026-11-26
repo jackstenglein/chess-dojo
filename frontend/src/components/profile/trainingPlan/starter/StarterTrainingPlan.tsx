@@ -16,6 +16,7 @@ import { CategoryColors } from '@/style/ThemeProvider';
 import { useTranslatedRequirement } from '@/translation/useTranslatedRequirement';
 import {
     AccessTime,
+    ArrowForward,
     AutoStories,
     Check,
     ChevronRight,
@@ -332,7 +333,7 @@ export function StarterTrainingPlan({
                 <Card variant='outlined' sx={dailyCardSx(true)} data-testid='starter-plan-done'>
                     <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
                         <Stack
-                            direction={{ xs: 'column', sm: 'row' }}
+                            direction={{ xs: 'column', md: 'row' }}
                             sx={{ alignItems: { xs: 'start', sm: 'center' }, gap: 2 }}
                         >
                             <EmojiEvents color='success' sx={{ fontSize: '2.25rem' }} />
@@ -376,10 +377,10 @@ export function StarterTrainingPlan({
             </Stack>
 
             <Stack
-                direction='row'
+                direction={{ xs: 'column', md: 'row' }}
                 sx={{
                     width: 1,
-                    alignItems: 'center',
+                    alignItems: { xs: 'stretch', md: 'center' },
                     gap: 1.5,
                     p: 2,
                     borderRadius: 3,
@@ -388,17 +389,19 @@ export function StarterTrainingPlan({
                     borderColor: 'divider',
                 }}
             >
-                <Lock sx={{ color: 'text.disabled' }} />
-                <Typography variant='body2' color='text.secondary' sx={{ flexGrow: 1 }}>
-                    {t('locked.description')}
-                </Typography>
+                <Stack direction='row' sx={{ alignItems: 'center', gap: 1.5, flexGrow: 1 }}>
+                    <Lock sx={{ color: 'text.disabled' }} />
+                    <Typography variant='body2' color='text.secondary'>
+                        {t('locked.description')}
+                    </Typography>
+                </Stack>
                 {!allDone && (
                     <Button
-                        size='small'
-                        color='inherit'
+                        variant='outlined'
+                        endIcon={<ArrowForward />}
                         disabled={request.isLoading()}
                         onClick={() => void onFinish()}
-                        sx={{ textTransform: 'none', color: 'text.secondary', flexShrink: 0 }}
+                        sx={{ textTransform: 'none', flexShrink: 0 }}
                         data-testid='skip-starter-plan'
                     >
                         {t('skip')}
