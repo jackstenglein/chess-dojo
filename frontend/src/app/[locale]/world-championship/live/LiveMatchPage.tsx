@@ -93,7 +93,6 @@ import {
     fanPartSx,
     fanTabletSidesSx,
     fanUnwrapSx,
-    HANDSET,
     parseLayout,
     PHONE,
     PHONE_LANDSCAPE,
@@ -411,7 +410,7 @@ export function LiveMatchPage() {
     // The games show only once the browser has loaded them, so the server never
     // renders them. That makes it safe to ask for the screen's real size on the
     // first render.
-    const handset = useMediaQuery(HANDSET, { noSsr: true });
+    const picker = useMediaQuery(PHONE, { noSsr: true });
     /** Only the fan view rearranges its parts on a phone. */
     const fan = (part: FanPart) => (streamView ? fanPartSx(part) : {});
 
@@ -761,7 +760,7 @@ export function LiveMatchPage() {
         />
     );
 
-    /** How each finished game ended, for the game picker on a phone. */
+    /** How each finished game ended, for the game picker. */
     const results = useMemo(() => {
         const byId: Record<string, string> = {};
         for (const r of rounds) {
@@ -857,9 +856,9 @@ export function LiveMatchPage() {
             {rounds.length > 0 && (
                 <Stack
                     direction='row'
-                    sx={{ alignItems: 'center', mb: handset ? 1 : 2, minWidth: 0 }}
+                    sx={{ alignItems: 'center', mb: picker ? 1 : 2, minWidth: 0 }}
                 >
-                    {handset ? (
+                    {picker ? (
                         <GamePicker
                             rounds={rounds}
                             roundId={roundId}
@@ -1262,8 +1261,8 @@ export function LiveMatchPage() {
                             Could not load this game from Lichess.
                         </Alert>
                     )}
-                    {/* A phone shows the result beside the game's name, in the game picker. */}
-                    {gameOver && !handset && (
+                    {/* The game picker shows the result beside the game's name. */}
+                    {gameOver && !picker && (
                         <Alert severity='info' sx={fan('notice')}>
                             {round?.name ?? 'This game'} ended {feed.result.replace('1/2', '½')}.
                         </Alert>

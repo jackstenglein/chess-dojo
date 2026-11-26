@@ -27,16 +27,9 @@ export function resolveLayout(saved: WcLayout | null, canAnalyze: boolean): WcLa
 export const PHONE_LANDSCAPE = '@media (orientation: landscape) and (max-height: 500px)';
 
 /**
- * Matches a phone and nothing wider. Held upright, a phone is under the theme's
- * sm breakpoint. On its side it is short. Here the games are a GamePicker and
- * not tabs.
- */
-export const HANDSET =
-    '@media (max-width: 599.95px), (orientation: landscape) and (max-height: 500px)';
-
-/**
- * A phone either way up. Held upright it is narrower than the theme's md
- * breakpoint, where the page goes down to one column.
+ * A phone either way up, and a tablet held upright. Up to the theme's md
+ * breakpoint the page has one column. Here the games are a GamePicker and not
+ * tabs.
  */
 export const PHONE =
     '@media (max-width: 899.95px), (orientation: landscape) and (max-height: 500px)';
@@ -113,10 +106,10 @@ export const TABLET_UPRIGHT =
 
 /**
  * On such a screen a board as wide as the screen would push the guess off it.
- * The board leaves 345px under the site's header for the tabs, the player
- * bars, the move buttons, the guess and the senseis.
+ * The board leaves 325px under the site's header for the game picker, the
+ * player bars, the move buttons, the guess and the senseis.
  */
-export const FAN_TABLET_BOARD = 'max(360px, calc(100dvh - var(--navbar-height) - 345px))';
+export const FAN_TABLET_BOARD = 'max(360px, calc(100dvh - var(--navbar-height) - 325px))';
 
 /**
  * The room on each side of that board when it is narrower than the screen. The
