@@ -99,30 +99,47 @@ export function getFreeTaskFields(task: CustomTask): FreeTaskFields {
     };
 }
 
-/** The sample task the plan starts with in each bucket. */
-export type SampleTasks = Record<CustomTaskCategory, Omit<FreeTaskFields, 'category'>>;
-
 /**
- * Builds a free-tier plan with one bucket per category, each holding its sample
- * task, and the sample tasks themselves.
+ * Builds an empty free-tier plan with one bucket per category, for the user to
+ * fill with their own tasks.
  * @param owner The username of the plan's owner.
  * @param planName The name of the plan.
  * @param bucketNames The name of each category's bucket.
- * @param samples The sample task of each category.
  */
 export function buildFreePlan(
     owner: string,
     planName: string,
     bucketNames: Record<CustomTaskCategory, string>,
-    samples: SampleTasks,
-): { plan: CustomPlan; tasks: CustomTask[] } {
-    const tasks: CustomTask[] = [];
-    const buckets: CustomPlanBucket[] = FREE_PLAN_CATEGORIES.map((category) => {
-        const task = buildFreeTask({ ...samples[category], category }, owner);
-        tasks.push(task);
-        return { id: uuidv4(), name: bucketNames[category], category, taskIds: [task.id] };
-    });
-    return { plan: createCustomPlan(planName, owner, buckets), tasks };
+): CustomPlan {
+    const buckets: CustomPlanBucket[] = FREE_PLAN_CATEGORIES.map((category) => ({
+        id: uuidv4(),
+        name: bucketNames[category],
+        category,
+        taskIds: [],
+    }));
+    return createCustomPlan(planName, owner, buckets);
+}
+
+/** A task of the plan whose progress a reset sets back to 0. */
+export interface ProgressReset {
+    requirementId: string;
+    /** The task's count before the reset. */
+    previousCount: number;
+}
+
+/**
+ * Returns the tasks of the plan that have progress to reset: those with a
+ * count logged above 0. Time spent is history and is not reset.
+ * @param plan The plan.
+ * @param progress The user's progress, by task id.
+ */
+export function getProgressResets(plan: CustomPlan, progress: User['progress']): ProgressReset[] {
+    return plan.buckets
+        .flatMap((b) => b.taskIds)
+        .flatMap((id) => {
+            const count = Math.max(0, ...Object.values(progress[id]?.counts ?? {}));
+            return count > 0 ? [{ requirementId: id, previousCount: count }] : [];
+        });
 }
 
 /** Categories that are not counted as Dojo plan tasks here. */

@@ -36,7 +36,7 @@ export function StarterPlanComplete({
 }) {
     const t = useTranslations('profile.trainingPlan.freePlan');
     const tStats = useTranslations('landing.hero.stats');
-    const { openCustomPlan } = useFreePlanEditor();
+    const { createPlan } = useFreePlanEditor();
 
     const stats: StatTileProps[] = [
         {
@@ -150,7 +150,7 @@ export function StarterPlanComplete({
                             action={
                                 <Button
                                     variant='outlined'
-                                    onClick={openCustomPlan}
+                                    onClick={createPlan}
                                     fullWidth
                                     data-testid='starter-build-own-button'
                                 >

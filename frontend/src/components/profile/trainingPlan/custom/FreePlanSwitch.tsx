@@ -4,16 +4,17 @@ import { useTranslations } from 'next-intl';
 import { use } from 'react';
 import { TrainingPlanContext } from '../TrainingPlanTab';
 import { PlanTypeIcon } from './PlanTypeIcon';
-import { useFreePlanEditor } from './useFreePlanEditor';
+import { FreePlanDraftContext, useFreePlanEditor } from './useFreePlanEditor';
 
 /**
  * The Custom Plan / Dojo Plan switch a free-tier member changes plans with,
- * shown at the right of the plan's header. The custom plan is made, with
- * sample tasks, the first time it is picked. Renders nothing for others.
+ * shown at the right of the plan's header. Picking Custom Plan before having
+ * one offers to create it. Renders nothing for others.
  */
 export function FreePlanSwitch() {
     const t = useTranslations('profile.trainingPlan.freePlan');
     const { user, isCurrentUser, activePlan } = use(TrainingPlanContext);
+    const { creating } = use(FreePlanDraftContext);
     const { openCustomPlan, openDojoPlan } = useFreePlanEditor();
 
     if (!isCurrentUser || !isFree(user)) {
@@ -24,7 +25,7 @@ export function FreePlanSwitch() {
         <ToggleButtonGroup
             exclusive
             size='small'
-            value={activePlan ? 'custom' : 'dojo'}
+            value={activePlan || creating ? 'custom' : 'dojo'}
             onChange={(_, v: string | null) => {
                 if (v === 'custom') {
                     openCustomPlan();
