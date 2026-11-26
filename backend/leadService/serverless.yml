@@ -33,6 +33,9 @@ functions:
         - emailTemplates/wcPrediction/confirmation.minified.html
         - emailTemplates/wcPrediction/confirmation.subject
         - emailTemplates/wcPrediction/confirmation.txt
+        - emailTemplates/rushDemo/code.minified.html
+        - emailTemplates/rushDemo/code.subject
+        - emailTemplates/rushDemo/code.txt
     events:
       - httpApi:
           path: /public/lead

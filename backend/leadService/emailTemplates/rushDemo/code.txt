@@ -1,0 +1,22 @@
+Here is your code
+
+Hi there,
+
+You finished your three Dojo Rush runs. Your best run was {{bestScore}} solved.
+
+Your code for {{percentOff}}% off a ChessDojo membership: {{code}}
+
+To use it, pick a plan and enter the code on the Stripe checkout page under "Add promotion code". It takes {{percentOff}}% off one time.
+
+See the plans: https://www.chessdojo.club/prices
+
+Every plan comes with a training plan for your rating, and with Dojo Rush that keeps your history and lets you retry every miss after a run.
+
+See you in the Dojo,
+
+The ChessDojo team
+
+--
+You're getting this because you asked for your Dojo Rush code at chessdojo.club.
+Unsubscribe: https://www.chessdojo.club/dojodigest/unsubscribe
+(c) 2026 ChessDojo
