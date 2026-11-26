@@ -339,6 +339,8 @@ export function LiveMatchPage() {
         ply++;
     }
     const atLive = node.mainline && node.ply === moves.length;
+    // A finished game has no live move, so the button to its latest move says "Last move".
+    const latestMoveLabel = gameOver ? 'Last move' : 'Live';
     const fen = node.fen;
 
     /** Shows a position: shared with the other senseis, or just here for fans. Null is live. */
@@ -834,6 +836,7 @@ export function LiveMatchPage() {
             guesses={myGuesses}
             onSelect={goTo}
             onLive={atLive ? undefined : () => goTo(null)}
+            gameOver={gameOver}
             onPromote={canAnalyze ? (n) => analysisApi.promote(n.path) : undefined}
             onDelete={canAnalyze ? (n) => analysisApi.remove(n.path) : undefined}
             // In the stream view the moves scroll in a short box, so the stream
@@ -1252,7 +1255,9 @@ export function LiveMatchPage() {
                                 }}
                             >
                                 {node.ply > 0 ? moveLabel(node.ply, node.san) : 'No moves yet'}
-                                {!atLive && (
+                                {/* A finished game has no live move, so its earlier
+                                    moves get no note. */}
+                                {!atLive && !(gameOver && node.mainline) && (
                                     <Typography
                                         component='span'
                                         color='text.secondary'
@@ -1274,11 +1279,11 @@ export function LiveMatchPage() {
                                     </IconButton>
                                 </span>
                             </Tooltip>
-                            <Tooltip title='Live'>
+                            <Tooltip title={latestMoveLabel}>
                                 <span>
                                     <IconButton
                                         size='small'
-                                        aria-label='Live'
+                                        aria-label={latestMoveLabel}
                                         onClick={() => goTo(null)}
                                         disabled={atLive}
                                         color={atLive ? 'default' : 'primary'}
