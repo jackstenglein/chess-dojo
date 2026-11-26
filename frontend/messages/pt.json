@@ -332,7 +332,7 @@
                 },
                 "stages": {
                     "welcome": {
-                        "title": "Boas-vindas",
+                        "title": "Bem-vindo ao Dojo",
                         "description": "Conhece o Dojo e a comunidade."
                     },
                     "training": {

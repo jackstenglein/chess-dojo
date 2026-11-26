@@ -344,7 +344,7 @@
                 },
                 "stages": {
                     "welcome": {
-                        "title": "Welcome",
+                        "title": "Welcome to the Dojo",
                         "description": "Get to know the Dojo and the community."
                     },
                     "training": {
