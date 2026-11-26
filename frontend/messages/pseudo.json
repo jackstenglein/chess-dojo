@@ -302,7 +302,7 @@
                 "skip": "[T] Already know the Dojo? Skip to the full training plan",
                 "buildOwn": {
                     "description": "[T] Want to train your own way? Build your own plan instead, with up to 3 tasks in each category.",
-                    "action": "[T] Build my own plan"
+                    "action": "[T] Create my own plan"
                 },
                 "welcomeKinds": {
                     "guide": {
