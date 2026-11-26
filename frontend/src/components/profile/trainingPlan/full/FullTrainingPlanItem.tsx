@@ -90,10 +90,6 @@ export const FullTrainingPlanItem = ({
     // A goal per day, week or month shows that period's minutes ("12m / 30m today").
     const period = goalPeriod(requirement);
     const time = formatTime(getTotalTime(cohort, progress), tTime);
-    // Counts start at the task's start (Polgar at #306), so progress means going past
-    // it, or having logged time on the task.
-    const hasProgress =
-        currentCount > (requirement.startCount || 0) || getTotalTime(cohort, progress) > 0;
     const expired = isExpired(requirement, progress);
     const isMinimumTask = MINIMUM_TASKS.has(requirement.id);
     const minimumReached = isMinimumTask && currentCount >= totalCount;
@@ -184,13 +180,8 @@ export const FullTrainingPlanItem = ({
                 >
                     <Grid
                         size={{ xs: 'grow', md: 9 }}
-                        onClick={() =>
-                            setTaskDialogView(
-                                isCurrentUser && hasProgress
-                                    ? TaskDialogView.Progress
-                                    : TaskDialogView.Details,
-                            )
-                        }
+                        // Clicking a task shows its details; only its log controls open logging.
+                        onClick={() => setTaskDialogView(TaskDialogView.Details)}
                         id='task-details'
                         sx={{
                             display: 'flex',

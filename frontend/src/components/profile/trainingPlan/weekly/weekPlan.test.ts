@@ -10,6 +10,8 @@ import {
     getWeekRows,
     WeekCell,
     WeekDay,
+    WeekRow,
+    withoutSuggestions,
 } from './weekPlan';
 
 // Week of Sunday 2026-09-20; "now" is Thursday afternoon.
@@ -198,5 +200,22 @@ describe('getCategoryTotals', () => {
 
     it('leaves out a category with nothing planned or logged', () => {
         expect(getCategoryTotals([row(opening, [[0, 0]])])).toEqual([]);
+    });
+});
+
+describe('withoutSuggestions', () => {
+    const cell = (goalMinutes: number, workedMinutes: number) => ({ goalMinutes, workedMinutes });
+    const row = (id: string, cells: { goalMinutes: number; workedMinutes: number }[]) =>
+        ({ task: makeTask({ id }), cells }) as WeekRow;
+
+    it('keeps pinned tasks and logged time, and drops unlogged suggestions', () => {
+        const rows = [
+            row('pinned', [cell(30, 0), cell(30, 0)]),
+            row('suggested', [cell(30, 0), cell(0, 0)]),
+            row('logged', [cell(30, 15), cell(0, 0)]),
+        ];
+        const result = withoutSuggestions(rows, new Set(['pinned']));
+        expect(result.map((r) => r.task.id)).toEqual(['pinned', 'logged']);
+        expect(result[1].cells).toEqual([cell(0, 15), cell(0, 0)]);
     });
 });

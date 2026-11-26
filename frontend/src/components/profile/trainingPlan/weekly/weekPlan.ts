@@ -212,3 +212,20 @@ export function getCategoryTotals(rows: WeekRow[]): CategoryTotal[] {
         .filter((t) => t.goalMinutes > 0 || t.workedMinutes > 0)
         .sort((a, b) => rank(a.category) - rank(b.category));
 }
+
+/**
+ * Returns the week's rows without the plan's suggestions: pinned tasks keep their
+ * planned time, other tasks keep only the time logged, and rows left empty are
+ * dropped.
+ * @param rows The week's rows.
+ * @param pinnedTaskIds The ids of the pinned tasks.
+ */
+export function withoutSuggestions(rows: WeekRow[], pinnedTaskIds: Set<string>): WeekRow[] {
+    return rows
+        .map((row) =>
+            pinnedTaskIds.has(row.task.id)
+                ? row
+                : { ...row, cells: row.cells.map((cell) => ({ ...cell, goalMinutes: 0 })) },
+        )
+        .filter((row) => row.cells.some((cell) => cell.goalMinutes > 0 || cell.workedMinutes > 0));
+}

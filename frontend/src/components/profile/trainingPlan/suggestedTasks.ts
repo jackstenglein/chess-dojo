@@ -301,14 +301,6 @@ export class TaskSuggestionAlgorithm {
         return SuggestedTaskGenerationReason.Init;
     }
 
-    shouldRegenerateToday(reason: SuggestedTaskGenerationReason): boolean {
-        return (
-            reason === SuggestedTaskGenerationReason.PinnedTaskUpdate ||
-            reason === SuggestedTaskGenerationReason.ScheduledGamesUpdateToday ||
-            reason === SuggestedTaskGenerationReason.SkippedTaskUpdate
-        );
-    }
-
     shouldRegenerateFuture(reason: SuggestedTaskGenerationReason): boolean {
         return reason !== SuggestedTaskGenerationReason.Init;
     }
@@ -436,10 +428,35 @@ export class TaskSuggestionAlgorithm {
                 return suggestions;
             }
         } else if (day.getTime() === today.getTime()) {
-            if (!this.shouldRegenerateToday(reason)) {
-                for (const task of this.weeklyPlan?.tasks[dayIdx] ?? []) {
-                    this.addTask(suggestions, task);
+            const todaysPlan = this.weeklyPlan?.tasks[dayIdx] ?? [];
+            if (todaysPlan.length > 0 && this.keepsTodaysTasks(reason, today)) {
+                // Once today has a plan, its tasks stay fixed for the day: completing
+                // or skipping tasks never brings in new suggestions. A skipped task is
+                // dropped without a replacement, and a newly pinned task is added.
+                for (const task of todaysPlan) {
+                    if (!this.skippedTaskIds.includes(task.id)) {
+                        this.addTask(suggestions, task);
+                    }
                 }
+                if (reason === SuggestedTaskGenerationReason.PinnedTaskUpdate) {
+                    // Unpinning (or taking today out of a pin's schedule) takes the
+                    // task back off today, unless time was already logged on it.
+                    const wasPinned = new Set(this.weeklyPlan?.pinnedTasks ?? []);
+                    const kept = suggestions.filter(
+                        (s) =>
+                            !wasPinned.has(s.task.id) ||
+                            this.isPinnedForDay(s.task.id, day) ||
+                            this.loggedOnDay(s.task.id, day),
+                    );
+                    suggestions.splice(0, suggestions.length, ...kept);
+
+                    for (const task of this.getPinnedTasksForDay(day)) {
+                        if (!suggestions.some((s) => s.task.id === task.id)) {
+                            suggestions.push({ task, goalMinutes: 0 });
+                        }
+                    }
+                }
+                return this.withWelcomeTasks(suggestions);
             }
         } else if (!this.shouldRegenerateFuture(reason)) {
             for (const task of this.weeklyPlan?.tasks[dayIdx] ?? []) {
@@ -472,6 +489,93 @@ export class TaskSuggestionAlgorithm {
             );
         }
 
+        return this.withWelcomeTasks(suggestions);
+    }
+
+    /**
+     * Returns whether today's existing tasks are kept rather than chosen again. Only
+     * a change to the work goal, or a classical game being scheduled or unscheduled
+     * for today, chooses today's tasks again.
+     * @param reason The reason the task list is being generated.
+     * @param today The start of today.
+     */
+    keepsTodaysTasks(reason: SuggestedTaskGenerationReason, today: Date): boolean {
+        if (reason === SuggestedTaskGenerationReason.ScheduledGamesUpdateToday) {
+            return false;
+        }
+        if (reason === SuggestedTaskGenerationReason.WorkGoalUpdate) {
+            // The saved plan's minutes can drift from the work goal during the day
+            // (e.g. after a skip), so only an actual change to the goal today counts.
+            return !this.workGoalChangedSince(today);
+        }
+        return true;
+    }
+
+    /**
+     * Returns whether the user changed their work goal on or after the given date,
+     * going by their work goal history.
+     * @param date The date to check from.
+     */
+    workGoalChangedSince(date: Date): boolean {
+        const last = this.user.workGoalHistory?.at(-1);
+        return !!last && new Date(last.date).getTime() >= date.getTime();
+    }
+
+    /**
+     * Returns whether the task is pinned and, if it has a schedule, scheduled for
+     * the given day.
+     * @param id The task's id.
+     * @param day The day.
+     */
+    isPinnedForDay(id: string, day: Date): boolean {
+        return (
+            (this.user.pinnedTasks ?? []).includes(id) && this.getScheduledMinutes(id, day) !== 0
+        );
+    }
+
+    /**
+     * Returns whether any time was logged on the task on the given day.
+     * @param id The task's id.
+     * @param day The start of the day.
+     */
+    loggedOnDay(id: string, day: Date): boolean {
+        const start = day.toISOString();
+        const next = new Date(day);
+        next.setDate(next.getDate() + 1);
+        const end = next.toISOString();
+        return this.timeline.some((entry) => {
+            const date = entry.date || entry.createdAt;
+            return (
+                entry.requirementId === id && entry.minutesSpent > 0 && date >= start && date < end
+            );
+        });
+    }
+
+    /**
+     * Returns the pinned tasks to plan on the given day: those not yet complete, not
+     * skipped, and (if they have a schedule) scheduled for that day.
+     * @param day The day.
+     */
+    getPinnedTasksForDay(day: Date): Task[] {
+        return this.pinnedTasks.filter(
+            (t) =>
+                !isComplete(
+                    this.user.dojoCohort,
+                    t,
+                    this.user.progress[t.id],
+                    this.timeline,
+                    true,
+                ) &&
+                !this.skippedTaskIds.includes(t.id) &&
+                this.getScheduledMinutes(t.id, day) !== 0,
+        );
+    }
+
+    /**
+     * Returns the suggestions with the unfinished Welcome to the Dojo tasks first.
+     * @param suggestions The day's other suggestions.
+     */
+    withWelcomeTasks(suggestions: SuggestedTask[]): SuggestedTask[] {
         const welcomeTasks = this.getWelcomeTasks();
         return welcomeTasks.concat(
             suggestions.filter((lhs) => !welcomeTasks.some((rhs) => lhs.task.id === rhs.task.id)),

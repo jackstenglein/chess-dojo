@@ -31,6 +31,7 @@ import { DatePicker } from '@mui/x-date-pickers-pro';
 import { DateTime } from 'luxon';
 import { useTranslations } from 'next-intl';
 import { use, useState } from 'react';
+import { useDoneColor } from './barColor';
 import { CategoryLabel } from './CategoryLabel';
 import {
     dailyCardActionsSx,
@@ -55,6 +56,7 @@ export function ScheduleClassicalGameDaily() {
         TaskDialogView.Details | TaskDialogView.Progress
     >();
     const upcomingGames = getUpcomingGameSchedule(user.gameSchedule);
+    const doneColor = useDoneColor();
 
     const menuActions: DailyTaskMenuAction[] = [
         {
@@ -74,8 +76,8 @@ export function ScheduleClassicalGameDaily() {
     }
 
     return (
-        <Grid size={{ xs: 12, md: 4 }}>
-            <Card variant='outlined' sx={dailyCardSx(upcomingGames.length > 0)}>
+        <Box sx={{ minWidth: 0 }}>
+            <Card variant='outlined' sx={dailyCardSx(upcomingGames.length > 0, doneColor)}>
                 <DailyTaskMenu actions={menuActions} />
 
                 <CardActionArea
@@ -86,13 +88,11 @@ export function ScheduleClassicalGameDaily() {
                     }}
                     onClick={() => setTaskDialogView(TaskDialogView.Details)}
                 >
-                    <CardContent sx={{ height: 1, p: 2.5, pb: 1.5 }}>
-                        <Stack spacing={1} sx={{ alignItems: 'start', pr: 3 }}>
+                    <CardContent sx={{ height: 1, p: 2, pb: 1 }}>
+                        <Stack spacing={0.75} sx={{ alignItems: 'start', pr: 3 }}>
                             <CategoryLabel category={RequirementCategory.Games} />
 
-                            <Typography
-                                sx={{ fontWeight: 700, fontSize: '1.1rem', lineHeight: 1.3 }}
-                            >
+                            <Typography sx={{ fontWeight: 700, fontSize: '1rem', lineHeight: 1.3 }}>
                                 {t('title')}
                             </Typography>
                         </Stack>
@@ -101,11 +101,11 @@ export function ScheduleClassicalGameDaily() {
                             sx={{
                                 color: 'text.secondary',
                                 fontSize: '0.875rem',
-                                lineHeight: 1.55,
-                                mt: 1,
-                                lineClamp: 2,
+                                lineHeight: 1.5,
+                                mt: 0.75,
+                                lineClamp: 1,
                                 display: '-webkit-box',
-                                WebkitLineClamp: 2,
+                                WebkitLineClamp: 1,
                                 WebkitBoxOrient: 'vertical',
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
@@ -157,7 +157,7 @@ export function ScheduleClassicalGameDaily() {
                     isCurrentUser={isCurrentUser}
                 />
             )}
-        </Grid>
+        </Box>
     );
 }
 
