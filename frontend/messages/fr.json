@@ -266,7 +266,7 @@
                         "description": "Parcours une partie classique de l'étude de parties de maîtres de ta cohorte. Cherche les plans et les idées derrière les coups."
                     },
                     "endgameAlgorithm": {
-                        "title": "Joue 1 position d'algorithme de finale",
+                        "title": "Termine 1 algorithme de finale",
                         "description": "Joue la première position du premier algorithme de finale de ta cohorte jusqu'à la gagner. Ton temps est reporté sur l'algorithme complet."
                     }
                 },
