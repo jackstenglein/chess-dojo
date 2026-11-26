@@ -1,5 +1,6 @@
 import { CreatePatRequest, CreatePatResponse, ListPatsResponse } from '@/database/pat';
 import { RequirementProgress } from '@/database/requirement';
+import { GetAdminStatsResponse } from '@jackstenglein/chess-dojo-common/src/adminStats/api';
 import { DiscordAuthRequest } from '@jackstenglein/chess-dojo-common/src/auth/discord';
 import { AxiosResponse } from 'axios';
 import { DateTime } from 'luxon';
@@ -258,6 +259,16 @@ export interface PutAdminComplimentaryRequest {
 export function getAdminUser(username: string) {
     return axiosService.get<AdminUserResponse>(`/admin/user/${encodeURIComponent(username)}`, {
         functionName: 'getAdminUser',
+    });
+}
+
+/**
+ * Admin-only: returns account, activity and conversion stats for the admin stats page.
+ * @returns An AxiosResponse containing the stats.
+ */
+export function getAdminStatistics() {
+    return axiosService.get<GetAdminStatsResponse>(`/admin/statistics`, {
+        functionName: 'getAdminStatistics',
     });
 }
 
