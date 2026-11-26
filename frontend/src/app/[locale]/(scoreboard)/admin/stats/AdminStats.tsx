@@ -80,6 +80,7 @@ export function AdminStats() {
     }
 
     const { totals, freePlan } = stats;
+    const totalPaid = totals.paying + totals.churned;
 
     return (
         <Container maxWidth='xl' sx={{ py: 5 }} data-testid='admin-stats'>
@@ -111,11 +112,10 @@ export function AdminStats() {
                             detail={`${number(totals.notOnboarded)} never picked a cohort`}
                         />
                         <Tile
-                            label='Paying'
-                            value={number(totals.paying)}
-                            detail={formatPercent(percent(totals.paying, totals.accounts))}
+                            label='Paying (lifetime)'
+                            value={number(totalPaid)}
+                            detail={`${formatPercent(percent(totalPaid, totals.accounts))} of accounts · ${number(totals.paying)} subscribed now, ${number(totals.churned)} canceled`}
                         />
-                        <Tile label='Canceled' value={number(totals.churned)} />
                         <Tile label='Complimentary' value={number(totals.complimentary)} />
                     </Grid>
                 </Section>
@@ -127,23 +127,27 @@ export function AdminStats() {
                     <Grid container spacing={2}>
                         <Tile label='Active today' value={number(totals.active1)} />
                         <Tile label='Active this week' value={number(totals.active7)} />
-                        <Tile label='Active in 30 days' value={number(totals.active30)} />
+                        <Tile
+                            label='Active in 30 days'
+                            value={number(totals.active30)}
+                            detail={`${number(totals.freeActive30)} free + ${number(totals.paidActive30)} paying + ${number(totals.complimentaryActive30)} complimentary`}
+                        />
                         <Tile
                             label='Free, active in 30 days'
                             value={number(totals.freeActive30)}
                             detail={`${formatPercent(percent(totals.freeActive30, totals.free))} of free`}
                         />
                         <Tile
-                            label='Paying, active in 30 days'
-                            value={number(totals.payingActive30)}
-                            detail={`${formatPercent(percent(totals.payingActive30, totals.paying))} of paying`}
+                            label='Paying (lifetime), active in 30 days'
+                            value={number(totals.paidActive30)}
+                            detail={`${formatPercent(percent(totals.paidActive30, totalPaid))} of paying`}
                         />
                     </Grid>
                 </Section>
 
                 <Section
                     title='New accounts by month'
-                    subtitle='Each month’s signups, by what those accounts are now.'
+                    subtitle='Each month’s signups, by what those accounts are now. The % above each bar is how many of them have paid.'
                     action={
                         <ToggleButtonGroup
                             size='small'
@@ -179,19 +183,24 @@ export function AdminStats() {
                                         stack: 'signups',
                                     },
                                     {
-                                        data: months.map((m) => m.paying),
-                                        label: 'Paying',
-                                        stack: 'signups',
-                                    },
-                                    {
-                                        data: months.map((m) => m.churned),
-                                        label: 'Paid, then canceled',
-                                        stack: 'signups',
-                                    },
-                                    {
                                         data: months.map((m) => m.complimentary),
                                         label: 'Complimentary',
                                         stack: 'signups',
+                                    },
+                                    {
+                                        data: months.map(convertedCount),
+                                        label: 'Paying (lifetime)',
+                                        stack: 'signups',
+                                        // On top of the stack, so the label sits above each bar.
+                                        barLabelPlacement: 'outside',
+                                        barLabel: ({ dataIndex }) => {
+                                            const m = months[dataIndex];
+                                            return m.signups > 0
+                                                ? formatPercent(
+                                                      percent(convertedCount(m), m.signups),
+                                                  )
+                                                : null;
+                                        },
                                     },
                                 ]}
                             />
@@ -201,7 +210,7 @@ export function AdminStats() {
 
                 <Section
                     title='Conversion and retention by signup month'
-                    subtitle='Converted = paying now or paid and canceled since. Recent months have had less time to convert.'
+                    subtitle='Paying (lifetime) = ever paid, whether still subscribed or canceled since. Recent months have had less time to convert.'
                 >
                     <Card variant='outlined'>
                         <CardContent>
@@ -220,7 +229,7 @@ export function AdminStats() {
                                         data: months.map((m) =>
                                             percent(convertedCount(m), m.signups),
                                         ),
-                                        label: 'Converted',
+                                        label: 'Paying (lifetime)',
                                         valueFormatter: formatPercent,
                                         connectNulls: true,
                                     },
@@ -286,8 +295,8 @@ export function AdminStats() {
                                         stack: 'cohort',
                                     },
                                     {
-                                        data: stats.cohorts.map((c) => c.paying),
-                                        label: 'Paying',
+                                        data: stats.cohorts.map((c) => c.paid),
+                                        label: 'Paying (lifetime)',
                                         stack: 'cohort',
                                     },
                                     {
@@ -323,8 +332,9 @@ export function AdminStats() {
                                     ]}
                                     series={[
                                         {
-                                            data: stats.history.map((h) => h.paying),
-                                            label: 'Paying',
+                                            // Snapshots from before `paid` was saved fall back to `paying`.
+                                            data: stats.history.map((h) => h.paid ?? h.paying),
+                                            label: 'Paying (lifetime)',
                                         },
                                         {
                                             data: stats.history.map((h) => h.active30),
@@ -408,10 +418,10 @@ function MonthTable({ months }: { months: AdminStatsMonth[] }) {
                         <TableCell align='right'>New accounts</TableCell>
                         <TableCell align='right'>Picked a cohort</TableCell>
                         <TableCell align='right'>Still free</TableCell>
-                        <TableCell align='right'>Paying</TableCell>
+                        <TableCell align='right'>Paying (lifetime)</TableCell>
+                        <TableCell align='right'>Subscribed now</TableCell>
                         <TableCell align='right'>Canceled</TableCell>
                         <TableCell align='right'>Complimentary</TableCell>
-                        <TableCell align='right'>Converted</TableCell>
                         <TableCell align='right'>Active in 30 days</TableCell>
                     </TableRow>
                 </TableHead>
@@ -422,13 +432,13 @@ function MonthTable({ months }: { months: AdminStatsMonth[] }) {
                             <TableCell align='right'>{number(m.signups)}</TableCell>
                             <TableCell align='right'>{number(m.onboarded)}</TableCell>
                             <TableCell align='right'>{number(m.free)}</TableCell>
-                            <TableCell align='right'>{number(m.paying)}</TableCell>
-                            <TableCell align='right'>{number(m.churned)}</TableCell>
-                            <TableCell align='right'>{number(m.complimentary)}</TableCell>
                             <TableCell align='right'>
                                 {number(convertedCount(m))} (
                                 {formatPercent(percent(convertedCount(m), m.signups))})
                             </TableCell>
+                            <TableCell align='right'>{number(m.paying)}</TableCell>
+                            <TableCell align='right'>{number(m.churned)}</TableCell>
+                            <TableCell align='right'>{number(m.complimentary)}</TableCell>
                             <TableCell align='right'>
                                 {number(m.active30)} (
                                 {formatPercent(percent(m.active30, m.signups))})

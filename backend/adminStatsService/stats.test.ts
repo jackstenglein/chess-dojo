@@ -68,7 +68,8 @@ describe('computeAccountStats', () => {
             active7: 2,
             active30: 3,
             freeActive30: 2,
-            payingActive30: 1,
+            paidActive30: 1,
+            complimentaryActive30: 0,
         });
     });
 
@@ -99,8 +100,8 @@ describe('computeAccountStats', () => {
 
     it('counts cohorts and free plan use', () => {
         expect(stats.cohorts).toEqual([
-            { cohort: '1000-1100', free: 1, paying: 1, active30: 2 },
-            { cohort: '1500-1600', free: 0, paying: 0, active30: 0 },
+            { cohort: '1000-1100', free: 1, paid: 1, active30: 2 },
+            { cohort: '1500-1600', free: 0, paid: 1, active30: 0 },
         ]);
         expect(stats.freePlan).toEqual({ freeOnboarded: 1, starterFinished: 1, customPlan: 1 });
     });
@@ -111,6 +112,7 @@ describe('computeAccountStats', () => {
             accounts: 5,
             free: 3,
             paying: 1,
+            paid: 2,
             active7: 2,
             active30: 3,
         });
