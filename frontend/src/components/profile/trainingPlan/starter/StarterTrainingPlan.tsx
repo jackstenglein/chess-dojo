@@ -407,11 +407,15 @@ export function StarterTrainingPlan({
                     }}
                     data-testid='starter-build-own-plan'
                 >
-                    <DashboardCustomize sx={{ color: 'primary.main', mt: 0.25 }} />
+                    <DashboardCustomize
+                        sx={{ color: 'primary.main', fontSize: '1.75rem', mt: 0.25 }}
+                    />
                     <Stack
                         sx={{ gap: 1.5, flexGrow: 1, alignItems: { xs: 'stretch', sm: 'start' } }}
                     >
-                        <Typography color='text.secondary'>{t('buildOwn.description')}</Typography>
+                        <Typography sx={{ fontSize: '1.15rem', fontWeight: 600, lineHeight: 1.4 }}>
+                            {t('buildOwn.description')}
+                        </Typography>
                         <Button
                             variant='contained'
                             size='large'
