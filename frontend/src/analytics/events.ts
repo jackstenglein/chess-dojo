@@ -57,6 +57,17 @@ export enum EventType {
     WcShare = 'wc_share',
     WcOfferClick = 'wc_offer_click',
 
+    // Dojo Rush landing page
+    RushDemoStart = 'rush_demo_start',
+    RushDemoFinish = 'rush_demo_finish',
+    RushDemoReview = 'rush_demo_review',
+    RushDemoUnlock = 'rush_demo_unlock',
+    RushDemoCodeCopy = 'rush_demo_code_copy',
+    RushDemoLeadStart = 'rush_demo_lead_start',
+    RushDemoLead = 'rush_demo_lead',
+    RushDemoOfferClick = 'rush_demo_offer_click',
+    RushDemoShare = 'rush_demo_share',
+
     // Class landing page
     ClassLead = 'class_lead',
 
