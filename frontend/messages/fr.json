@@ -300,6 +300,10 @@
                     "description": "Termine le plan de démarrage pour débloquer ton plan d'entraînement complet. Tout ce que tu marques ici y sera coché pour toi."
                 },
                 "skip": "Tu connais déjà le Dojo ? Passe directement au plan d'entraînement complet",
+                "buildOwn": {
+                    "description": "Tu préfères t'entraîner à ta façon ? Crée plutôt ton propre plan, avec jusqu'à 3 tâches par catégorie.",
+                    "action": "Créer mon propre plan"
+                },
                 "welcomeKinds": {
                     "guide": {
                         "label": "Guide",

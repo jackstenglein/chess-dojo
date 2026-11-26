@@ -9,6 +9,7 @@ import { PlayMaiaDialog } from '@/components/playbot/PlayMaiaDialog';
 import { useTimelineContext } from '@/components/profile/activity/useTimeline';
 import { getTimeControl } from '@/components/tournaments/round-robin/TimeControlChip';
 import { formatTime, Requirement, RequirementCategory } from '@/database/requirement';
+import { isFree } from '@/database/user';
 import LoadingPage from '@/loading/LoadingPage';
 import { ChessDojoIcon } from '@/style/ChessDojoIcon';
 import { DiscordIcon } from '@/style/SocialMediaIcons';
@@ -20,6 +21,7 @@ import {
     AutoStories,
     Check,
     ChevronRight,
+    DashboardCustomize,
     EmojiEvents,
     Flag,
     Lock,
@@ -49,6 +51,7 @@ import { DateTime } from 'luxon';
 import { useTranslations } from 'next-intl';
 import { ReactNode, use, useEffect, useMemo, useRef, useState } from 'react';
 import { CategoryLabel } from '../CategoryLabel';
+import { useFreePlanEditor } from '../custom/useFreePlanEditor';
 import {
     dailyCardActionsSx,
     dailyCardSx,
@@ -132,6 +135,7 @@ export function StarterTrainingPlan({
     const { updateUser } = useAuth();
     const { onNewEntry } = useTimelineContext();
     const { user, requirements, timeline, isLoading } = use(TrainingPlanContext);
+    const { createPlan } = useFreePlanEditor();
     const isPreview = preview !== StarterPreviewMode.Off;
     // Dojo Rush runs from before the member last undid the step do not count, nor, in
     // the preview, runs from before the last reset.
@@ -234,8 +238,9 @@ export function StarterTrainingPlan({
      * Credits every starter task to the member's real progress, then marks the starter
      * plan finished. Each credited task is remembered, so a retry after a failure never
      * credits a task twice.
+     * @returns Whether the starter plan was finished.
      */
-    const onFinish = async () => {
+    const onFinish = async (): Promise<boolean> => {
         request.onStart();
         let tutorials = user.tutorials ?? {};
         try {
@@ -254,9 +259,18 @@ export function StarterTrainingPlan({
             }
             await saveTutorials(withStarterPlanFinished(tutorials));
             request.onSuccess();
+            return true;
         } catch (err) {
             request.onFailure(err);
             await saveTutorials(tutorials).catch(() => undefined);
+            return false;
+        }
+    };
+
+    /** Finishes the starter plan and switches a free-tier member to a new custom plan. */
+    const onBuildOwnPlan = async () => {
+        if (await onFinish()) {
+            createPlan();
         }
     };
 
@@ -376,38 +390,74 @@ export function StarterTrainingPlan({
                 ))}
             </Stack>
 
-            <Stack
-                direction={{ xs: 'column', md: 'row' }}
-                sx={{
-                    width: 1,
-                    alignItems: { xs: 'stretch', md: 'center' },
-                    gap: 1.5,
-                    p: 2,
-                    borderRadius: 3,
-                    border: 1,
-                    borderStyle: 'dashed',
-                    borderColor: 'divider',
-                }}
-            >
-                <Stack direction='row' sx={{ alignItems: 'center', gap: 1.5, flexGrow: 1 }}>
-                    <Lock sx={{ color: 'text.disabled' }} />
-                    <Typography variant='body2' color='text.secondary'>
-                        {t('locked.description')}
-                    </Typography>
-                </Stack>
-                {!allDone && (
+            {isFree(user) ? (
+                // Free-tier members can't skip to the full plan, so they're offered
+                // their own custom plan instead.
+                <Stack
+                    direction={{ xs: 'column', md: 'row' }}
+                    sx={{
+                        width: 1,
+                        alignItems: { xs: 'stretch', md: 'center' },
+                        gap: 1.5,
+                        p: 2,
+                        borderRadius: 3,
+                        border: 1,
+                        borderStyle: 'dashed',
+                        borderColor: 'divider',
+                    }}
+                    data-testid='starter-build-own-plan'
+                >
+                    <Stack direction='row' sx={{ alignItems: 'center', gap: 1.5, flexGrow: 1 }}>
+                        <DashboardCustomize sx={{ color: 'primary.main' }} />
+                        <Typography variant='body2' color='text.secondary'>
+                            {t('buildOwn.description')}
+                        </Typography>
+                    </Stack>
                     <Button
                         variant='outlined'
                         endIcon={<ArrowForward />}
                         disabled={request.isLoading()}
-                        onClick={() => void onFinish()}
+                        onClick={() => void onBuildOwnPlan()}
                         sx={{ textTransform: 'none', flexShrink: 0 }}
-                        data-testid='skip-starter-plan'
+                        data-testid='starter-build-own-plan-button'
                     >
-                        {t('skip')}
+                        {t('buildOwn.action')}
                     </Button>
-                )}
-            </Stack>
+                </Stack>
+            ) : (
+                <Stack
+                    direction={{ xs: 'column', md: 'row' }}
+                    sx={{
+                        width: 1,
+                        alignItems: { xs: 'stretch', md: 'center' },
+                        gap: 1.5,
+                        p: 2,
+                        borderRadius: 3,
+                        border: 1,
+                        borderStyle: 'dashed',
+                        borderColor: 'divider',
+                    }}
+                >
+                    <Stack direction='row' sx={{ alignItems: 'center', gap: 1.5, flexGrow: 1 }}>
+                        <Lock sx={{ color: 'text.disabled' }} />
+                        <Typography variant='body2' color='text.secondary'>
+                            {t('locked.description')}
+                        </Typography>
+                    </Stack>
+                    {!allDone && (
+                        <Button
+                            variant='outlined'
+                            endIcon={<ArrowForward />}
+                            disabled={request.isLoading()}
+                            onClick={() => void onFinish()}
+                            sx={{ textTransform: 'none', flexShrink: 0 }}
+                            data-testid='skip-starter-plan'
+                        >
+                            {t('skip')}
+                        </Button>
+                    )}
+                </Stack>
+            )}
         </Stack>
     );
 }
