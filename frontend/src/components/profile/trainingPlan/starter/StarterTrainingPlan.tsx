@@ -71,7 +71,7 @@ import {
     StarterStepId,
     StarterStepTask,
 } from './starterPlan';
-import { StarterPreviewMode } from './starterPreview';
+import { StarterPreviewMode, useLeaveStarterReset } from './starterPreview';
 import {
     getStarterResetAt,
     getStarterRushUndoneAt,
@@ -136,6 +136,7 @@ export function StarterTrainingPlan({
     const { onNewEntry } = useTimelineContext();
     const { user, requirements, timeline, isLoading } = use(TrainingPlanContext);
     const { createPlan } = useFreePlanEditor();
+    const leaveStarterReset = useLeaveStarterReset();
     const isPreview = preview !== StarterPreviewMode.Off;
     // Dojo Rush runs from before the member last undid the step do not count, nor, in
     // the preview, runs from before the last reset.
@@ -259,6 +260,7 @@ export function StarterTrainingPlan({
             }
             await saveTutorials(withStarterPlanFinished(tutorials));
             request.onSuccess();
+            leaveStarterReset();
             return true;
         } catch (err) {
             request.onFailure(err);
