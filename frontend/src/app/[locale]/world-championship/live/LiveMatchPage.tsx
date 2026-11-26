@@ -58,17 +58,19 @@ import {
     ToggleButtonGroup,
     Tooltip,
     Typography,
+    useMediaQuery,
 } from '@mui/material';
 import { isAxiosError } from 'axios';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { AddGameDialog } from './AddGameDialog';
 import { AdminView } from './AdminView';
 import { useAnalysis } from './analysisClient';
 import { BoardThemeButton } from './BoardThemeButton';
 import { ClockText } from './ClockText';
-import { useCrosstable } from './crosstable';
+import { formatResult, useCrosstable } from './crosstable';
 import { CrosstableView } from './CrosstableView';
+import { GamePicker } from './GamePicker';
 import { GuessPanel, GuessState, Leaderboard } from './GuessTheMove';
 import { useGuestAccess } from './guestAccess';
 import {
@@ -83,13 +85,25 @@ import {
     useRoundFeed,
 } from './lichessFeed';
 import { LiveBoard } from './LiveBoard';
-import { parseLayout, resolveLayout, WcLayout } from './liveLayout';
+import {
+    FAN_LANDSCAPE_BOARD,
+    fanLandscapeGrid,
+    FanPart,
+    fanPartSx,
+    fanUnwrapSx,
+    HANDSET,
+    parseLayout,
+    PHONE,
+    PHONE_LANDSCAPE,
+    resolveLayout,
+    WcLayout,
+} from './liveLayout';
 import { useActAs } from './localTesting';
 import { useMoveSounds } from './moveSounds';
 import { Notation } from './Notation';
 import { PLAYER_COLUMN_WIDTH, PlayerColumn } from './PlayerColumn';
 import { PlayerPhoto } from './PlayerPhoto';
-import { EVAL_BAR_WIDTH, EvalBar, SenseiStrip } from './SenseiEval';
+import { EVAL_BAR_GAP, EVAL_BAR_WIDTH, EvalAverage, EvalBar, SenseiStrip } from './SenseiEval';
 import { GuestLinks, SenseiPanel } from './SenseiPanel';
 import { StreamEmbed } from './StreamEmbed';
 import {
@@ -391,6 +405,12 @@ export function LiveMatchPage() {
     };
     const streamView = layout === 'stream';
     const playerColumn = layout === 'analysis2';
+    // The games show only once the browser has loaded them, so the server never
+    // renders them. That makes it safe to ask for the screen's real size on the
+    // first render.
+    const handset = useMediaQuery(HANDSET, { noSsr: true });
+    /** Only the fan view rearranges its parts on a phone. */
+    const fan = (part: FanPart) => (streamView ? fanPartSx(part) : {});
 
     // The Admin tab. The page always opens on a game, never here.
     const canAdmin = !!user?.isAdmin || (!!actAs && isSensei);
@@ -738,13 +758,57 @@ export function LiveMatchPage() {
         />
     );
 
+    /** How each finished game ended, for the game picker on a phone. */
+    const results = useMemo(() => {
+        const byId: Record<string, string> = {};
+        for (const r of rounds) {
+            const inMatch = !r.pgnUrl && crosstable?.games.find((g) => g.number === r.number);
+            const result =
+                r.id === roundId && feed.result !== '*'
+                    ? feed.result
+                    : inMatch
+                      ? inMatch.result
+                      : '*';
+            const shown = formatResult(result);
+            if (shown) {
+                byId[r.id] = shown;
+            }
+        }
+        return byId;
+    }, [rounds, roundId, feed.result, crosstable]);
+
+    const notation = (
+        <Notation
+            root={tree}
+            current={node}
+            moves={moves}
+            guesses={myGuesses}
+            onSelect={goTo}
+            onLive={atLive ? undefined : () => goTo(null)}
+            onPromote={canAnalyze ? (n) => analysisApi.promote(n.path) : undefined}
+            onDelete={canAnalyze ? (n) => analysisApi.remove(n.path) : undefined}
+            // In the stream view the moves scroll in a short box, so the stream
+            // under them starts higher up, next to the board.
+            compact={streamView}
+            fill={!streamView}
+        />
+    );
+
     // ---- Layout ----------------------------------------------------------
     const topColor = orientation === 'white' ? 'black' : 'white';
     const bottomColor = orientation;
     const player = (color: 'white' | 'black') => (color === 'white' ? feed.white : feed.black);
 
     return (
-        <Container maxWidth='xl' sx={{ py: { xs: 2, md: 3 } }}>
+        <Container
+            maxWidth='xl'
+            sx={{
+                py: { xs: 2, md: 3 },
+                // A phone gives the board the width that wider margins would take.
+                px: { xs: 1.5, sm: 3 },
+                ...(streamView && { [PHONE_LANDSCAPE]: { py: 1 } }),
+            }}
+        >
             {/* The two views differ in height. Reserving room for the scrollbar stops
                 the page from shifting sideways when a switch adds or removes one. */}
             <GlobalStyles styles={{ html: { scrollbarGutter: 'stable' } }} />
@@ -788,61 +852,79 @@ export function LiveMatchPage() {
             )}
 
             {rounds.length > 0 && (
-                <Stack direction='row' sx={{ alignItems: 'center', mb: 2, minWidth: 0 }}>
-                    <Tabs
-                        value={adminOpen ? ADMIN_TAB : (roundId ?? false)}
-                        onChange={(_, id: string) =>
-                            id === ADMIN_TAB ? setAdminOpen(true) : selectRound(id)
-                        }
-                        variant='scrollable'
-                        scrollButtons='auto'
-                        sx={{ flexGrow: 1, minWidth: 0 }}
-                    >
-                        {canAdmin && (
-                            <Tab
-                                value={ADMIN_TAB}
-                                label='Admin'
-                                sx={{ textTransform: 'none', fontWeight: 700 }}
-                            />
-                        )}
-                        {rounds.map((r) => (
-                            <Tab
-                                key={r.id}
-                                value={r.id}
-                                sx={{ textTransform: 'none' }}
-                                label={
-                                    r.pgnUrl && isSensei ? (
-                                        <Stack direction='row' sx={{ alignItems: 'center' }}>
-                                            {r.name}
-                                            <Box
-                                                component='span'
-                                                role='button'
-                                                aria-label={`Remove ${r.name}`}
-                                                title='Remove this game'
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    void removeGame(r.id);
-                                                }}
-                                                sx={{
-                                                    ml: 0.75,
-                                                    px: 0.5,
-                                                    borderRadius: 0.5,
-                                                    color: 'text.secondary',
-                                                    '&:hover': { bgcolor: 'action.hover' },
-                                                }}
-                                            >
-                                                ×
-                                            </Box>
-                                        </Stack>
-                                    ) : r.ongoing ? (
-                                        `${r.name} · live`
-                                    ) : (
-                                        r.name
-                                    )
-                                }
-                            />
-                        ))}
-                    </Tabs>
+                <Stack
+                    direction='row'
+                    sx={{ alignItems: 'center', mb: handset ? 1 : 2, minWidth: 0 }}
+                >
+                    {handset ? (
+                        <GamePicker
+                            rounds={rounds}
+                            roundId={roundId}
+                            onSelect={selectRound}
+                            admin={
+                                canAdmin
+                                    ? { open: adminOpen, onOpen: () => setAdminOpen(true) }
+                                    : undefined
+                            }
+                            onRemove={isSensei ? (id) => void removeGame(id) : undefined}
+                            results={results}
+                        />
+                    ) : (
+                        <Tabs
+                            value={adminOpen ? ADMIN_TAB : (roundId ?? false)}
+                            onChange={(_, id: string) =>
+                                id === ADMIN_TAB ? setAdminOpen(true) : selectRound(id)
+                            }
+                            variant='scrollable'
+                            scrollButtons='auto'
+                            sx={{ flexGrow: 1, minWidth: 0 }}
+                        >
+                            {canAdmin && (
+                                <Tab
+                                    value={ADMIN_TAB}
+                                    label='Admin'
+                                    sx={{ textTransform: 'none', fontWeight: 700 }}
+                                />
+                            )}
+                            {rounds.map((r) => (
+                                <Tab
+                                    key={r.id}
+                                    value={r.id}
+                                    sx={{ textTransform: 'none' }}
+                                    label={
+                                        r.pgnUrl && isSensei ? (
+                                            <Stack direction='row' sx={{ alignItems: 'center' }}>
+                                                {r.name}
+                                                <Box
+                                                    component='span'
+                                                    role='button'
+                                                    aria-label={`Remove ${r.name}`}
+                                                    title='Remove this game'
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        void removeGame(r.id);
+                                                    }}
+                                                    sx={{
+                                                        ml: 0.75,
+                                                        px: 0.5,
+                                                        borderRadius: 0.5,
+                                                        color: 'text.secondary',
+                                                        '&:hover': { bgcolor: 'action.hover' },
+                                                    }}
+                                                >
+                                                    ×
+                                                </Box>
+                                            </Stack>
+                                        ) : r.ongoing ? (
+                                            `${r.name} · live`
+                                        ) : (
+                                            r.name
+                                        )
+                                    }
+                                />
+                            ))}
+                        </Tabs>
+                    )}
                     {canAnalyze && (
                         <ToggleButtonGroup
                             size='small'
@@ -910,13 +992,22 @@ export function LiveMatchPage() {
                           }
                         : {
                               xs: '1fr',
-                              md: 'minmax(0, 1fr) 340px',
+                              // On a tablet on its side, or in a short window, the fan view's
+                              // board is no taller than the screen has room for. The header,
+                              // the tabs, the player bars and the move buttons take the rest.
+                              // Besides the header that is 225px, less the 46px that the eval
+                              // bar adds to the column. The column beside the board takes the
+                              // width that frees up.
+                              md: streamView
+                                  ? 'minmax(0, max(406px, calc(100dvh - var(--navbar-height) - 179px))) minmax(340px, 1fr)'
+                                  : 'minmax(0, 1fr) 340px',
                               // The leaderboard needs no more than this; wider only spreads it out.
                               lg: 'minmax(0, 620px) 340px minmax(280px, 360px)',
                           },
                     gridTemplateAreas: streamView
                         ? {
-                              xs: '"top" "board" "twitch" "moves" "leaders"',
+                              // A phone stacks the parts in the order liveLayout gives them.
+                              xs: 'none',
                               md: '"top ." "board moves" "twitch twitch" "leaders leaders"',
                               lg: '"top . ." "board twitch twitch" "board moves leaders"',
                           }
@@ -933,6 +1024,7 @@ export function LiveMatchPage() {
                             },
                     // In the stream view the board spans the stream row and the notation row.
                     gridTemplateRows: streamView ? { lg: 'auto auto 1fr' } : undefined,
+                    ...(streamView && { [PHONE_LANDSCAPE]: fanLandscapeGrid }),
                 }}
             >
                 <Box
@@ -941,12 +1033,14 @@ export function LiveMatchPage() {
                         gridArea: 'top',
                         // In analysis view 2 the player column replaces the bars, except on a phone.
                         display: playerColumn ? { xs: 'block', md: 'none' } : 'block',
+                        ...fan('top'),
                     }}
                 >
                     <PlayerBar
                         player={player(topColor)}
                         seconds={clocks[topColor]}
                         running={clocks.running === topColor}
+                        beside={streamView}
                     />
                 </Box>
                 {playerColumn && (
@@ -972,8 +1066,12 @@ export function LiveMatchPage() {
                         />
                     </Box>
                 )}
-                <Stack spacing={1} sx={{ minWidth: 0, gridArea: 'board' }}>
-                    <Stack direction='row' spacing={1}>
+                <Stack
+                    spacing={1}
+                    useFlexGap
+                    sx={{ minWidth: 0, gridArea: 'board', ...(streamView && fanUnwrapSx) }}
+                >
+                    <Stack direction='row' spacing={EVAL_BAR_GAP} sx={fan('board')}>
                         <EvalBar average={bar.average} pins={bar.pins} orientation={orientation} />
                         <Box
                             sx={{
@@ -985,6 +1083,9 @@ export function LiveMatchPage() {
                                 maxWidth: playerColumn
                                     ? { md: 'max(360px, calc(100dvh - 230px))' }
                                     : undefined,
+                                ...(streamView && {
+                                    [PHONE_LANDSCAPE]: { flexGrow: 0, width: FAN_LANDSCAPE_BOARD },
+                                }),
                             }}
                         >
                             <LiveBoard
@@ -1013,14 +1114,32 @@ export function LiveMatchPage() {
                             />
                         </Box>
                     </Stack>
-                    <Box sx={{ display: playerColumn ? { xs: 'block', md: 'none' } : 'block' }}>
+                    <Box
+                        sx={{
+                            display: playerColumn ? { xs: 'block', md: 'none' } : 'block',
+                            ...fan('bottom'),
+                        }}
+                    >
                         <PlayerBar
                             player={player(bottomColor)}
                             seconds={clocks[bottomColor]}
                             running={clocks.running === bottomColor}
+                            beside={streamView}
+                            underBar={<EvalAverage average={bar.average} />}
                         />
                     </Box>
-                    <Stack direction='row' spacing={0.5} sx={{ alignItems: 'center' }}>
+                    <Stack
+                        direction='row'
+                        spacing={0.5}
+                        useFlexGap
+                        sx={[
+                            { alignItems: 'center' },
+                            fan('nav'),
+                            // On a phone the fan view's buttons close up, which leaves
+                            // the move between them room to show in full.
+                            streamView && { [PHONE]: { gap: 0 } },
+                        ]}
+                    >
                         <Tooltip title='Start'>
                             <span>
                                 <IconButton
@@ -1052,6 +1171,7 @@ export function LiveMatchPage() {
                                 textAlign: 'center',
                                 fontWeight: 800,
                                 fontSize: { xs: '1rem', sm: '1.25rem' },
+                                ...(streamView && { [PHONE]: { fontSize: '1rem' } }),
                                 fontVariantNumeric: 'tabular-nums',
                                 minWidth: 0,
                                 whiteSpace: 'nowrap',
@@ -1119,17 +1239,20 @@ export function LiveMatchPage() {
                         <BoardThemeButton />
                     </Stack>
                     {canAnalyze && analysisApi.error && (
-                        <Typography variant='caption' color='error'>
+                        <Typography variant='caption' color='error' sx={fan('error')}>
                             {analysisApi.error}
                         </Typography>
                     )}
-                    {streamView && senseiEvals}
-                    {crosstableView}
+                    {streamView && <Box sx={fan('evals')}>{senseiEvals}</Box>}
+                    {streamView ? <Box sx={fan('cross')}>{crosstableView}</Box> : crosstableView}
                     {feed.status === 'error' && (
-                        <Alert severity='error'>Could not load this game from Lichess.</Alert>
+                        <Alert severity='error' sx={fan('notice')}>
+                            Could not load this game from Lichess.
+                        </Alert>
                     )}
-                    {gameOver && (
-                        <Alert severity='info'>
+                    {/* A phone shows the result beside the game's name, in the game picker. */}
+                    {gameOver && !handset && (
+                        <Alert severity='info' sx={fan('notice')}>
                             {round?.name ?? 'This game'} ended {feed.result.replace('1/2', '½')}.
                         </Alert>
                     )}
@@ -1141,28 +1264,17 @@ export function LiveMatchPage() {
                     next to them the guess panel sits under the leaderboard. */}
                 <Stack
                     spacing={2}
+                    useFlexGap
                     sx={{
                         minWidth: 0,
                         gridArea: 'moves',
                         height: streamView ? undefined : { lg: 'var(---cg-height)' },
+                        ...(streamView && fanUnwrapSx),
                     }}
                 >
                     {/* In the fan view the guess panel comes first, above the moves. */}
-                    {streamView && guessPanel}
-                    <Notation
-                        root={tree}
-                        current={node}
-                        moves={moves}
-                        guesses={myGuesses}
-                        onSelect={goTo}
-                        onLive={atLive ? undefined : () => goTo(null)}
-                        onPromote={canAnalyze ? (n) => analysisApi.promote(n.path) : undefined}
-                        onDelete={canAnalyze ? (n) => analysisApi.remove(n.path) : undefined}
-                        // In the stream view the moves scroll in a short box, so the stream
-                        // under them starts higher up, next to the board.
-                        compact={streamView}
-                        fill={!streamView}
-                    />
+                    {streamView && <Box sx={fan('guess')}>{guessPanel}</Box>}
+                    {streamView ? <Box sx={fan('moves')}>{notation}</Box> : notation}
                     {!streamView && senseiEvals}
                 </Stack>
 
@@ -1171,6 +1283,7 @@ export function LiveMatchPage() {
                     sx={{
                         minWidth: 0,
                         gridArea: 'leaders',
+                        ...fan('leaders'),
                         ...(!streamView && {
                             minHeight: { lg: 'var(---cg-height)' },
                             justifyContent: 'space-between',
@@ -1186,7 +1299,7 @@ export function LiveMatchPage() {
                     {!streamView && guessPanel}
                 </Stack>
 
-                <Box sx={{ minWidth: 0, gridArea: 'twitch' }}>
+                <Box sx={{ minWidth: 0, gridArea: 'twitch', ...fan('twitch') }}>
                     <StreamEmbed minimizable={streamView} />
                 </Box>
             </Box>
@@ -1209,19 +1322,34 @@ function PlayerBar({
     player,
     seconds,
     running,
+    beside,
+    underBar,
 }: {
     player?: LivePlayer;
     seconds: number;
     running: boolean;
+    /** Shown in the space under the eval bar, left of the player. */
+    underBar?: ReactNode;
+    /** The fan view puts the bar beside the board on a phone on its side, not above or below it. */
+    beside?: boolean;
 }) {
     return (
         // The same row as the board: a space as wide as the eval bar, the same
         // gap, then the player, so the photo starts exactly at the board's edge.
-        <Stack direction='row' spacing={1} sx={{ alignItems: 'center' }}>
-            <Box sx={{ width: EVAL_BAR_WIDTH, flexShrink: 0 }} />
+        <Stack direction='row' spacing={EVAL_BAR_GAP} useFlexGap sx={{ alignItems: 'center' }}>
+            <Box
+                sx={{
+                    width: EVAL_BAR_WIDTH,
+                    flexShrink: 0,
+                    ...(beside && { [PHONE_LANDSCAPE]: { display: 'none' } }),
+                }}
+            >
+                {underBar}
+            </Box>
             <Stack
                 direction='row'
                 sx={{
+                    containerType: 'inline-size',
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     flexGrow: 1,
@@ -1230,11 +1358,23 @@ function PlayerBar({
                     // leave the board up to 8 device pixels narrower than its box. This cap
                     // ends the clock at the board's edge, not the box's.
                     maxWidth: 'var(---cg-width)',
+                    ...(beside && { [PHONE_LANDSCAPE]: { maxWidth: 'none' } }),
                 }}
             >
                 <Stack direction='row' spacing={1} sx={{ alignItems: 'center', minWidth: 0 }}>
                     <PlayerPhoto name={player?.name} size={36} />
-                    <Typography sx={{ fontWeight: 700 }} noWrap>
+                    <Typography
+                        sx={{
+                            fontWeight: 700,
+                            // On a narrow phone a long name fits beside the clock only
+                            // without the rating and a little smaller.
+                            '@container (max-width: 340px)': {
+                                fontSize: '0.9375rem',
+                                '& .rating': { display: 'none' },
+                            },
+                        }}
+                        noWrap
+                    >
                         {player?.title && (
                             <Box component='span' sx={{ color: 'warning.main', mr: 0.75 }}>
                                 {player.title}
@@ -1244,6 +1384,7 @@ function PlayerBar({
                         {player?.rating && (
                             <Box
                                 component='span'
+                                className='rating'
                                 sx={{ color: 'text.secondary', fontWeight: 400, ml: 0.75 }}
                             >
                                 {player.rating}
@@ -1254,16 +1395,17 @@ function PlayerBar({
                 <Paper
                     elevation={0}
                     sx={{
-                        px: 1.5,
+                        px: { xs: 1.25, sm: 1.5 },
                         py: 0.5,
                         // Trimming the line box to the digits centers them. The larger
                         // padding makes up the height the trim removes.
                         '@supports (text-box: trim-both cap alphabetic)': {
                             textBox: 'trim-both cap alphabetic',
-                            py: '11px',
+                            py: { xs: '8px', sm: '11px' },
                         },
                         fontWeight: 600,
-                        fontSize: '1.35rem',
+                        // A phone's clock is smaller, which leaves the name more of the row.
+                        fontSize: { xs: '1.1rem', sm: '1.35rem' },
                         fontVariantNumeric: 'tabular-nums',
                         bgcolor: running ? 'text.primary' : 'action.hover',
                         color: running ? 'background.paper' : 'text.primary',

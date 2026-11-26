@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatPoints, parseMatchPgn, pointsFor } from './crosstable';
+import { formatPoints, formatResult, parseMatchPgn, pointsFor } from './crosstable';
 
 const game = (round: string, white: string, black: string, result: string) =>
     `[Event "FIDE World Chess Championship 2026"]
@@ -36,6 +36,17 @@ describe('parseMatchPgn', () => {
         expect([pointsFor(g2, 'gukesh'), pointsFor(g2, 'sindarov')]).toEqual([1, 0]);
         expect([pointsFor(g3, 'gukesh'), pointsFor(g3, 'sindarov')]).toEqual([0, 1]);
         expect(pointsFor(g4, 'gukesh')).toBeUndefined();
+    });
+});
+
+describe('formatResult', () => {
+    it('writes a finished game with halves and a dash', () => {
+        expect(['1-0', '0-1', '1/2-1/2'].map(formatResult)).toEqual(['1–0', '0–1', '½–½']);
+    });
+
+    it('has nothing to write for a game that is not over', () => {
+        expect(formatResult('*')).toBeUndefined();
+        expect(formatResult('')).toBeUndefined();
     });
 });
 

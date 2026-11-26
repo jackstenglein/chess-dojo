@@ -22,3 +22,110 @@ export function resolveLayout(saved: WcLayout | null, canAnalyze: boolean): WcLa
     }
     return saved ?? 'analysis';
 }
+
+/** A phone on its side is wide, but too short to stack the page under the board. */
+export const PHONE_LANDSCAPE = '@media (orientation: landscape) and (max-height: 500px)';
+
+/**
+ * Matches a phone and nothing wider. Held upright, a phone is under the theme's
+ * sm breakpoint. On its side it is short. Here the games are a GamePicker and
+ * not tabs.
+ */
+export const HANDSET =
+    '@media (max-width: 599.95px), (orientation: landscape) and (max-height: 500px)';
+
+/**
+ * A phone either way up. Held upright it is narrower than the theme's md
+ * breakpoint, where the page goes down to one column.
+ */
+export const PHONE =
+    '@media (max-width: 899.95px), (orientation: landscape) and (max-height: 500px)';
+
+/**
+ * The parts of the fan view, in the order a phone held upright stacks them.
+ * The guess comes straight after the board and its buttons, so a guess made on
+ * the board shows without scrolling. What changes during a game comes before
+ * what people look things up in, so the stream is above the moves.
+ */
+export const FAN_PARTS = [
+    'top',
+    'board',
+    'bottom',
+    'nav',
+    'error',
+    'notice',
+    'guess',
+    'evals',
+    'twitch',
+    'moves',
+    'leaders',
+    'cross',
+] as const;
+export type FanPart = (typeof FAN_PARTS)[number];
+
+/**
+ * The fan view on a phone on its side. The players, the guess and the move
+ * buttons sit beside the board, as on Lichess, and the rest follows in two
+ * columns. The dot is an empty cell. Every part has a place here. The grid
+ * would put a part without one into the first empty row it finds.
+ */
+const FAN_LANDSCAPE_ROWS: readonly (readonly [FanPart | '.', FanPart | '.'])[] = [
+    ['board', 'top'],
+    ['board', 'guess'],
+    ['board', '.'],
+    ['board', 'nav'],
+    ['board', 'bottom'],
+    ['error', 'notice'],
+    ['moves', 'twitch'],
+    ['evals', 'leaders'],
+    ['cross', 'cross'],
+];
+
+/** How tall the GamePicker is, which a phone has in place of the game tabs. */
+export const GAME_PICKER_HEIGHT = 36;
+
+/**
+ * On a phone on its side the board is as tall as the screen has room for under
+ * the site's header and the game picker, with 8px above the picker, under it
+ * and under the board. It is never so wide that the players beside it have
+ * less than about 220px.
+ */
+export const FAN_LANDSCAPE_BOARD = `min(calc(100dvh - var(--navbar-height) - ${GAME_PICKER_HEIGHT + 24}px), calc(100vw - 340px))`;
+
+/** The grid of the fan view on a phone on its side. */
+export const fanLandscapeGrid = {
+    gridTemplateColumns: 'auto minmax(0, 1fr)',
+    gridTemplateAreas: FAN_LANDSCAPE_ROWS.map((row) => `"${row.join(' ')}"`).join(' '),
+    // The row with the empty cell stretches. It takes the height the board has
+    // left over, so the bottom player is level with the board's bottom edge
+    // whenever the parts beside the board are no taller than the board.
+    gridTemplateRows: FAN_LANDSCAPE_ROWS.map(([, side]) =>
+        side === '.' ? 'minmax(0, 1fr)' : 'auto',
+    ).join(' '),
+};
+
+/**
+ * On a phone the two columns of the fan view have no box of their own, so the
+ * page can place their parts one by one.
+ */
+export const fanUnwrapSx = { [PHONE]: { display: 'contents' } };
+
+/** Where a part of the fan view goes on a phone. A wide screen keeps the place it has. */
+export function fanPartSx(part: FanPart) {
+    // The board alone sets the width of its column. A part under it takes that
+    // width and cannot make the column wider.
+    const underBoard =
+        part !== 'board' &&
+        FAN_LANDSCAPE_ROWS.some(([left, right]) => left === part && right !== part);
+    return {
+        // A part with nothing in it, such as the crosstable before it has loaded,
+        // takes no room on any screen.
+        '&:empty': { display: 'none' },
+        [PHONE]: { minWidth: 0, order: FAN_PARTS.indexOf(part), gridArea: 'auto' },
+        // A phone on its side matches both rules. This one comes last, so it wins.
+        [PHONE_LANDSCAPE]: {
+            gridArea: part,
+            ...(underBoard && { width: 0, minWidth: '100%' }),
+        },
+    };
+}
