@@ -30,36 +30,8 @@ export const Container = ({ children }: { children: ReactNode }) => {
                     borderTopColor: 'dojoOrange.main',
                     borderRadius: { xs: 2, sm: 4 },
                     boxShadow: '0 16px 60px rgba(0, 0, 0, 0.12)',
-                    '& p:not([data-testid="blog-header"] *)': {
-                        fontSize: { xs: '1rem', sm: '1.125rem' },
-                        lineHeight: 1.85,
-                    },
-                    '& a:not([data-testid="blog-header"] *)': {
-                        textUnderlineOffset: '4px',
-                        textDecorationThickness: '1px',
-                    },
                     '& iframe': { borderRadius: 2, border: 0, my: 2 },
                     '& img': { maxWidth: '100%' },
-                    // Legacy articles use MUI headings instead of the Markdown renderer.
-                    // Keep the title/subtitle in Header independent of article sections.
-                    '& :is(h2, h3, h4, h5, h6):not([data-testid="blog-header"] *)': {
-                        color: 'text.primary',
-                        fontWeight: 800,
-                        lineHeight: 1.25,
-                        letterSpacing: '-0.02em',
-                        mt: 5,
-                        mb: 2,
-                        '& strong, & em, & a': { fontSize: 'inherit', fontWeight: 'inherit' },
-                    },
-                    '& :is(h2, h3):not([data-testid="blog-header"] *)': {
-                        fontSize: { xs: '1.75rem', sm: '2rem' },
-                        pb: 1.25,
-                        borderBottom: '2px solid',
-                        borderColor: 'divider',
-                    },
-                    '& :is(h4, h5, h6):not([data-testid="blog-header"] *)': {
-                        fontSize: { xs: '1.4rem', sm: '1.6rem' },
-                    },
                 }}
             >
                 {children}
