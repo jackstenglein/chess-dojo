@@ -17,8 +17,13 @@ interface NotationProps {
     /** The viewer's guesses by ply, to mark the ones they got right. */
     guesses: Record<string, string>;
     onSelect: (node: AnalysisNode) => void;
-    /** Shown when the board is not on the live position: takes it back there. */
+    /**
+     * The button under the moves calls this to take the board back to the latest
+     * move of the game. Without it there is no button.
+     */
     onLive?: () => void;
+    /** The game has ended, so its latest move is its last move and no longer live. */
+    gameOver?: boolean;
     /** Senseis only: right-click a variation move to promote or delete it. */
     onPromote?: (node: AnalysisNode) => void;
     onDelete?: (node: AnalysisNode) => void;
@@ -56,6 +61,7 @@ export function Notation({
     guesses,
     onSelect,
     onLive,
+    gameOver,
     onPromote,
     onDelete,
     compact,
@@ -368,7 +374,7 @@ export function Notation({
                     }}
                 >
                     <PlayIcon fontSize='small' />
-                    Back to live move
+                    {gameOver ? 'Back to last move' : 'Back to live move'}
                 </Box>
             )}
             <Menu
