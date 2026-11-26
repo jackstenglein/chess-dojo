@@ -258,7 +258,7 @@
                         "description": "Importe une de tes parties et analyse-la avant d'utiliser un moteur. Note ce que tu pensais, tes décisions clés et tes erreurs."
                     },
                     "dojoRush": {
-                        "title": "Essaie l'entraîneur Dojo Rush",
+                        "title": "Fais une partie de Dojo Rush",
                         "description": "Résous un maximum de problèmes contre la montre. Cette étape se coche toute seule après ta première session."
                     },
                     "masterGame": {

@@ -258,7 +258,7 @@
                         "description": "Importa una de tus partidas y revísala antes de usar un motor. Anota lo que pensabas, tus decisiones clave y tus errores."
                     },
                     "dojoRush": {
-                        "title": "Prueba el entrenador Dojo Rush",
+                        "title": "Haz una partida de Dojo Rush",
                         "description": "Resuelve tantos problemas como puedas contra el reloj. Este paso se marca solo después de tu primera partida."
                     },
                     "masterGame": {
