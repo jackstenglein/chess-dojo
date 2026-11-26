@@ -191,6 +191,7 @@
             },
             "daily": {
                 "today": "Today",
+                "emptyPlan": "Add tasks to your training plan below to create your daily and weekly training schedule.",
                 "summary": "{done} of {total} tasks done · {worked} of {goal}",
                 "allDone": "Done for today · {worked} logged",
                 "goalMet": "Time goal met",
@@ -252,7 +253,6 @@
             "starter": {
                 "title": "Tutorial",
                 "planName": "Dojo Training Plan",
-                "subtitle": "Three short stages to learn how training works here. Everything you complete carries over to your full training plan, which unlocks when you finish.",
                 "progress": "{done} of {total} tasks done",
                 "stepNumber": "Step {number}",
                 "stepProgress": "{done} of {total} done",
@@ -271,7 +271,7 @@
                         "description": "Import one of your games and go through it before using an engine. Note what you were thinking, your key decisions and your mistakes."
                     },
                     "dojoRush": {
-                        "title": "Try the Dojo Rush trainer",
+                        "title": "Do one run of Dojo Rush",
                         "description": "Solve as many puzzles as you can against the clock. This step ticks off by itself after your first run."
                     },
                     "masterGame": {
@@ -279,7 +279,7 @@
                         "description": "Go through one classical game from your cohort's master games study. Look for the plans and ideas behind the moves."
                     },
                     "endgameAlgorithm": {
-                        "title": "Play 1 endgame algorithm position",
+                        "title": "Complete 1 Endgame Algorithm",
                         "description": "Play the first position of your cohort's first endgame algorithm until you can win it. The time you spend carries over to the full algorithm."
                     }
                 },
@@ -313,6 +313,10 @@
                     "description": "Finish the starter plan to unlock your full training plan. Everything you mark done here will be checked off for you."
                 },
                 "skip": "Already know the Dojo? Skip to the full training plan",
+                "buildOwn": {
+                    "description": "Want to train your own way? Build your own plan instead, with up to 3 tasks in each category.",
+                    "action": "Create my own plan"
+                },
                 "welcomeKinds": {
                     "guide": {
                         "label": "Guide",
@@ -341,7 +345,7 @@
                 },
                 "stages": {
                     "welcome": {
-                        "title": "Welcome",
+                        "title": "Welcome to the Dojo",
                         "description": "Get to know the Dojo and the community."
                     },
                     "training": {
@@ -364,6 +368,82 @@
                 "title": "Graduate from {cohort}",
                 "descriptionBase": "Congrats on reaching {rating} {system}! Use this task to move to the next cohort, add a badge to your profile, and get one of your annotated games reviewed on stream!",
                 "descriptionWithName": "Congrats on reaching {rating} {system} ({name})! Use this task to move to the next cohort, add a badge to your profile, and get one of your annotated games reviewed on stream!"
+            },
+            "customPlan": {
+                "officialPlan": "Official Dojo plan",
+                "customPlanLabel": "Custom plan",
+                "removeTask": "Remove from plan",
+                "delete": "Delete",
+                "editTask": "Edit task"
+            },
+            "freePlan": {
+                "customTab": "Custom Plan",
+                "dojoTab": "Dojo Plan",
+                "planName": "My Plan",
+                "bucketGames": "Games + Analysis",
+                "bucketTactics": "Tactics",
+                "bucketMiddlegames": "Middlegame",
+                "bucketEndgames": "Endgame",
+                "bucketOpenings": "Opening",
+                "subheading": "Pick up to {max} tasks for each category. Your Today and This Week plans are built from them.",
+                "taskCount": "{count}/{max} tasks",
+                "emptyBucket": "No tasks yet. Add one to start training this category.",
+                "addTask": "Add task",
+                "bucketFull": "Category full",
+                "deleteTask": "Delete task",
+                "limitReached": "Free accounts can have {max} tasks per category. Join the full program for unlimited tasks and the full Dojo plan.",
+                "deleteTitle": "Delete {name}?",
+                "deleteContent": "The task is removed from your plan. Time you've logged stays on your profile.",
+                "addTitle": "Add a task to {bucket}",
+                "editTitle": "Edit task",
+                "taskName": "Task name",
+                "description": "Notes (optional)",
+                "measuredIn": "Measure progress in",
+                "unitGames": "Games",
+                "unitMinutes": "Minutes",
+                "unitPuzzles": "Puzzles",
+                "unitPages": "Pages",
+                "unitChapters": "Chapters",
+                "unitExercises": "Exercises",
+                "unitSessions": "Sessions",
+                "unitCheck": "Just check it off",
+                "goal": "Goal ({unit})",
+                "startCount": "Already done",
+                "startCountHelper": "Optional",
+                "nameRequired": "Please enter a name",
+                "goalError": "Enter a whole number",
+                "startCountError": "Must be less than the goal",
+                "save": "Save",
+                "completeTitle": "You finished the Dojo Starter Plan!",
+                "completeBody": "Choose how you want to keep training.",
+                "statAverageGain": "average rating points gained",
+                "statAverageGainDetail": "Follow a plan built for your rating",
+                "statTotalPoints": "total rating points gained",
+                "statTotalPointsDetail": "Train alongside a community of players",
+                "statGraduations": "total graduations",
+                "statGraduationsDetail": "Get your games reviewed by a sensei",
+                "fullProgramTitle": "Join the full Dojo program",
+                "fullProgramBody": "Unlock {count} more tasks in the {cohort} training plan, and a new plan every time you graduate.",
+                "fullProgramBullet1": "Complete training plans from 0‑2400+",
+                "fullProgramBullet2": "Daily and weekly tasks picked for your rating",
+                "fullProgramBullet3": "Graduate up the cohorts and get your games reviewed by a sensei",
+                "fullProgramBullet4": "Classes, courses, opening tools, puzzles, bots and an active community",
+                "joinCta": "Join the full program",
+                "customOptionTitle": "Build your own plan",
+                "customOptionBody": "Keep training for free with a plan you put together yourself.",
+                "customOptionBullet1": "5 categories with up to 3 tasks each",
+                "customOptionBullet2": "Track games, hours, puzzles, and more",
+                "customOptionBullet3": "Log your progress and see your activity on the heatmap",
+                "buildOwnCta": "Build my own plan (free)",
+                "createTitle": "Build your own training plan",
+                "createBody": "Start from scratch: add up to {max} tasks to each category, and measure them however you like — games, minutes, pages, puzzles and more.",
+                "createCta": "Create New Plan",
+                "resetProgress": "Reset progress",
+                "resetTitle": "Reset your plan's progress?",
+                "resetContent": "Progress on every task in your plan goes back to 0. Your tasks stay, and time you've logged stays on your profile.",
+                "resetConfirm": "Reset",
+                "resetNothing": "No progress to reset yet",
+                "resetNote": "Progress reset"
             },
             "customTask": {
                 "createTitle": "Create Custom Task?",
@@ -725,7 +805,7 @@
             "public": "Public",
             "private": "Private",
             "unlisted": "Unlisted",
-            "dateTooltip": "{date} \u2022 {time}",
+            "dateTooltip": "{date} • {time}",
             "moveDirectoryTitle": "Move {name}?",
             "moveGameTitle": "Move game?",
             "moveFoldersAndGamesTitle": "Move {dirCount} {dirCount, plural, =1 {folder} other {folders}} and {gameCount} {gameCount, plural, =1 {game} other {games}}?",
@@ -2203,8 +2283,8 @@
                 "sortOldestFirst": "Oldest first",
                 "sortTcShortest": "Time control (shortest)",
                 "sortTcLongest": "Time control (longest)",
-                "sortTcClassBulletToClassical": "Time class (bullet \u2192 classical)",
-                "sortTcClassClassicalToBullet": "Time class (classical \u2192 bullet)",
+                "sortTcClassBulletToClassical": "Time class (bullet → classical)",
+                "sortTcClassClassicalToBullet": "Time class (classical → bullet)",
                 "sortWhiteWinsFirst": "White wins first",
                 "sortBlackWinsFirst": "Black wins first",
                 "sortDrawsFirst": "Draws first",
@@ -3493,7 +3573,7 @@
             "difficultyLabel": "Difficulty",
             "difficultyEasiest": "Easiest (-600)",
             "difficultyEasier": "Easier (-300)",
-            "difficultyStandard": "Standard (\u00b1200)",
+            "difficultyStandard": "Standard (±200)",
             "difficultyHarder": "Harder (+300)",
             "difficultyHardest": "Hardest (+600)",
             "rated": "Rated",
@@ -3637,7 +3717,7 @@
             "bestFitCohortRange": "Best Fit Cohort Range ({range})",
             "usersLine": "<dim>Users:</dim> {count}",
             "avgScoreLine": "<dim>Avg Score:</dim> {score}",
-            "regressionCaptionRange": "Best fit is calculated as a linear regression over all users {min}\u2013{max}",
+            "regressionCaptionRange": "Best fit is calculated as a linear regression over all users {min}–{max}",
             "regressionCaptionPlus": "Best fit is calculated as a linear regression over all users {min}+",
             "seriesTestRating": "Test Rating",
             "seriesYourScore": "Your Score",
@@ -3667,9 +3747,9 @@
         "freeVolunteer": "Offering volunteer help",
         "volunteeringHeading": "Volunteering",
         "volunteeringIntro": "Please message @hellokostya on Discord if you're interested in helping out with any of the following categories:",
-        "volunteerAdmin": "Admin/Organizational \u2014 organizing events, both on-stream and off-stream, modding, etc.",
-        "volunteerProgramming": "Programming \u2014 Discord bots, contributions to the website, Google Sheets, and other tech stuff!",
-        "volunteerContent": "Content \u2014 thumbnails, posting clips on social media, etc."
+        "volunteerAdmin": "Admin/Organizational — organizing events, both on-stream and off-stream, modding, etc.",
+        "volunteerProgramming": "Programming — Discord bots, contributions to the website, Google Sheets, and other tech stuff!",
+        "volunteerContent": "Content — thumbnails, posting clips on social media, etc."
     },
     "blog": {
         "footer": {
@@ -4125,15 +4205,15 @@
                 "gameReviewCompleteDialogTitle": "Game Review Complete",
                 "completedReviewDescription": "Your game review was reviewed on a previous <stream>Twitch stream</stream>. If you missed the live stream, you can watch the review in the <vods>Twitch VODs</vods> or on the <youtube>ChessDojoLive Youtube channel</youtube>.",
                 "reviewerLabel": "Reviewer:",
-                "dateReviewedLabel": "Date Reviewed: {date} \u2022 {time}",
-                "dateRequestedLabel": "Date Requested: {date} \u2022 {time}",
+                "dateReviewedLabel": "Date Reviewed: {date} • {time}",
+                "dateRequestedLabel": "Date Requested: {date} • {time}",
                 "reviewTypeDisplayLabel": "Review Type: {type}",
                 "gameReviewPendingDialogTitle": "Game Review Pending",
                 "pendingReviewDescription": "Your game review is still in the queue. One of the senseis will review this game on a future <stream>Twitch stream</stream>. If you miss the live stream, you can watch the review in the <vods>Twitch VODs</vods> or on the <youtube>ChessDojoLive Youtube channel</youtube>.",
                 "currentQueuePositionLabel": "Current Position in Queue: <value></value>",
                 "estimatedReviewDateByLabel": "Estimated Review Date: by {date}",
                 "adminSettingsTitle": "Admin Settings",
-                "reviewRequestedLabel": "Review Requested: {date} \u2022 {time}",
+                "reviewRequestedLabel": "Review Requested: {date} • {time}",
                 "markReviewedButton": "Mark Reviewed",
                 "keyArrowLeft": "Arrow Left",
                 "keyArrowRight": "Arrow Right",
@@ -4180,7 +4260,7 @@
                 "replyPlaceholder": "Reply to {displayName} ({cohort})",
                 "replyCancelButton": "cancel",
                 "replyPostButton": "reply",
-                "updatedAt": "Updated at {date} \u2022 {time}"
+                "updatedAt": "Updated at {date} • {time}"
             },
             "directories": {},
             "share": {
@@ -4388,8 +4468,8 @@
             "previousPageLabel": "Go to previous page",
             "nextPageLabel": "Go to next page",
             "freeTierLimit": "Free-tier users can only access the first page of results",
-            "displayedRowsExact": "{from}\u2013{to} of {count}",
-            "displayedRowsWithMore": "{from}\u2013{to} of {count}+"
+            "displayedRowsExact": "{from}–{to} of {count}",
+            "displayedRowsWithMore": "{from}–{to} of {count}+"
         }
     },
     "upsell": {

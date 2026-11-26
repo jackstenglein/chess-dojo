@@ -10,6 +10,7 @@ import {
     RequirementCategory,
 } from '@/database/requirement';
 import {
+    ALL_COHORTS,
     dojoCohorts,
     formatRatingSystem,
     getCurrentRating,
@@ -27,8 +28,12 @@ import { isCustom } from '@jackstenglein/chess-dojo-common/src/ratings/ratings';
 import { BarChart, TaskAlt } from '@mui/icons-material';
 import { Box, Card, CardContent, Grid, LinearProgress, Stack, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useTimelineContext } from '../activity/useTimeline';
+import { getBucketCategory, getBucketColor } from '../trainingPlan/custom/bucketColors';
+import { getPlanProgress } from '../trainingPlan/custom/bucketProgress';
+import { sortFreePlanBuckets } from '../trainingPlan/custom/freePlan';
+import { getActivePlan, resolvePlanTasks } from '../trainingPlan/customPlan';
 import { CLASSICAL_GAMES_TASK_ID } from '../trainingPlan/suggestedTasks';
 import { TrainingPlanIcon } from '../trainingPlan/TrainingPlanIcon';
 import { CardTitle } from './CardTitle';
@@ -37,9 +42,9 @@ import { TimeManagementRatingRow } from './TimeManagementRatingRow';
 const categories = [
     RequirementCategory.Games,
     RequirementCategory.Tactics,
+    RequirementCategory.Opening,
     RequirementCategory.Middlegames,
     RequirementCategory.Endgame,
-    RequirementCategory.Opening,
 ] as const;
 
 /**
@@ -129,6 +134,7 @@ interface DojoScoreCardProps {
 const DojoScoreCard: React.FC<DojoScoreCardProps> = ({ user, cohort }) => {
     const { user: viewer } = useAuth();
     const { requirements: cohortRequirements } = useRequirements(cohort, false);
+    const { requirements: allRequirements } = useRequirements(ALL_COHORTS, false);
     const { entries: timeline } = useTimelineContext();
     const t = useTranslations('profile.info');
     const tCategory = useTranslations('enums.requirementCategory');
@@ -137,6 +143,27 @@ const DojoScoreCard: React.FC<DojoScoreCardProps> = ({ user, cohort }) => {
     const requirements = cohortRequirements.filter((requirement) =>
         isRequirementAvailableForSubscriptionTier(requirement, subscriptionTier),
     );
+
+    // With a custom plan active, the panel shows that plan's buckets instead of
+    // the Dojo categories.
+    const activePlan = getActivePlan(user);
+    const planRows = useMemo(() => {
+        if (!activePlan) {
+            return undefined;
+        }
+        const tasks = resolvePlanTasks(activePlan, allRequirements, user.customTasks ?? []);
+        const overall = getPlanProgress([...tasks.values()], user, cohort, timeline);
+        const buckets = sortFreePlanBuckets(activePlan.buckets).map((bucket, index) => {
+            const bucketTasks = bucket.taskIds.map((id) => tasks.get(id)).filter((t) => !!t);
+            return {
+                bucket,
+                color: getBucketColor(bucket, index),
+                category: getBucketCategory(bucket),
+                progress: getPlanProgress(bucketTasks, user, cohort, timeline),
+            };
+        });
+        return { overall, buckets };
+    }, [activePlan, allRequirements, user, cohort, timeline]);
 
     const totalScore = getTotalScore(cohort, requirements);
     const cohortScore = getCohortScore(user, cohort, requirements, timeline);
@@ -210,8 +237,8 @@ const DojoScoreCard: React.FC<DojoScoreCardProps> = ({ user, cohort }) => {
                     <ProgressRow
                         icon={<TaskAlt />}
                         label={t('allTasks')}
-                        value={`${percentComplete}%`}
-                        percent={percentComplete}
+                        value={`${planRows ? planRows.overall.percent : percentComplete}%`}
+                        percent={planRows ? planRows.overall.percent : percentComplete}
                         color='text.primary'
                     />
 
@@ -229,21 +256,51 @@ const DojoScoreCard: React.FC<DojoScoreCardProps> = ({ user, cohort }) => {
                         />
                     )}
 
-                    {categories.map((c) => {
-                        const value = getCategoryScore(user, cohort, c, requirements, timeline);
-                        const total = getTotalCategoryScore(cohort, c, requirements);
-                        const percent = total > 0 ? Math.round((100 * value) / total) : 0;
-                        return (
-                            <ProgressRow
-                                key={c}
-                                icon={<TrainingPlanIcon category={c} />}
-                                label={tCategory.has(c) ? tCategory(c) : c}
-                                value={`${percent}%`}
-                                percent={percent}
-                                color={CategoryColors[c]}
-                            />
-                        );
-                    })}
+                    {planRows?.buckets.map(({ bucket, color, category, progress }) => (
+                        <ProgressRow
+                            key={bucket.id}
+                            icon={
+                                category ? (
+                                    <TrainingPlanIcon category={category} />
+                                ) : (
+                                    <Box
+                                        sx={{
+                                            width: 10,
+                                            height: 10,
+                                            m: '3px',
+                                            borderRadius: '50%',
+                                            backgroundColor: color,
+                                        }}
+                                    />
+                                )
+                            }
+                            label={
+                                category && tCategory.has(category)
+                                    ? tCategory(category)
+                                    : bucket.name
+                            }
+                            value={`${progress.percent}%`}
+                            percent={progress.percent}
+                            color={color}
+                        />
+                    ))}
+
+                    {!planRows &&
+                        categories.map((c) => {
+                            const value = getCategoryScore(user, cohort, c, requirements, timeline);
+                            const total = getTotalCategoryScore(cohort, c, requirements);
+                            const percent = total > 0 ? Math.round((100 * value) / total) : 0;
+                            return (
+                                <ProgressRow
+                                    key={c}
+                                    icon={<TrainingPlanIcon category={c} />}
+                                    label={tCategory.has(c) ? tCategory(c) : c}
+                                    value={`${percent}%`}
+                                    percent={percent}
+                                    color={CategoryColors[c]}
+                                />
+                            );
+                        })}
 
                     {timeManagementRating && timeManagementRating.currentRating > 0 && (
                         <Grid container>

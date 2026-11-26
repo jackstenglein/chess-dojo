@@ -41,6 +41,7 @@ import { useTranslations } from 'next-intl';
 import { use, useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { CategoryLabel } from '../CategoryLabel';
+import { FreePlanSwitch } from '../custom/FreePlanSwitch';
 import { displayProgress } from '../full/FullTrainingPlanItem';
 import { OverbookedDayAlert } from '../OverbookedDayAlert';
 import { ScheduleClassicalGameDaily } from '../ScheduleClassicalGame';
@@ -77,7 +78,13 @@ export function DailyTrainingPlan() {
         return [startDate.toISOString(), endDate.toISOString()];
     }, []);
 
-    const { suggestionsByDay, isCurrentUser, timeline, isLoading, user } = use(TrainingPlanContext);
+    const {
+        suggestionsByDay,
+        isCurrentUser,
+        planTimeline: timeline,
+        isLoading,
+        user,
+    } = use(TrainingPlanContext);
 
     const [goalTime, _, workedTime, extraTaskIds] = useTrainingPlanProgress({
         startDate,
@@ -114,6 +121,8 @@ export function DailyTrainingPlan() {
                 direction='row'
                 sx={{
                     alignItems: 'center',
+                    flexWrap: 'wrap',
+                    rowGap: 1,
                 }}
             >
                 <Tooltip title={expanded ? tCommon('hide') : tCommon('show')}>
@@ -147,6 +156,8 @@ export function DailyTrainingPlan() {
                     workGoalHistory={user.workGoalHistory}
                     variant='icon'
                 />
+
+                <FreePlanSwitch />
             </Stack>
 
             {!isLoading && taskCount > 0 && (
@@ -253,7 +264,8 @@ function DailyTrainingPlanInternal({
     endDate: string;
     extraTaskIds: Set<string>;
 }) {
-    const { suggestionsByDay, user, skippedTaskIds, allRequirements, pinnedTasks } =
+    const t = useTranslations('profile.trainingPlan.daily');
+    const { suggestionsByDay, user, skippedTaskIds, allRequirements, pinnedTasks, activePlan } =
         use(TrainingPlanContext);
     const suggestedTasks = useMemo(() => suggestionsByDay[new Date().getDay()], [suggestionsByDay]);
     const [selectedTask, setSelectedTask] = useState<Requirement | CustomTask>();
@@ -277,6 +289,9 @@ function DailyTrainingPlanInternal({
         setTaskDialogView(view);
     };
 
+    // A custom plan with no tasks yet has nothing to schedule.
+    const isEmptyPlan = !!activePlan && activePlan.buckets.every((b) => b.taskIds.length === 0);
+
     const onCloseTask = () => {
         setSelectedTask(undefined);
         setTaskDialogView(undefined);
@@ -299,10 +314,20 @@ function DailyTrainingPlanInternal({
                 />
             )}
 
+            {isEmptyPlan && (
+                <Typography
+                    sx={{ color: 'text.primary', fontWeight: 500, py: 1, pl: 1 }}
+                    data-testid='daily-empty-plan'
+                >
+                    {t('emptyPlan')}
+                </Typography>
+            )}
+
             <Grid container sx={{ width: 1 }} columnSpacing={2} rowSpacing={2}>
-                {shouldPromptGraduation(user) && !skippedTaskIds?.includes(GRADUATION_SKIP_ID) && (
-                    <GraduationTask />
-                )}
+                {/* Graduating is part of the Dojo plan, so it is not prompted from a custom plan. */}
+                {!activePlan &&
+                    shouldPromptGraduation(user) &&
+                    !skippedTaskIds?.includes(GRADUATION_SKIP_ID) && <GraduationTask />}
 
                 {suggestedTasks.map((t) =>
                     t.task.id === SCHEDULE_CLASSICAL_GAME_TASK_ID ? (
@@ -352,7 +377,7 @@ function DailyTrainingPlanItem({
     const tCommon = useTranslations('profile.trainingPlan.common');
     const tQuickLog = useTranslations('profile.trainingPlan.quickLog');
     const task = useTranslatedRequirement(suggestion.task) ?? suggestion.task;
-    const { isCurrentUser, pinnedTasks, openPinEditor, timeline, user, toggleSkip } =
+    const { isCurrentUser, pinnedTasks, openPinEditor, timeline, planTimeline, user, toggleSkip } =
         use(TrainingPlanContext);
     const isPinned = pinnedTasks.some((t) => t.id === task.id);
 
@@ -362,7 +387,7 @@ function DailyTrainingPlanItem({
         startDate,
         endDate,
         tasks,
-        timeline,
+        timeline: planTimeline,
     });
 
     const currentCount = getCurrentCount({

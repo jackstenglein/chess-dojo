@@ -179,6 +179,7 @@
             },
             "daily": {
                 "today": "Hoje",
+                "emptyPlan": "Adicione tarefas ao seu plano de treino abaixo para criar sua agenda de treino diária e semanal.",
                 "summary": "{done} de {total} tarefas feitas · {worked} de {goal}",
                 "allDone": "Concluído por hoje · {worked} registrados",
                 "goalMet": "Meta de tempo atingida",
@@ -240,7 +241,6 @@
             "starter": {
                 "title": "Tutorial",
                 "planName": "Plano de treino do Dojo",
-                "subtitle": "Três etapas curtas para aprender como funciona o treino aqui. Tudo o que concluíres passa para o teu plano de treino completo, que é desbloqueado quando terminares.",
                 "progress": "{done} de {total} tarefas concluídas",
                 "stepNumber": "Passo {number}",
                 "stepProgress": "{done} de {total} concluídas",
@@ -259,7 +259,7 @@
                         "description": "Importa uma das tuas partidas e analisa-a antes de usar um motor. Regista o que pensavas, as decisões-chave e os teus erros."
                     },
                     "dojoRush": {
-                        "title": "Experimenta o treinador Dojo Rush",
+                        "title": "Faz uma ronda de Dojo Rush",
                         "description": "Resolve o maior número de problemas possível contra o relógio. Este passo fica marcado sozinho depois da tua primeira sessão."
                     },
                     "masterGame": {
@@ -267,7 +267,7 @@
                         "description": "Analisa uma partida clássica do estudo de partidas de mestres da tua coorte. Procura os planos e as ideias por trás dos lances."
                     },
                     "endgameAlgorithm": {
-                        "title": "Joga 1 posição de um algoritmo de finais",
+                        "title": "Completa 1 algoritmo de finais",
                         "description": "Joga a primeira posição do primeiro algoritmo de finais da tua coorte até a ganhares. O tempo que gastares passa para o algoritmo completo."
                     }
                 },
@@ -301,6 +301,10 @@
                     "description": "Conclui o plano inicial para desbloquear o teu plano de treino completo. Tudo o que marcares aqui ficará marcado lá."
                 },
                 "skip": "Já conheces o Dojo? Salta para o plano de treino completo",
+                "buildOwn": {
+                    "description": "Queres treinar à tua maneira? Cria antes o teu próprio plano, com até 3 tarefas em cada categoria.",
+                    "action": "Criar o meu plano"
+                },
                 "welcomeKinds": {
                     "guide": {
                         "label": "Guia",
@@ -329,7 +333,7 @@
                 },
                 "stages": {
                     "welcome": {
-                        "title": "Boas-vindas",
+                        "title": "Bem-vindo ao Dojo",
                         "description": "Conhece o Dojo e a comunidade."
                     },
                     "training": {
@@ -352,6 +356,82 @@
                 "title": "Forme-se em {cohort}",
                 "descriptionBase": "Parabéns por alcançar {rating} {system}! Use esta tarefa para passar para a próxima coorte, adicionar uma insígnia ao seu perfil e conseguir que uma das suas partidas comentadas seja analisada ao vivo!",
                 "descriptionWithName": "Parabéns por alcançar {rating} {system} ({name})! Use esta tarefa para passar para a próxima coorte, adicionar uma insígnia ao seu perfil e conseguir que uma das suas partidas comentadas seja analisada ao vivo!"
+            },
+            "customPlan": {
+                "officialPlan": "Plano oficial do Dojo",
+                "customPlanLabel": "Plano personalizado",
+                "removeTask": "Remover do plano",
+                "delete": "Excluir",
+                "editTask": "Editar tarefa"
+            },
+            "freePlan": {
+                "customTab": "Plano personalizado",
+                "dojoTab": "Plano Dojo",
+                "planName": "Meu plano",
+                "bucketGames": "Partidas + Análise",
+                "bucketTactics": "Tática",
+                "bucketMiddlegames": "Meio-jogo",
+                "bucketEndgames": "Final",
+                "bucketOpenings": "Abertura",
+                "subheading": "Escolha até {max} tarefas por categoria. Seus planos de Hoje e Esta semana são montados a partir delas.",
+                "taskCount": "{count}/{max} tarefas",
+                "emptyBucket": "Ainda não há tarefas. Adicione uma para treinar esta categoria.",
+                "addTask": "Adicionar tarefa",
+                "bucketFull": "Categoria cheia",
+                "deleteTask": "Excluir tarefa",
+                "limitReached": "Contas gratuitas podem ter {max} tarefas por categoria. Entre no programa completo para tarefas ilimitadas e o plano Dojo completo.",
+                "deleteTitle": "Excluir {name}?",
+                "deleteContent": "A tarefa é removida do seu plano. O tempo registrado continua no seu perfil.",
+                "addTitle": "Adicionar uma tarefa a {bucket}",
+                "editTitle": "Editar tarefa",
+                "taskName": "Nome da tarefa",
+                "description": "Notas (opcional)",
+                "measuredIn": "Medir o progresso em",
+                "unitGames": "Partidas",
+                "unitMinutes": "Minutos",
+                "unitPuzzles": "Problemas",
+                "unitPages": "Páginas",
+                "unitChapters": "Capítulos",
+                "unitExercises": "Exercícios",
+                "unitSessions": "Sessões",
+                "unitCheck": "Só marcar como feita",
+                "goal": "Meta ({unit})",
+                "startCount": "Já feitos",
+                "startCountHelper": "Opcional",
+                "nameRequired": "Digite um nome",
+                "goalError": "Digite um número inteiro",
+                "startCountError": "Deve ser menor que a meta",
+                "save": "Salvar",
+                "completeTitle": "Você terminou o Plano Inicial do Dojo!",
+                "completeBody": "Escolha como quer continuar treinando.",
+                "statAverageGain": "pontos de rating ganhos em média",
+                "statAverageGainDetail": "Siga um plano feito para o seu rating",
+                "statTotalPoints": "pontos de rating ganhos no total",
+                "statTotalPointsDetail": "Treine junto com uma comunidade de jogadores",
+                "statGraduations": "graduações no total",
+                "statGraduationsDetail": "Tenha suas partidas analisadas por um sensei",
+                "fullProgramTitle": "Entre no programa Dojo completo",
+                "fullProgramBody": "Desbloqueie mais {count} tarefas no plano de treino de {cohort}, e um plano novo a cada graduação.",
+                "fullProgramBullet1": "Planos de treino completos de 0‑2400+",
+                "fullProgramBullet2": "Tarefas diárias e semanais escolhidas para seu rating",
+                "fullProgramBullet3": "Suba de coorte em coorte e tenha suas partidas analisadas por um sensei",
+                "fullProgramBullet4": "Aulas, cursos, ferramentas de aberturas, problemas, bots e uma comunidade ativa",
+                "joinCta": "Entrar no programa completo",
+                "customOptionTitle": "Monte seu próprio plano",
+                "customOptionBody": "Continue treinando de graça com um plano que você mesmo monta.",
+                "customOptionBullet1": "5 categorias com até 3 tarefas cada",
+                "customOptionBullet2": "Acompanhe partidas, horas, problemas e mais",
+                "customOptionBullet3": "Registre seu progresso e veja sua atividade no mapa de calor",
+                "buildOwnCta": "Montar meu plano (grátis)",
+                "createTitle": "Cria o teu próprio plano de treino",
+                "createBody": "Começa do zero: adiciona até {max} tarefas a cada categoria e mede-as como quiseres — partidas, minutos, páginas, problemas e mais.",
+                "createCta": "Criar novo plano",
+                "resetProgress": "Repor progresso",
+                "resetTitle": "Repor o progresso do teu plano?",
+                "resetContent": "O progresso de cada tarefa do teu plano volta a 0. As tuas tarefas ficam, e o tempo registado fica no teu perfil.",
+                "resetConfirm": "Repor",
+                "resetNothing": "Ainda não há progresso para repor",
+                "resetNote": "Progresso reposto"
             },
             "customTask": {
                 "createTitle": "Criar tarefa personalizada?",
