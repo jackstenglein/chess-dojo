@@ -87,15 +87,18 @@ import {
 import { LiveBoard } from './LiveBoard';
 import {
     FAN_LANDSCAPE_BOARD,
+    FAN_TABLET_BOARD,
     fanLandscapeGrid,
     FanPart,
     fanPartSx,
+    fanTabletSidesSx,
     fanUnwrapSx,
     HANDSET,
     parseLayout,
     PHONE,
     PHONE_LANDSCAPE,
     resolveLayout,
+    TABLET_UPRIGHT,
     WcLayout,
 } from './liveLayout';
 import { useActAs } from './localTesting';
@@ -1071,7 +1074,11 @@ export function LiveMatchPage() {
                     useFlexGap
                     sx={{ minWidth: 0, gridArea: 'board', ...(streamView && fanUnwrapSx) }}
                 >
-                    <Stack direction='row' spacing={EVAL_BAR_GAP} sx={fan('board')}>
+                    <Stack
+                        direction='row'
+                        spacing={EVAL_BAR_GAP}
+                        sx={[fan('board'), streamView && fanTabletSidesSx]}
+                    >
                         <EvalBar average={bar.average} pins={bar.pins} orientation={orientation} />
                         <Box
                             sx={{
@@ -1084,7 +1091,12 @@ export function LiveMatchPage() {
                                     ? { md: 'max(360px, calc(100dvh - 230px))' }
                                     : undefined,
                                 ...(streamView && {
-                                    [PHONE_LANDSCAPE]: { flexGrow: 0, width: FAN_LANDSCAPE_BOARD },
+                                    [TABLET_UPRIGHT]: { maxWidth: FAN_TABLET_BOARD },
+                                    [PHONE_LANDSCAPE]: {
+                                        flexGrow: 0,
+                                        width: FAN_LANDSCAPE_BOARD,
+                                        maxWidth: 'none',
+                                    },
                                 }),
                             }}
                         >
@@ -1330,13 +1342,26 @@ function PlayerBar({
     running: boolean;
     /** Shown in the space under the eval bar, left of the player. */
     underBar?: ReactNode;
-    /** The fan view puts the bar beside the board on a phone on its side, not above or below it. */
+    /**
+     * The bar is in the fan view. There it goes beside the board on a phone on
+     * its side, and lines up with the board on a tablet held upright.
+     */
     beside?: boolean;
 }) {
     return (
         // The same row as the board: a space as wide as the eval bar, the same
         // gap, then the player, so the photo starts exactly at the board's edge.
-        <Stack direction='row' spacing={EVAL_BAR_GAP} useFlexGap sx={{ alignItems: 'center' }}>
+        <Stack
+            direction='row'
+            spacing={EVAL_BAR_GAP}
+            useFlexGap
+            sx={{
+                alignItems: 'center',
+                // Under a board that is narrower than the screen, the bar starts and
+                // ends where the board does.
+                ...(beside && fanTabletSidesSx),
+            }}
+        >
             <Box
                 sx={{
                     width: EVAL_BAR_WIDTH,

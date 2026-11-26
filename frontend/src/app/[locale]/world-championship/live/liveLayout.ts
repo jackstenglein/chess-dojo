@@ -105,6 +105,29 @@ export const fanLandscapeGrid = {
 };
 
 /**
+ * A tablet held upright, or any other screen that has one column like a phone
+ * but is wider than a phone held upright and taller than a phone on its side.
+ */
+export const TABLET_UPRIGHT =
+    '@media (min-width: 600px) and (max-width: 899.95px) and (min-height: 500.05px)';
+
+/**
+ * On such a screen a board as wide as the screen would push the guess off it.
+ * The board leaves 345px under the site's header for the tabs, the player
+ * bars, the move buttons, the guess and the senseis.
+ */
+export const FAN_TABLET_BOARD = 'max(360px, calc(100dvh - var(--navbar-height) - 345px))';
+
+/**
+ * The room on each side of that board when it is narrower than the screen. The
+ * board's row and the player bars take the same room, so the bars start and
+ * end where the board does. 46px is the eval bar and the gap after it.
+ */
+export const fanTabletSidesSx = {
+    [TABLET_UPRIGHT]: { px: `max(0px, calc((100% - ${FAN_TABLET_BOARD} - 46px) / 2))` },
+};
+
+/**
  * On a phone the two columns of the fan view have no box of their own, so the
  * page can place their parts one by one.
  */
