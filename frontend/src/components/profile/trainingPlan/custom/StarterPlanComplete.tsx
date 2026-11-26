@@ -70,7 +70,7 @@ export function StarterPlanComplete({
             sx={{ width: 1, borderRadius: 3, p: { xs: 2.5, sm: 3 } }}
             data-testid='starter-plan-complete'
         >
-            <Stack spacing={2.5}>
+            <Stack spacing={2}>
                 <Stack spacing={1} sx={{ alignItems: 'start' }}>
                     <Stack
                         direction='row'
@@ -92,7 +92,15 @@ export function StarterPlanComplete({
                     </Typography>
                 </Stack>
 
-                <Grid container spacing={2}>
+                <Grid container spacing={1.5}>
+                    {stats.map((stat) => (
+                        <Grid key={stat.label} size={{ xs: 12, sm: 4 }}>
+                            <StatTile {...stat} />
+                        </Grid>
+                    ))}
+                </Grid>
+
+                <Grid container spacing={1.5}>
                     <Grid size={{ xs: 12, md: 6 }}>
                         <OptionCard
                             highlighted
@@ -140,15 +148,6 @@ export function StarterPlanComplete({
                         />
                     </Grid>
                 </Grid>
-
-                {/* Below the options, so their buttons show without scrolling. */}
-                <Grid container spacing={2}>
-                    {stats.map((stat) => (
-                        <Grid key={stat.label} size={{ xs: 12, sm: 4 }}>
-                            <StatTile {...stat} />
-                        </Grid>
-                    ))}
-                </Grid>
             </Stack>
         </Card>
     );
@@ -169,10 +168,11 @@ interface StatTileProps {
 function StatTile({ icon, color, value, label, detail, detailIcon }: StatTileProps) {
     return (
         <Stack
-            spacing={1.25}
+            spacing={1}
             sx={{
                 height: 1,
-                p: 2,
+                px: 2,
+                py: 1.5,
                 borderRadius: 2,
                 border: 1,
                 borderColor: alpha(color, 0.35),
@@ -181,32 +181,35 @@ function StatTile({ icon, color, value, label, detail, detailIcon }: StatTilePro
                 overflow: 'hidden',
             }}
         >
-            <Box
-                sx={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color,
-                    backgroundColor: alpha(color, 0.18),
-                    boxShadow: `0 0 0 4px ${alpha(color, 0.06)}`,
-                }}
-            >
-                {icon}
-            </Box>
-            <Box>
-                <Typography
-                    variant='h4'
-                    sx={{ fontWeight: 800, color, lineHeight: 1.1, letterSpacing: '-0.02em' }}
+            <Stack direction='row' spacing={1.5} sx={{ alignItems: 'center' }}>
+                <Box
+                    sx={{
+                        width: 40,
+                        height: 40,
+                        flexShrink: 0,
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color,
+                        backgroundColor: alpha(color, 0.18),
+                        boxShadow: `0 0 0 4px ${alpha(color, 0.06)}`,
+                    }}
                 >
-                    {value}
-                </Typography>
-                <Typography variant='body2' sx={{ color: 'text.secondary', mt: 0.5 }}>
-                    {label}
-                </Typography>
-            </Box>
+                    {icon}
+                </Box>
+                <Box>
+                    <Typography
+                        variant='h4'
+                        sx={{ fontWeight: 800, color, lineHeight: 1.1, letterSpacing: '-0.02em' }}
+                    >
+                        {value}
+                    </Typography>
+                    <Typography variant='body2' sx={{ color: 'text.secondary' }}>
+                        {label}
+                    </Typography>
+                </Box>
+            </Stack>
             {detail && (
                 <Stack
                     direction='row'
@@ -214,7 +217,7 @@ function StatTile({ icon, color, value, label, detail, detailIcon }: StatTilePro
                     sx={{
                         // Lines up the highlight across tiles of different heights.
                         mt: 'auto !important',
-                        pt: 1,
+                        pt: 0.5,
                         alignItems: 'center',
                         color,
                         '& svg': { fontSize: '1rem' },
@@ -263,7 +266,7 @@ function OptionCard({
                 </Typography>
             </Stack>
             <Typography sx={{ color: 'text.secondary' }}>{body}</Typography>
-            <Stack component='ul' spacing={0.75} sx={{ m: 0, pl: 2.5, flexGrow: 1 }}>
+            <Stack component='ul' spacing={0.5} sx={{ m: 0, pl: 2.5, flexGrow: 1 }}>
                 {bullets.map((b) => (
                     <Typography component='li' key={b} variant='body2'>
                         {b}
