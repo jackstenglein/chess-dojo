@@ -1,32 +1,71 @@
-import { useAuth } from '@/auth/Auth';
 import { ScoreCategories } from '@/components/profile/activity/activity';
 import { RequirementCategory } from '@/database/requirement';
 import { YearReviewDataSection } from '@/database/yearReview';
-import { CategoryColors } from '@/style/ThemeProvider';
+import { CategoryColors, ChartColors } from '@/style/ThemeProvider';
 import { Box, Card, CardContent, CardHeader, Grid, Stack, Typography } from '@mui/material';
+import { BarChart } from '@mui/x-charts';
 import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
-import { AxisOptions, Chart } from 'react-charts';
 import Percentiles from './Percentiles';
 import { SectionProps } from './section';
 
 export interface Datum {
     primary: string;
     secondary: number;
+    color?: string;
 }
 
-export const primaryAxis: AxisOptions<Datum> = {
-    position: 'left',
-    getValue: (datum) => datum.primary,
-};
+interface HorizontalBarChartProps {
+    series: { label: string; data: Datum[] }[];
+    height: number;
+    stacked?: boolean;
+    valueFormatter?: (value: number) => string;
+}
 
-export const secondaryAxes: AxisOptions<Datum>[] = [
-    {
-        position: 'bottom',
-        getValue: (datum) => datum.secondary,
-        min: 0,
-    },
-];
+export function HorizontalBarChart({
+    series,
+    height,
+    stacked,
+    valueFormatter,
+}: HorizontalBarChartProps) {
+    return (
+        <BarChart
+            layout='horizontal'
+            height={height}
+            colors={ChartColors}
+            hideLegend
+            margin={{ top: 10, right: 24 }}
+            grid={{ horizontal: true, vertical: true }}
+            yAxis={[
+                {
+                    scaleType: 'band',
+                    data: series[0]?.data.map((d) => d.primary) ?? [],
+                    width: 'auto',
+                    tickLabelStyle: { fontSize: 10 },
+                },
+            ]}
+            xAxis={[
+                {
+                    min: 0,
+                    valueFormatter,
+                    tickNumber: 8,
+                    tickLabelStyle: { fontSize: 10 },
+                },
+            ]}
+            series={series.map((s, i) => ({
+                label: s.label,
+                data: s.data.map((d) => d.secondary),
+                stack: stacked ? 'total' : undefined,
+                colorGetter: ({ dataIndex }) =>
+                    s.data[dataIndex]?.color ?? ChartColors[i % ChartColors.length],
+                ...(valueFormatter && {
+                    valueFormatter: (value: number | null) =>
+                        value === null ? '' : valueFormatter(value),
+                }),
+            }))}
+        />
+    );
+}
 
 export function getCategoryData(label: string, data: YearReviewDataSection, nonDojo?: boolean) {
     const categories = [RequirementCategory.Welcome, ...ScoreCategories];
@@ -37,9 +76,10 @@ export function getCategoryData(label: string, data: YearReviewDataSection, nonD
     return [
         {
             label,
-            data: categories.reverse().map((category) => ({
+            data: categories.map((category) => ({
                 primary: category,
                 secondary: data.byCategory?.[category] || 0,
+                color: CategoryColors[category],
             })),
         },
     ];
@@ -65,7 +105,7 @@ export function getMonthData(label: string, data: YearReviewDataSection) {
         {
             label,
             data: Object.entries(months)
-                .sort((lhs, rhs) => rhs[1].localeCompare(lhs[1]))
+                .sort((lhs, rhs) => lhs[1].localeCompare(rhs[1]))
                 .map((month) => ({
                     primary: month[0],
                     secondary: data.byPeriod?.[month[1]] || 0,
@@ -84,7 +124,6 @@ export function getTaskData(label: string, data: YearReviewDataSection) {
             data: Object.entries(data.byTask)
                 .sort((lhs, rhs) => rhs[1] - lhs[1])
                 .slice(0, 10)
-                .reverse()
                 .map((datum) => ({
                     primary: datum[0],
                     secondary: datum[1],
@@ -95,8 +134,6 @@ export function getTaskData(label: string, data: YearReviewDataSection) {
 
 const DojoPointSection = ({ review }: SectionProps) => {
     const t = useTranslations('profile.yearReview.dojoPoints');
-    const viewer = useAuth().user;
-    const dark = !viewer?.enableLightMode;
 
     const data = review.total.dojoPoints;
 
@@ -172,24 +209,8 @@ const DojoPointSection = ({ review }: SectionProps) => {
                         }}
                     >
                         <Typography>{t('byCategory')}</Typography>
-                        <Box
-                            sx={{
-                                width: 1,
-                                height: 300,
-                                mt: 2,
-                            }}
-                        >
-                            <Chart
-                                options={{
-                                    data: categoryData,
-                                    primaryAxis,
-                                    secondaryAxes,
-                                    dark,
-                                    getDatumStyle: (datum) => ({
-                                        color: CategoryColors[datum.originalDatum.primary],
-                                    }),
-                                }}
-                            />
+                        <Box sx={{ width: 1, mt: 2 }}>
+                            <HorizontalBarChart series={categoryData} height={300} />
                         </Box>
                     </Stack>
 
@@ -200,21 +221,8 @@ const DojoPointSection = ({ review }: SectionProps) => {
                         }}
                     >
                         <Typography>{t('byMonth')}</Typography>
-                        <Box
-                            sx={{
-                                width: 1,
-                                height: 400,
-                                mt: 2,
-                            }}
-                        >
-                            <Chart
-                                options={{
-                                    data: monthData,
-                                    primaryAxis,
-                                    secondaryAxes,
-                                    dark,
-                                }}
-                            />
+                        <Box sx={{ width: 1, mt: 2 }}>
+                            <HorizontalBarChart series={monthData} height={400} />
                         </Box>
                     </Stack>
 
@@ -226,21 +234,8 @@ const DojoPointSection = ({ review }: SectionProps) => {
                             }}
                         >
                             <Typography>{t('top10Tasks')}</Typography>
-                            <Box
-                                sx={{
-                                    width: 1,
-                                    height: 400,
-                                    mt: 2,
-                                }}
-                            >
-                                <Chart
-                                    options={{
-                                        data: taskData,
-                                        primaryAxis,
-                                        secondaryAxes,
-                                        dark,
-                                    }}
-                                />
+                            <Box sx={{ width: 1, mt: 2 }}>
+                                <HorizontalBarChart series={taskData} height={400} />
                             </Box>
                         </Stack>
                     )}

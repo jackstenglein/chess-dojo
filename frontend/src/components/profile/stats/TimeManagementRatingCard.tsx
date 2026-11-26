@@ -1,15 +1,13 @@
-import { useAuth } from '@/auth/Auth';
 import { RatingHistory, User } from '@/database/user';
 import { MIN_GAMES_FOR_ELO } from '@jackstenglein/chess-dojo-common/src/ratings/timeManagement';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import { Box, Card, CardContent, Stack, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
-import { Chart } from 'react-charts';
 import {
     TimeManagementDirectionIcon,
     TimeManagementDirectionTooltip,
 } from '../info/TimeManagementRatingRow';
-import { primaryAxis, secondaryAxes } from './RatingCard';
+import { RatingHistoryChart } from './RatingHistoryChart';
 
 /**
  * Returns recorded daily ratings within the last year, without inventing missing history.
@@ -40,7 +38,6 @@ export function getTimeManagementChartData(history: RatingHistory[] = [], now = 
  */
 export function TimeManagementRatingCard({ user }: { user: User }) {
     const t = useTranslations('profile');
-    const { user: viewer } = useAuth();
     const rating = user.timeManagementRating;
     if (!rating || rating.numGames <= 0) {
         return null;
@@ -94,20 +91,9 @@ export function TimeManagementRatingCard({ user }: { user: User }) {
                 </Stack>
                 {points.length > 0 ? (
                     <Box role='img' aria-label={title} sx={{ height: 300, mt: 2, minWidth: 0 }}>
-                        <Chart
-                            options={{
-                                data: [
-                                    { label: t('stats.ratingCard.ratingChartLabel'), data: points },
-                                ],
-                                primaryAxis,
-                                secondaryAxes: secondaryAxes.map((axis) => ({
-                                    ...axis,
-                                    showDatumElements: points.length === 1,
-                                })),
-                                dark: !viewer?.enableLightMode,
-                                interactionMode: 'closest',
-                                tooltip: false,
-                            }}
+                        <RatingHistoryChart
+                            data={points}
+                            label={t('stats.ratingCard.ratingChartLabel')}
                         />
                     </Box>
                 ) : (

@@ -1,34 +1,15 @@
-import { useAuth } from '@/auth/Auth';
 import { formatTime } from '@/database/requirement';
-import { CategoryColors } from '@/style/ThemeProvider';
 import { Box, Card, CardContent, CardHeader, Grid, Stack, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
-import { AxisOptions, Chart } from 'react-charts';
-import { Datum, getCategoryData, getMonthData, getTaskData, primaryAxis } from './DojoPointSection';
+import { getCategoryData, getMonthData, getTaskData, HorizontalBarChart } from './DojoPointSection';
 import Percentiles from './Percentiles';
 import { SectionProps } from './section';
-
-function getSecondaryAxes(
-    tCommon: (key: string, values?: Record<string, string | number>) => string,
-): AxisOptions<Datum>[] {
-    return [
-        {
-            position: 'bottom',
-            getValue: (datum) => datum.secondary,
-            formatters: {
-                scale: (value: number) => formatTime(value, tCommon),
-            },
-        },
-    ];
-}
 
 const TimeSection = ({ review }: SectionProps) => {
     const t = useTranslations('profile.yearReview.time');
     const tCommon = useTranslations('common');
-    const secondaryAxes = useMemo(() => getSecondaryAxes(tCommon), [tCommon]);
-    const viewer = useAuth().user;
-    const dark = !viewer?.enableLightMode;
+    const formatValue = (value: number) => formatTime(value, tCommon);
 
     const data = review.total.minutesSpent;
 
@@ -120,23 +101,11 @@ const TimeSection = ({ review }: SectionProps) => {
                             }}
                         >
                             <Typography>{t('byCategory')}</Typography>
-                            <Box
-                                sx={{
-                                    width: 1,
-                                    height: 300,
-                                    mt: 2,
-                                }}
-                            >
-                                <Chart
-                                    options={{
-                                        data: categoryData,
-                                        primaryAxis,
-                                        secondaryAxes,
-                                        dark,
-                                        getDatumStyle: (datum) => ({
-                                            color: CategoryColors[datum.originalDatum.primary],
-                                        }),
-                                    }}
+                            <Box sx={{ width: 1, mt: 2 }}>
+                                <HorizontalBarChart
+                                    series={categoryData}
+                                    height={300}
+                                    valueFormatter={formatValue}
                                 />
                             </Box>
                         </Stack>
@@ -148,20 +117,11 @@ const TimeSection = ({ review }: SectionProps) => {
                             }}
                         >
                             <Typography>{t('byMonth')}</Typography>
-                            <Box
-                                sx={{
-                                    width: 1,
-                                    height: 400,
-                                    mt: 2,
-                                }}
-                            >
-                                <Chart
-                                    options={{
-                                        data: monthData,
-                                        primaryAxis,
-                                        secondaryAxes,
-                                        dark,
-                                    }}
+                            <Box sx={{ width: 1, mt: 2 }}>
+                                <HorizontalBarChart
+                                    series={monthData}
+                                    height={400}
+                                    valueFormatter={formatValue}
                                 />
                             </Box>
                         </Stack>
@@ -174,20 +134,11 @@ const TimeSection = ({ review }: SectionProps) => {
                                 }}
                             >
                                 <Typography>{t('top10Tasks')}</Typography>
-                                <Box
-                                    sx={{
-                                        width: 1,
-                                        height: 400,
-                                        mt: 2,
-                                    }}
-                                >
-                                    <Chart
-                                        options={{
-                                            data: taskData,
-                                            primaryAxis,
-                                            secondaryAxes,
-                                            dark,
-                                        }}
+                                <Box sx={{ width: 1, mt: 2 }}>
+                                    <HorizontalBarChart
+                                        series={taskData}
+                                        height={400}
+                                        valueFormatter={formatValue}
                                     />
                                 </Box>
                             </Stack>

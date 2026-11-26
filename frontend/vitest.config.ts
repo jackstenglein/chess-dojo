@@ -19,14 +19,6 @@ export default defineConfig({
         environment: 'happy-dom',
         include: ['./src/**/*.test.ts', './src/**/*.test.tsx'],
         setupFiles: ['./src/setupTests.ts'],
-        deps: {
-            optimizer: {
-                web: {
-                    enabled: true,
-                    include: ['react-charts'],
-                },
-            },
-        },
         server: {
             deps: {
                 // https://github.com/vercel/next.js/issues/77200
