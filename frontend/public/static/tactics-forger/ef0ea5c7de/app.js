@@ -3908,8 +3908,11 @@ document.addEventListener('visibilitychange', () => document.visibilityState ===
 // once per account, one entry per session on the day it was played. progress.trainingBackfill
 // is the start of the last session added, so an interrupted run picks up where it stopped.
 const TRAINING_LIVE_FROM = Date.parse('2026-11-25T04:20:08Z');
+// Off: each added session made a newsfeed post, all at once. Accounts that opened the Forger
+// while it was on already have their past sessions.
+const BACKFILL_ON = false;
 async function backfillTrainingTime() {
-  if (!HOSTED || !cloud.username || progress.trainingBackfill === -1) return;
+  if (!BACKFILL_ON || !HOSTED || !cloud.username || progress.trainingBackfill === -1) return;
   const done = progress.trainingBackfill ?? 0;
   const past = [];
   for (const s of progress.sessions ?? []) {

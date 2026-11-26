@@ -67,6 +67,30 @@ interface ForgerVisit {
     day: string;
 }
 
+/**
+ * The visit is also kept in this browser, so coming back to the page carries on the same entry
+ * while the app's session lasts (until 30 minutes after your last puzzle), like the app does.
+ */
+const VISIT_KEY = 'tacticsForger.visit';
+
+function savedVisit(owner: string): ForgerVisit | null {
+    try {
+        const v = JSON.parse(localStorage.getItem(VISIT_KEY) ?? 'null') as
+            (ForgerVisit & { owner?: string }) | null;
+        return v?.owner === owner && v.entry ? v : null;
+    } catch {
+        return null;
+    }
+}
+
+function saveVisit(owner: string, v: ForgerVisit) {
+    try {
+        localStorage.setItem(VISIT_KEY, JSON.stringify({ ...v, owner }));
+    } catch {
+        // Private browsing: the entry just won't carry over to the next visit.
+    }
+}
+
 /** A past Forger session to add to the training plan. */
 interface PastSession {
     start: number;
@@ -142,7 +166,11 @@ export function TacticsForgerFrame({ src }: { src: string }) {
         return { entry, progress };
     };
 
-    /** Live minutes: one timeline entry per Forger session (and day), growing as you play. */
+    /**
+     * Live minutes: one timeline entry per Forger session (and day), growing as you play. The app
+     * says which session the minutes belong to; it lasts until 30 minutes after the last puzzle,
+     * even if the page is closed and opened again in between.
+     */
     const logTime = (minutes: number, puzzles: number, session: number | null) =>
         inTurn(async () => {
             const { user: u, api: a } = latest.current;
@@ -150,8 +178,18 @@ export function TacticsForgerFrame({ src }: { src: string }) {
             await ensureTask(u, a);
             const cohort = u.dojoCohort;
             const today = new Date().toDateString();
-            const v = visit.current;
-            if (v?.day === today && v.session === session) {
+            // After a reload the saved entry is used, with the task's progress from the server.
+            const kept = visit.current ? null : savedVisit(u.username);
+            const v: ForgerVisit | null =
+                visit.current ??
+                (kept && {
+                    ...kept,
+                    progress:
+                        lastProgress.current ??
+                        u.progress?.[TACTICS_FORGER_TASK_ID] ??
+                        kept.progress,
+                });
+            if (session !== null && v?.day === today && v.session === session) {
                 const total = (v.progress.minutesSpent?.[cohort] ?? 0) + minutes;
                 const count = (v.progress.counts?.[ALL_COHORTS] ?? 0) + minutes;
                 const progress: RequirementProgress = {
@@ -176,10 +214,12 @@ export function TacticsForgerFrame({ src }: { src: string }) {
                 });
                 lastProgress.current = progress;
                 visit.current = { entry, progress, session, day: today };
+                saveVisit(u.username, visit.current);
                 return;
             }
             const made = await newEntry(u, a, minutes, forgerNotes(puzzles), null);
             visit.current = { ...made, session, day: today };
+            saveVisit(u.username, visit.current);
         });
 
     /** Past sessions (from before live logging): one entry each, dated when it was played. */

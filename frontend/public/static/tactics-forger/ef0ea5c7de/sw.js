@@ -4,7 +4,7 @@
 // first (the app fetches sounds whole, so no byte-range requests reach here). Puzzle files are
 // cached as you open them, or all at once with "Download for offline".
 // VERSION is filled in by scripts/export_to_site.sh; each version keeps its own cache.
-const VERSION = 'fcd2ce5d40';
+const VERSION = 'ef0ea5c7de';
 const CACHE = `tactics-forger-${VERSION}`;
 const SHELL = [
   './', 'index.html', 'app.js', 'icons.js', 'styles.css', 'board.css',
