@@ -84,11 +84,12 @@ export function computeAccountStats(
         active7: 0,
         active30: 0,
         freeActive30: 0,
-        payingActive30: 0,
+        paidActive30: 0,
+        complimentaryActive30: 0,
     };
     const months = new Map<string, AdminStatsMonth>();
     const cohortStats = new Map<string, AdminStatsCohort>(
-        cohorts.map((cohort) => [cohort, { cohort, free: 0, paying: 0, active30: 0 }]),
+        cohorts.map((cohort) => [cohort, { cohort, free: 0, paid: 0, active30: 0 }]),
     );
     const freePlan: AdminStatsFreePlan = { freeOnboarded: 0, starterFinished: 0, customPlan: 0 };
 
@@ -106,7 +107,8 @@ export function computeAccountStats(
         if (active30) {
             totals.active30++;
             if (kind === 'free') totals.freeActive30++;
-            if (kind === 'paying') totals.payingActive30++;
+            if (kind === 'paying' || kind === 'churned') totals.paidActive30++;
+            if (kind === 'complimentary') totals.complimentaryActive30++;
         }
 
         const month = user.createdAt?.slice(0, 7);
@@ -134,7 +136,7 @@ export function computeAccountStats(
         const cohortRow = user.dojoCohort ? cohortStats.get(user.dojoCohort) : undefined;
         if (cohortRow) {
             if (kind === 'free') cohortRow.free++;
-            if (kind === 'paying') cohortRow.paying++;
+            if (kind === 'paying' || kind === 'churned') cohortRow.paid++;
             if (active30) cohortRow.active30++;
         }
 
@@ -166,6 +168,7 @@ export function toSnapshot(totals: AdminStatsTotals, now: Date): AdminStatsSnaps
         accounts: totals.accounts,
         free: totals.free,
         paying: totals.paying,
+        paid: totals.paying + totals.churned,
         active7: totals.active7,
         active30: totals.active30,
     };

@@ -33,15 +33,18 @@ export interface AdminStatsTotals {
     active30: number;
     /** Free accounts active in the last 30 days. */
     freeActive30: number;
-    /** Paying accounts active in the last 30 days. */
-    payingActive30: number;
+    /** Accounts that ever paid (subscribed now or canceled since), active in the last 30 days. */
+    paidActive30: number;
+    /** Complimentary accounts active in the last 30 days. */
+    complimentaryActive30: number;
 }
 
 /** Counts for one cohort. */
 export interface AdminStatsCohort {
     cohort: string;
     free: number;
-    paying: number;
+    /** Accounts that ever paid: subscribed now or canceled since. */
+    paid: number;
     active30: number;
 }
 
@@ -61,7 +64,10 @@ export interface AdminStatsSnapshot {
     date: string;
     accounts: number;
     free: number;
+    /** Accounts subscribed that day. */
     paying: number;
+    /** Accounts that had ever paid by that day. */
+    paid: number;
     active7: number;
     active30: number;
 }
