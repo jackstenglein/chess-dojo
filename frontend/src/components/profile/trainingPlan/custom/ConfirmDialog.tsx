@@ -14,10 +14,19 @@ interface ConfirmDialogProps {
     title: string;
     content: string;
     onConfirm: () => void;
+    /** The confirm button's label. Defaults to Delete. */
+    confirmLabel?: string;
 }
 
 /** A confirmation dialog for destructive actions on plans and buckets. */
-export function ConfirmDialog({ open, onClose, title, content, onConfirm }: ConfirmDialogProps) {
+export function ConfirmDialog({
+    open,
+    onClose,
+    title,
+    content,
+    onConfirm,
+    confirmLabel,
+}: ConfirmDialogProps) {
     const t = useTranslations('profile.trainingPlan.customPlan');
     const tCommon = useTranslations('profile.trainingPlan.common');
 
@@ -37,7 +46,7 @@ export function ConfirmDialog({ open, onClose, title, content, onConfirm }: Conf
                     }}
                     data-testid='plan-confirm-delete-button'
                 >
-                    {t('delete')}
+                    {confirmLabel ?? t('delete')}
                 </Button>
             </DialogActions>
         </Dialog>

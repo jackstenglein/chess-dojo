@@ -1,3 +1,4 @@
+import { RequestSnackbar, useRequest } from '@/api/Request';
 import {
     CustomTask,
     CustomTaskCategory,
@@ -5,7 +6,7 @@ import {
     RequirementCategory,
 } from '@/database/requirement';
 import { CustomPlan, CustomPlanBucket } from '@/database/user';
-import { Add, LockOutlined } from '@mui/icons-material';
+import { Add, LockOutlined, RestartAlt } from '@mui/icons-material';
 import { Box, Button, Card, LinearProgress, Stack, Tooltip, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { use, useMemo, useState } from 'react';
@@ -15,7 +16,7 @@ import { TrainingPlanContext } from '../TrainingPlanTab';
 import { getBucketCategory, getBucketColor } from './bucketColors';
 import { getPlanProgress } from './bucketProgress';
 import { ConfirmDialog } from './ConfirmDialog';
-import { FREE_PLAN_MAX_TASKS_PER_BUCKET } from './freePlan';
+import { FREE_PLAN_MAX_TASKS_PER_BUCKET, getProgressResets } from './freePlan';
 import { FreeTaskEditor } from './FreeTaskEditor';
 import { PlanTypeIcon } from './PlanTypeIcon';
 import { useFreePlanEditor } from './useFreePlanEditor';
@@ -25,7 +26,7 @@ import { useFreePlanEditor } from './useFreePlanEditor';
  * FREE_PLAN_MAX_TASKS_PER_BUCKET of their own tasks each.
  */
 export function FreeCustomPlanView({ plan }: { plan: CustomPlan }) {
-    const { user, allRequirements } = use(TrainingPlanContext);
+    const { user, allRequirements, isCurrentUser } = use(TrainingPlanContext);
     const t = useTranslations('profile.trainingPlan.freePlan');
 
     const tasks = useMemo(
@@ -36,11 +37,15 @@ export function FreeCustomPlanView({ plan }: { plan: CustomPlan }) {
     return (
         <Stack spacing={2} sx={{ width: 1 }} data-testid='free-custom-plan-view'>
             <Stack spacing={0.5}>
-                <Stack direction='row' spacing={1} sx={{ alignItems: 'center' }}>
+                <Stack
+                    direction='row'
+                    sx={{ alignItems: 'center', flexWrap: 'wrap', columnGap: 1, rowGap: 0.5 }}
+                >
                     <PlanTypeIcon custom sx={{ color: 'primary.main' }} />
                     <Typography variant='h5' sx={{ fontWeight: 'bold' }}>
                         {plan.name}
                     </Typography>
+                    {isCurrentUser && <ResetProgressButton plan={plan} />}
                 </Stack>
                 <Typography sx={{ color: 'text.secondary' }}>
                     {t('subheading', { max: FREE_PLAN_MAX_TASKS_PER_BUCKET })}
@@ -57,6 +62,56 @@ export function FreeCustomPlanView({ plan }: { plan: CustomPlan }) {
                 />
             ))}
         </Stack>
+    );
+}
+
+/**
+ * Sets the progress of every task in the plan back to 0, after confirming.
+ * The tasks stay. Disabled while there is nothing to reset.
+ */
+function ResetProgressButton({ plan }: { plan: CustomPlan }) {
+    const t = useTranslations('profile.trainingPlan.freePlan');
+    const { user } = use(TrainingPlanContext);
+    const { resetProgress } = useFreePlanEditor();
+    const [confirming, setConfirming] = useState(false);
+    const request = useRequest();
+
+    const hasProgress = getProgressResets(plan, user.progress).length > 0;
+
+    const onConfirm = () => {
+        request.onStart();
+        resetProgress(plan)
+            .then(() => request.onSuccess())
+            .catch((err: unknown) => request.onFailure(err));
+    };
+
+    return (
+        <>
+            <Tooltip title={hasProgress ? '' : t('resetNothing')}>
+                <span style={{ marginLeft: 'auto' }}>
+                    <Button
+                        size='small'
+                        startIcon={<RestartAlt />}
+                        disabled={!hasProgress}
+                        loading={request.isLoading()}
+                        onClick={() => setConfirming(true)}
+                        sx={{ textTransform: 'none' }}
+                        data-testid='free-plan-reset-progress'
+                    >
+                        {t('resetProgress')}
+                    </Button>
+                </span>
+            </Tooltip>
+            <ConfirmDialog
+                open={confirming}
+                onClose={() => setConfirming(false)}
+                title={t('resetTitle')}
+                content={t('resetContent')}
+                onConfirm={onConfirm}
+                confirmLabel={t('resetConfirm')}
+            />
+            <RequestSnackbar request={request} />
+        </>
     );
 }
 

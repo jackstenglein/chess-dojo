@@ -4,6 +4,7 @@ import { useAuth } from '@/auth/Auth';
 import { CustomTaskCategory, RequirementCategory } from '@/database/requirement';
 import { CustomPlan, User } from '@/database/user';
 import { useTranslations } from 'next-intl';
+import { createContext, use } from 'react';
 import {
     addTasksToBucket,
     removeTaskFromPlans,
@@ -16,7 +17,7 @@ import {
     buildFreeTask,
     FREE_PLAN_MAX_TASKS_PER_BUCKET,
     FreeTaskFields,
-    SampleTasks,
+    getProgressResets,
 } from './freePlan';
 
 /**
@@ -28,6 +29,15 @@ export function getFreePlan(user: User): CustomPlan | undefined {
 }
 
 /**
+ * Whether a free-tier user without a custom plan has picked Custom Plan, so
+ * the page offers to create one. Provided by the training plan tab.
+ */
+export const FreePlanDraftContext = createContext<{
+    creating: boolean;
+    setCreating: (creating: boolean) => void;
+}>({ creating: false, setCreating: () => undefined });
+
+/**
  * Returns mutation functions for a free-tier user's custom plan. Tasks in the
  * plan are the user's own custom tasks, so adding or deleting a task changes
  * both the plan and the custom tasks in one update. Updates are optimistic.
@@ -36,23 +46,46 @@ export function useFreePlanEditor() {
     const { user, updateUser } = useAuth();
     const api = useApi();
     const t = useTranslations('profile.trainingPlan.freePlan');
+    const { setCreating } = use(FreePlanDraftContext);
 
     const save = (patch: Partial<User>) => {
         updateUser(patch);
         void api.updateUser(patch);
     };
 
-    /** Switches to the custom plan, creating it with sample tasks the first time. */
+    /** Switches to the user's existing custom plan. */
+    const switchToPlan = (plan: CustomPlan) => {
+        if (user && user.activePlanId !== plan.id) {
+            save(switchPlanUpdate(user, plan.id));
+            trackEvent(EventType.SwitchTrainingPlan, { plan_id: plan.id });
+        }
+    };
+
+    /**
+     * Switches to the custom plan. Without one yet, shows the page that offers
+     * to create it.
+     */
     const openCustomPlan = () => {
         if (!user) {
             return;
         }
         const existing = getFreePlan(user);
         if (existing) {
-            if (user.activePlanId !== existing.id) {
-                save(switchPlanUpdate(user, existing.id));
-                trackEvent(EventType.SwitchTrainingPlan, { plan_id: existing.id });
-            }
+            switchToPlan(existing);
+        } else {
+            setCreating(true);
+        }
+    };
+
+    /** Creates an empty custom plan and switches to it, or opens the existing one. */
+    const createPlan = () => {
+        if (!user) {
+            return;
+        }
+        setCreating(false);
+        const existing = getFreePlan(user);
+        if (existing) {
+            switchToPlan(existing);
             return;
         }
 
@@ -63,60 +96,42 @@ export function useFreePlanEditor() {
             [RequirementCategory.Endgame]: t('bucketEndgames'),
             [RequirementCategory.Opening]: t('bucketOpenings'),
         };
-        const samples: SampleTasks = {
-            [RequirementCategory.Games]: {
-                name: t('sampleGamesName'),
-                description: t('sampleGamesDescription'),
-                goal: 10,
-                startCount: 0,
-                unit: 'Games',
-            },
-            [RequirementCategory.Tactics]: {
-                name: t('sampleTacticsName'),
-                description: t('sampleTacticsDescription'),
-                goal: 20,
-                startCount: 0,
-                unit: 'Sessions',
-            },
-            [RequirementCategory.Middlegames]: {
-                name: t('sampleBookName'),
-                description: t('sampleMiddlegamesDescription'),
-                goal: 12,
-                startCount: 0,
-                unit: 'Chapters',
-            },
-            [RequirementCategory.Endgame]: {
-                name: t('sampleBookName'),
-                description: t('sampleEndgamesDescription'),
-                goal: 200,
-                startCount: 0,
-                unit: 'Pages',
-            },
-            [RequirementCategory.Opening]: {
-                name: t('sampleOpeningsName'),
-                description: t('sampleOpeningsDescription'),
-                goal: 300,
-                startCount: 0,
-                unit: 'Minutes',
-            },
-        };
-
-        const { plan, tasks } = buildFreePlan(user.username, t('planName'), bucketNames, samples);
-        save({
-            customTasks: [...(user.customTasks ?? []), ...tasks],
-            customPlans: [plan],
-            ...switchPlanUpdate(user, plan.id),
-        });
+        const plan = buildFreePlan(user.username, t('planName'), bucketNames);
+        save({ customPlans: [plan], ...switchPlanUpdate(user, plan.id) });
         trackEvent(EventType.CreateCustomPlan, { plan_id: plan.id, start_from_dojo: false });
     };
 
     /** Switches back to the Dojo plan. */
     const openDojoPlan = () => {
+        setCreating(false);
         if (!user?.activePlanId) {
             return;
         }
         save(switchPlanUpdate(user, ''));
         trackEvent(EventType.SwitchTrainingPlan, { plan_id: '' });
+    };
+
+    /**
+     * Sets the progress of every task in the plan back to 0, one progress
+     * update per task, so each reset shows on the timeline. The tasks and the
+     * time logged on them are kept.
+     */
+    const resetProgress = async (plan: CustomPlan) => {
+        if (!user) {
+            return;
+        }
+        const resets = getProgressResets(plan, user.progress);
+        for (const reset of resets) {
+            await api.updateUserProgress({
+                ...reset,
+                cohort: user.dojoCohort,
+                newCount: 0,
+                incrementalMinutesSpent: 0,
+                date: null,
+                notes: t('resetNote'),
+            });
+        }
+        trackEvent(EventType.ResetProgress, { plan_id: plan.id, task_count: resets.length });
     };
 
     /** Creates a task and adds it to the bucket, if the bucket has room. */
@@ -161,5 +176,13 @@ export function useFreePlanEditor() {
         trackEvent(EventType.DeleteNondojoTask, { task_id: taskId });
     };
 
-    return { openCustomPlan, openDojoPlan, addTask, editTask, deleteTask };
+    return {
+        openCustomPlan,
+        createPlan,
+        openDojoPlan,
+        resetProgress,
+        addTask,
+        editTask,
+        deleteTask,
+    };
 }
