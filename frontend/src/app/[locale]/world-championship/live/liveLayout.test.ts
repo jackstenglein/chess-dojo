@@ -5,6 +5,7 @@ import {
     fanLandscapeGrid,
     FanPart,
     fanPartSx,
+    fanSmallLandscapeGrid,
     fanTopBarSx,
     fanTwoColumnGrid,
     fanUprightWideGrid,
@@ -78,7 +79,7 @@ function rowsOf(grid: { gridTemplateAreas: string }): string[][] {
 /** Fails unless the browser would accept the grid. */
 function expectValidGrid(grid: { gridTemplateAreas: string; gridTemplateRows: string }) {
     const rows = rowsOf(grid);
-    expect(rows.every((row) => row.length === 2)).toBe(true);
+    expect(rows.every((row) => row.length === rows[0].length)).toBe(true);
     // An area that is not one rectangle makes the browser drop the whole grid.
     for (const name of new Set(rows.flat().filter((cell) => cell !== '.'))) {
         const cells = rows.flatMap((row, y) =>
@@ -153,46 +154,45 @@ describe('the fan view on a large tablet held upright', () => {
 
 describe('the fan view on a phone on its side', () => {
     const rows = rowsOf(fanLandscapeGrid);
+    /** The parts beside the board, from the top, row by row. */
+    const beside = rows.map(([, ...side]) => [...new Set(side)].join(' and '));
 
     it('draws a grid the browser accepts', () => {
         expectValidGrid(fanLandscapeGrid);
     });
 
-    it('keeps the players, the guess and the move buttons beside the board', () => {
-        const besideBoard = rows.filter(([left]) => left === 'board').map(([, right]) => right);
-        expect(besideBoard).toEqual(['top', 'guess', '.', 'nav', 'bottom']);
+    it('shows the game picker, both players, the stream and the guess first', () => {
+        expect(beside.slice(0, 4)).toEqual(['games', 'top and bottom', 'twitch', 'guess']);
+    });
+
+    it('gives the board every row of its column, so nothing is under it', () => {
+        expect(rows.every(([left]) => left === 'board')).toBe(true);
+    });
+
+    it('keeps the board in view while the page scrolls', () => {
+        expect(fanPartSx('board')[PHONE_LANDSCAPE]).toMatchObject({ position: 'sticky' });
+        expect(fanPartSx('twitch')[PHONE_LANDSCAPE]).toEqual({ gridArea: 'twitch' });
     });
 
     it('gives every part a place of its own in the grid', () => {
-        // The browser puts a part without a place into the first empty row, which
-        // is between the board and the moves while a game is being played.
+        // The browser puts a part without a place into the first empty row.
         for (const part of FAN_PARTS) {
             expect(rows.flat(), part).toContain(part);
             expect(fanPartSx(part)[PHONE_LANDSCAPE].gridArea, part).toBe(part);
         }
     });
 
-    it('puts the crosstable last, under everything else', () => {
-        expect(rows.at(-1)).toEqual(['cross', 'cross']);
+    it('puts the crosstable last', () => {
+        expect(beside.filter((part) => part !== '.').at(-1)).toBe('cross');
     });
 
-    it('lets only the board set the width of its column', () => {
-        const underBoard = rows
-            .filter(([left, right]) => left !== 'board' && left !== right)
-            .map(([left]) => left as FanPart);
-        expect(underBoard).toEqual(['error', 'moves', 'evals']);
-        for (const part of underBoard) {
-            expect(fanPartSx(part)[PHONE_LANDSCAPE], part).toMatchObject({
-                width: 0,
-                minWidth: '100%',
-            });
-        }
-        expect(fanPartSx('board')[PHONE_LANDSCAPE]).toEqual({ gridArea: 'board' });
-    });
-
-    it('lists its rules after the ones for any phone, so they win where both apply', () => {
-        // A phone on its side matches both media queries, and the later one decides.
-        const keys = Object.keys(fanPartSx('guess'));
-        expect(keys.indexOf(PHONE_LANDSCAPE)).toBeGreaterThan(keys.indexOf(PHONE));
+    it('gives each player a line on a small phone, and changes nothing else', () => {
+        const small = rowsOf(fanSmallLandscapeGrid);
+        expectValidGrid(fanSmallLandscapeGrid);
+        expect(small.slice(1, 3)).toEqual([
+            ['board', 'top', 'top'],
+            ['board', 'bottom', 'bottom'],
+        ]);
+        expect([small[0], ...small.slice(3)]).toEqual([rows[0], ...rows.slice(2)]);
     });
 });

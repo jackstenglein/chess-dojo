@@ -5,6 +5,7 @@ import Image from 'next/image';
 import gukeshPhoto from '../assets/gukesh.webp';
 import sindarovPhoto from '../assets/sindarov.webp';
 import { CrossPlayer, playerOf } from './crosstable';
+import { PHONE_LANDSCAPE } from './liveLayout';
 
 const PHOTOS: Record<CrossPlayer, typeof gukeshPhoto> = {
     gukesh: gukeshPhoto,
@@ -16,7 +17,16 @@ const PHOTOS: Record<CrossPlayer, typeof gukeshPhoto> = {
  * page already uses. Renders nothing for anyone else, such as the players of
  * the test game.
  */
-export function PlayerPhoto({ name, size }: { name: string | undefined; size: number }) {
+export function PlayerPhoto({
+    name,
+    size,
+    hiddenOnPhoneOnItsSide,
+}: {
+    name: string | undefined;
+    size: number;
+    /** For a place that has no room for the photo on a phone on its side. */
+    hiddenOnPhoneOnItsSide?: boolean;
+}) {
     const player = playerOf(name);
     if (!player) {
         return null;
@@ -32,6 +42,7 @@ export function PlayerPhoto({ name, size }: { name: string | undefined; size: nu
                 borderRadius: 0.5,
                 overflow: 'hidden',
                 bgcolor: 'action.hover',
+                ...(hiddenOnPhoneOnItsSide && { [PHONE_LANDSCAPE]: { display: 'none' } }),
             }}
         >
             <Image
