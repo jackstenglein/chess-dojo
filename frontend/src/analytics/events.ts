@@ -28,6 +28,9 @@ export enum EventType {
     CreateNondojoTask = 'create_nondojo_task',
     EditNondojoTask = 'edit_nondojo_task',
     DeleteNondojoTask = 'delete_nondojo_task',
+    CreateCustomPlan = 'create_custom_plan',
+    DeleteCustomPlan = 'delete_custom_plan',
+    SwitchTrainingPlan = 'switch_training_plan',
     ViewTaskDetails = 'view_task_details',
     OpenProgramTips = 'open_program_tips',
 

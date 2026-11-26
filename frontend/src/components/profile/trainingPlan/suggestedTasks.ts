@@ -167,6 +167,13 @@ export class TaskSuggestionAlgorithm {
     private readonly pinnedTasks: Task[];
     private readonly timeline: TimelineEntry[];
     private readonly skippedTaskIds: string[];
+    /**
+     * The task ids of the active custom plan's buckets, in display order. If set,
+     * tasks are suggested from these buckets instead of the Dojo categories.
+     */
+    private readonly planBuckets?: string[][];
+    /** The set of all task ids in the active custom plan, if one is active. */
+    private readonly planTaskIds?: Set<string>;
 
     private user: User;
     private timePerTask: Record<string, number> = {};
@@ -177,7 +184,10 @@ export class TaskSuggestionAlgorithm {
         cohortRequirements: Requirement[],
         allRequirements: Requirement[],
         timeline: TimelineEntry[],
+        planBuckets?: string[][],
     ) {
+        this.planBuckets = planBuckets;
+        this.planTaskIds = planBuckets ? new Set(planBuckets.flat()) : undefined;
         this.user = JSON.parse(JSON.stringify(user)) as User;
         this.requirements = cohortRequirements.filter(
             (requirement) => requirement.status === RequirementStatus.Active,
@@ -193,7 +203,11 @@ export class TaskSuggestionAlgorithm {
                             (task) => task.id === id && task.status === RequirementStatus.Active,
                         ),
                 )
-                .filter((t) => !!t) ?? [];
+                // Pins belong to the active plan: a pinned task outside a custom
+                // plan is not suggested while that plan is active.
+                .filter(
+                    (t): t is Task => !!t && (!this.planTaskIds || this.planTaskIds.has(t.id)),
+                ) ?? [];
         this.skippedTaskIds = this.user.weeklyPlan?.skippedTasks ?? [];
     }
 
@@ -306,6 +320,12 @@ export class TaskSuggestionAlgorithm {
      */
     addTask(to: SuggestedTask[], task: { id: string; minutes: number }) {
         const { id, minutes } = task;
+
+        // A saved weekly plan may still hold tasks from a previously active plan;
+        // only tasks in the current plan are reused.
+        if (this.planTaskIds && !this.planTaskIds.has(id)) {
+            return;
+        }
 
         if (id === SCHEDULE_CLASSICAL_GAME_TASK_ID) {
             to.push({
@@ -597,6 +617,10 @@ export class TaskSuggestionAlgorithm {
             return suggestedTasks;
         }
 
+        if (this.planBuckets) {
+            return this.getPlanSuggestions(suggestedTasks, maxTasks, date);
+        }
+
         const eligibleRequirements = getEligibleTasks({
             suggestedTasks,
             requirements: this.requirements,
@@ -704,6 +728,72 @@ export class TaskSuggestionAlgorithm {
      * Suggested tasks only fill the time the pinned tasks leave free: once the
      * pinned tasks' schedules use up the day, nothing more is suggested.
      */
+    /**
+     * Fills the given suggestions up to maxTasks from the active custom plan's
+     * buckets. Every task the user put in the plan can be suggested, whatever its
+     * category or cohort. Buckets take turns, starting from a different bucket
+     * each day of the week so that the work is spread across the plan, and each
+     * bucket suggests its first unfinished task in the order the user set.
+     * @param suggestedTasks The tasks already suggested (e.g. pinned tasks).
+     * @param maxTasks The maximum number of tasks to suggest.
+     * @param date The date to get suggestions for.
+     */
+    getPlanSuggestions(suggestedTasks: Task[], maxTasks: number, date: Date): Task[] {
+        const isFreeUser = isFree(this.user);
+        const buckets = (this.planBuckets ?? [])
+            .map((ids) =>
+                ids
+                    .map(
+                        (id) =>
+                            this.customTasks.find((t) => t.id === id) ??
+                            this.requirements.find((r) => r.id === id),
+                    )
+                    .filter(
+                        (t): t is Task =>
+                            !!t &&
+                            t.id !== SCHEDULE_CLASSICAL_GAME_TASK_ID &&
+                            (!isFreeUser || !isRequirement(t) || t.isFree) &&
+                            !this.skippedTaskIds.includes(t.id) &&
+                            this.getScheduledMinutes(t.id, date) === undefined &&
+                            !isComplete(
+                                this.user.dojoCohort,
+                                t,
+                                this.user.progress[t.id],
+                                this.timeline,
+                                true,
+                            ),
+                    ),
+            )
+            .filter((tasks) => tasks.length > 0);
+        if (buckets.length === 0) {
+            return suggestedTasks;
+        }
+
+        const start = date.getDay() % buckets.length;
+        const ordered = buckets.slice(start).concat(buckets.slice(0, start));
+        const next = ordered.map(() => 0);
+
+        let added = true;
+        while (suggestedTasks.length < maxTasks && added) {
+            added = false;
+            for (let i = 0; i < ordered.length && suggestedTasks.length < maxTasks; i++) {
+                const tasks = ordered[i];
+                while (
+                    next[i] < tasks.length &&
+                    suggestedTasks.some((t) => t.id === tasks[next[i]].id)
+                ) {
+                    next[i]++;
+                }
+                if (next[i] < tasks.length) {
+                    suggestedTasks.push(tasks[next[i]]);
+                    next[i]++;
+                    added = true;
+                }
+            }
+        }
+        return suggestedTasks;
+    }
+
     getMaxTasks(pinnedTasks: Task[], date: Date): number {
         const scheduledIds = pinnedTasks
             .map((t) => t.id)

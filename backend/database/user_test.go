@@ -362,3 +362,15 @@ func TestCalculateScoreUser(t *testing.T) {
 		})
 	}
 }
+
+func TestGetActivePlan_FreeTierOnly(t *testing.T) {
+	plan := &CustomPlan{Id: "plan"}
+	free := &User{ActivePlanId: "plan", CustomPlans: []*CustomPlan{plan}}
+	if got := free.GetActivePlan(); got != plan {
+		t.Errorf("free user GetActivePlan() = %v, want the plan", got)
+	}
+	subscribed := &User{ActivePlanId: "plan", CustomPlans: []*CustomPlan{plan}, SubscriptionStatus: SubscriptionStatus_Subscribed}
+	if got := subscribed.GetActivePlan(); got != nil {
+		t.Errorf("subscribed user GetActivePlan() = %v, want nil", got)
+	}
+}

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"regexp"
 	"slices"
 	"strings"
 	"time"
@@ -100,6 +101,26 @@ func Handler(ctx context.Context, event api.Request) (api.Response, error) {
 	if err := validateMainClubId(user, update); err != nil {
 		return api.Failure(err), nil
 	}
+	if update.CustomPlans != nil {
+		if err := validateCustomPlans(info.Username, *update.CustomPlans); err != nil {
+			return api.Failure(err), nil
+		}
+		if !user.IsSubscribed() {
+			if err := validateFreeTierPlans(*update.CustomPlans); err != nil {
+				return api.Failure(err), nil
+			}
+		}
+	}
+	if update.ActivePlanId != nil {
+		if err := validateActivePlanId(user, update); err != nil {
+			return api.Failure(err), nil
+		}
+	}
+	if update.PlanPins != nil {
+		if err := validatePlanPins(user, update); err != nil {
+			return api.Failure(err), nil
+		}
+	}
 	if err := saveReferralSource(ctx, user, update); err != nil {
 		return api.Failure(err), nil
 	}
@@ -154,6 +175,168 @@ func validateMainClubId(user *database.User, update *database.UserUpdate) error 
 	}
 	if !slices.Contains(user.Clubs, clubId) {
 		return errors.New(400, "Invalid request: mainClubId must be a club you are a member of", "")
+	}
+	return nil
+}
+
+// hexColorRegex matches a 6-digit hex color like #faa137.
+var hexColorRegex = regexp.MustCompile(`^#[0-9a-fA-F]{6}$`)
+
+// bucketCategories are the Dojo categories a custom plan bucket can stand for.
+var bucketCategories = map[string]bool{
+	"Welcome to the Dojo":    true,
+	"Games + Analysis":       true,
+	"Tactics":                true,
+	"Middlegames + Strategy": true,
+	"Endgame":                true,
+	"Opening":                true,
+	"Non-Dojo":               true,
+}
+
+const (
+	maxCustomPlans  = 10
+	maxPlanBuckets  = 50
+	maxBucketTasks  = 500
+	maxPlanNameSize = 100
+)
+
+// validateCustomPlans checks the user's custom plans and normalizes their names
+// and owners.
+func validateCustomPlans(username string, plans []*database.CustomPlan) error {
+	if len(plans) > maxCustomPlans {
+		return errors.New(400, fmt.Sprintf("Invalid request: no more than %d custom plans are allowed", maxCustomPlans), "")
+	}
+	planIds := make(map[string]bool, len(plans))
+	for _, plan := range plans {
+		if plan == nil {
+			return errors.New(400, "Invalid request: custom plan cannot be null", "")
+		}
+		plan.Owner = username
+		plan.Name = strings.TrimSpace(plan.Name)
+		if plan.Id == "" {
+			return errors.New(400, "Invalid request: custom plan id cannot be empty", "")
+		}
+		if plan.Name == "" {
+			return errors.New(400, "Invalid request: custom plan name cannot be empty", "")
+		}
+		if len(plan.Name) > maxPlanNameSize {
+			return errors.New(400, fmt.Sprintf("Invalid request: custom plan name cannot exceed %d characters", maxPlanNameSize), "")
+		}
+		if planIds[plan.Id] {
+			return errors.New(400, "Invalid request: custom plan ids must be unique", "")
+		}
+		planIds[plan.Id] = true
+
+		if len(plan.Buckets) > maxPlanBuckets {
+			return errors.New(400, fmt.Sprintf("Invalid request: no more than %d buckets are allowed per plan", maxPlanBuckets), "")
+		}
+		bucketIds := make(map[string]bool, len(plan.Buckets))
+		for _, bucket := range plan.Buckets {
+			if bucket == nil {
+				return errors.New(400, "Invalid request: custom plan bucket cannot be null", "")
+			}
+			bucket.Name = strings.TrimSpace(bucket.Name)
+			if bucket.Id == "" {
+				return errors.New(400, "Invalid request: custom plan bucket id cannot be empty", "")
+			}
+			if bucket.Name == "" {
+				return errors.New(400, "Invalid request: custom plan bucket name cannot be empty", "")
+			}
+			if len(bucket.Name) > maxPlanNameSize {
+				return errors.New(400, fmt.Sprintf("Invalid request: custom plan bucket name cannot exceed %d characters", maxPlanNameSize), "")
+			}
+			if bucketIds[bucket.Id] {
+				return errors.New(400, "Invalid request: custom plan bucket ids must be unique within a plan", "")
+			}
+			bucketIds[bucket.Id] = true
+			if bucket.Category != "" && !bucketCategories[bucket.Category] {
+				return errors.New(400, "Invalid request: custom plan bucket category is not a Dojo category", "")
+			}
+			bucket.Color = strings.TrimSpace(bucket.Color)
+			if bucket.Color != "" && !hexColorRegex.MatchString(bucket.Color) {
+				return errors.New(400, "Invalid request: custom plan bucket color must be a hex color like #faa137", "")
+			}
+			if len(bucket.TaskIds) > maxBucketTasks {
+				return errors.New(400, fmt.Sprintf("Invalid request: no more than %d tasks are allowed per bucket", maxBucketTasks), "")
+			}
+		}
+	}
+	return nil
+}
+
+const (
+	// freeTierMaxPlans is the number of custom plans a free-tier user can have.
+	freeTierMaxPlans = 1
+	// freeTierMaxBuckets is the number of buckets in a free-tier user's plan.
+	freeTierMaxBuckets = 5
+	// freeTierMaxBucketTasks is the number of tasks in each bucket of a free-tier user's plan.
+	freeTierMaxBucketTasks = 3
+)
+
+// validateFreeTierPlans checks the smaller limits on a free-tier user's custom
+// plans: one plan of up to 5 buckets with up to 3 tasks each.
+func validateFreeTierPlans(plans []*database.CustomPlan) error {
+	if len(plans) > freeTierMaxPlans {
+		return errors.New(403, fmt.Sprintf("Free-tier users can have at most %d custom plan", freeTierMaxPlans), "")
+	}
+	for _, plan := range plans {
+		if len(plan.Buckets) > freeTierMaxBuckets {
+			return errors.New(403, fmt.Sprintf("Free-tier plans can have at most %d buckets", freeTierMaxBuckets), "")
+		}
+		for _, bucket := range plan.Buckets {
+			if len(bucket.TaskIds) > freeTierMaxBucketTasks {
+				return errors.New(403, fmt.Sprintf("Free-tier plans can have at most %d tasks per bucket", freeTierMaxBucketTasks), "")
+			}
+		}
+	}
+	return nil
+}
+
+// validateActivePlanId checks that the active plan id is empty (the default Dojo
+// plan) or refers to one of the user's custom plans.
+func validateActivePlanId(user *database.User, update *database.UserUpdate) error {
+	id := strings.TrimSpace(*update.ActivePlanId)
+	update.ActivePlanId = &id
+	if id == "" {
+		return nil
+	}
+	plans := user.CustomPlans
+	if update.CustomPlans != nil {
+		plans = *update.CustomPlans
+	}
+	for _, plan := range plans {
+		if plan != nil && plan.Id == id {
+			return nil
+		}
+	}
+	return errors.New(400, "Invalid request: activePlanId must be empty or the id of one of your custom plans", "")
+}
+
+// The maximum number of pinned tasks saved for a single inactive plan.
+const maxPlanPinnedTasks = 100
+
+// validatePlanPins checks that every key of the saved plan pins is the Dojo plan
+// or one of the user's custom plans, and that no plan has too many pins.
+func validatePlanPins(user *database.User, update *database.UserUpdate) error {
+	plans := user.CustomPlans
+	if update.CustomPlans != nil {
+		plans = *update.CustomPlans
+	}
+	planIds := make(map[string]bool, len(plans)+1)
+	planIds[database.DojoPlanPinsKey] = true
+	for _, plan := range plans {
+		if plan != nil {
+			planIds[plan.Id] = true
+		}
+	}
+
+	for id, pins := range *update.PlanPins {
+		if !planIds[id] {
+			return errors.New(400, "Invalid request: planPins keys must be `dojo` or the id of one of your custom plans", "")
+		}
+		if pins != nil && len(pins.PinnedTasks) > maxPlanPinnedTasks {
+			return errors.New(400, fmt.Sprintf("Invalid request: no more than %d pinned tasks are allowed per plan", maxPlanPinnedTasks), "")
+		}
 	}
 	return nil
 }
