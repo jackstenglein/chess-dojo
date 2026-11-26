@@ -160,14 +160,18 @@ export const fanUnwrapSx = {
 export const TWO_COLUMNS =
     '@media (min-width: 900px) and (max-width: 1199.95px) and (min-height: 500.05px)';
 
+/** Two columns on a screen tall enough for the board's column to fit under the site's header. */
+const BOARD_STAYS = '@media (min-width: 900px) and (max-width: 1199.95px) and (min-height: 600px)';
+
 /** A player's bar, with the clock. */
 const PLAYER_BAR_HEIGHT = 37;
 
 /**
  * The rows of the fan view in two columns. The board has the left column to
- * itself, and everything else is beside it. The first screen shows what a fan
- * wants to see all the time: the board, and beside it the game picker, the
- * guess, the stream and the leaderboard.
+ * itself and stays in view. Everything else is beside it, and the page scrolls
+ * it past the board. The first screen shows what a fan wants to see all the
+ * time: the board, and beside it the game picker, the guess, the stream and
+ * the leaderboard.
  *
  * The dots on the left are where the top player's bar and the board with its
  * buttons go. They span every row, so each row is as tall as the part on its
@@ -211,12 +215,20 @@ export function boardColumnWidth(tabs: boolean) {
     return `minmax(0, max(406px, calc(100dvh - var(--navbar-height) - ${(tabs ? 225 : 161) - 46}px)))`;
 }
 
+/** The page's top padding. The board's column rests that far under the site's header. */
+const BOARD_STAYS_AT = 24;
+
 /**
  * In two columns the top player's bar and the board with its buttons span
- * every row. Nothing is under them in their column.
+ * every row, and stay in view while the page scrolls the column beside them.
+ * Nothing is under them in their column, so they never cover anything.
  */
 export const fanTopBarSx = {
     [TWO_COLUMNS]: { gridArea: `1 / 1 / ${LAST_LINE} / 2`, alignSelf: 'start' },
+    [BOARD_STAYS]: {
+        position: 'sticky',
+        top: `calc(var(--navbar-height) + ${BOARD_STAYS_AT}px)`,
+    },
 };
 export const fanBoardBlockSx = {
     // Everywhere else the page places the board, the bottom player's bar and
@@ -229,6 +241,11 @@ export const fanBoardBlockSx = {
         minWidth: 0,
         gridArea: `2 / 1 / ${LAST_LINE} / 2`,
         alignSelf: 'start',
+    },
+    [BOARD_STAYS]: {
+        position: 'sticky',
+        // Under the top player's bar and the gap after it.
+        top: `calc(var(--navbar-height) + ${BOARD_STAYS_AT + PLAYER_BAR_HEIGHT + 8}px)`,
     },
 };
 
