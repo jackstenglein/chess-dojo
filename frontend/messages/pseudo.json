@@ -258,7 +258,7 @@
                         "description": "[T] Import one of your games and go through it before using an engine. Note what you were thinking, your key decisions and your mistakes."
                     },
                     "dojoRush": {
-                        "title": "[T] Try the Dojo Rush trainer",
+                        "title": "[T] Do one run of Dojo Rush",
                         "description": "[T] Solve as many puzzles as you can against the clock. This step ticks off by itself after your first run."
                     },
                     "masterGame": {
