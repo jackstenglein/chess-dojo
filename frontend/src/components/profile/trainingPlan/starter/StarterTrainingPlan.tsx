@@ -638,7 +638,15 @@ function StarterHero({
                             />
                         </Stack>
 
-                        <Stack direction='row' sx={{ gap: 1, flexWrap: 'wrap' }}>
+                        <Stack
+                            direction='row'
+                            sx={{
+                                gap: 1,
+                                flexWrap: 'wrap',
+                                ml: { md: 'auto' },
+                                justifyContent: { md: 'flex-end' },
+                            }}
+                        >
                             {stages.map((stage, i) => {
                                 const complete = stage.done >= stage.total;
                                 return (
