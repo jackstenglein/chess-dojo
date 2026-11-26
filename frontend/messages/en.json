@@ -252,7 +252,6 @@
             "starter": {
                 "title": "Tutorial",
                 "planName": "Dojo Training Plan",
-                "subtitle": "Three short stages to learn how training works here. Everything you complete carries over to your full training plan, which unlocks when you finish.",
                 "progress": "{done} of {total} tasks done",
                 "stepNumber": "Step {number}",
                 "stepProgress": "{done} of {total} done",
