@@ -16,7 +16,7 @@ import { TrainingPlanContext } from '../TrainingPlanTab';
 import { getBucketCategory, getBucketColor } from './bucketColors';
 import { getPlanProgress } from './bucketProgress';
 import { ConfirmDialog } from './ConfirmDialog';
-import { FREE_PLAN_MAX_TASKS_PER_BUCKET, getProgressResets } from './freePlan';
+import { FREE_PLAN_MAX_TASKS_PER_BUCKET, getProgressResets, sortFreePlanBuckets } from './freePlan';
 import { FreeTaskEditor } from './FreeTaskEditor';
 import { PlanTypeIcon } from './PlanTypeIcon';
 import { useFreePlanEditor } from './useFreePlanEditor';
@@ -52,7 +52,7 @@ export function FreeCustomPlanView({ plan }: { plan: CustomPlan }) {
                 </Typography>
             </Stack>
 
-            {plan.buckets.map((bucket, index) => (
+            {sortFreePlanBuckets(plan.buckets).map((bucket, index) => (
                 <BucketCard
                     key={bucket.id}
                     plan={plan}
