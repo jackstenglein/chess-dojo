@@ -744,7 +744,12 @@ export function LiveMatchPage() {
         );
 
     const guessPanel = (
-        <GuessPanel state={guessState} onGoLive={() => goTo(null)} score={myScore} />
+        <GuessPanel
+            state={guessState}
+            onGoLive={() => goTo(null)}
+            score={myScore}
+            shortInTwoColumns={streamView}
+        />
     );
     const crosstableView = (
         <CrosstableView
