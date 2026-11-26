@@ -266,7 +266,7 @@
                         "description": "Ripercorri una partita classica dallo studio di partite di maestri della tua coorte. Cerca i piani e le idee dietro le mosse."
                     },
                     "endgameAlgorithm": {
-                        "title": "Gioca 1 posizione di un algoritmo di finale",
+                        "title": "Completa 1 algoritmo di finale",
                         "description": "Gioca la prima posizione del primo algoritmo di finale della tua coorte finché non la vinci. Il tempo impiegato passa all'algoritmo completo."
                     }
                 },

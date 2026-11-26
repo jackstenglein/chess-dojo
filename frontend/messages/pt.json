@@ -266,7 +266,7 @@
                         "description": "Analisa uma partida clássica do estudo de partidas de mestres da tua coorte. Procura os planos e as ideias por trás dos lances."
                     },
                     "endgameAlgorithm": {
-                        "title": "Joga 1 posição de um algoritmo de finais",
+                        "title": "Completa 1 algoritmo de finais",
                         "description": "Joga a primeira posição do primeiro algoritmo de finais da tua coorte até a ganhares. O tempo que gastares passa para o algoritmo completo."
                     }
                 },

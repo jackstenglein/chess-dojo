@@ -266,7 +266,7 @@
                         "description": "Geh eine klassische Partie aus der Meisterpartien-Studie deiner Kohorte durch. Achte auf die Pläne und Ideen hinter den Zügen."
                     },
                     "endgameAlgorithm": {
-                        "title": "Spiele 1 Stellung eines Endspiel-Algorithmus",
+                        "title": "Schließe 1 Endspiel-Algorithmus ab",
                         "description": "Spiele die erste Stellung des ersten Endspiel-Algorithmus deiner Kohorte, bis du sie gewinnst. Deine Zeit wird dem ganzen Algorithmus angerechnet."
                     }
                 },

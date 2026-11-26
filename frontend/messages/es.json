@@ -266,7 +266,7 @@
                         "description": "Repasa una partida clásica del estudio de partidas de maestros de tu cohorte. Busca los planes e ideas detrás de las jugadas."
                     },
                     "endgameAlgorithm": {
-                        "title": "Juega 1 posición de algoritmo de finales",
+                        "title": "Completa 1 algoritmo de finales",
                         "description": "Juega la primera posición del primer algoritmo de finales de tu cohorte hasta ganarla. El tiempo que dediques pasa al algoritmo completo."
                     }
                 },
