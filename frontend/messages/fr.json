@@ -240,7 +240,6 @@
             "starter": {
                 "title": "Tutoriel",
                 "planName": "Plan d'entraînement du Dojo",
-                "subtitle": "Trois courtes étapes pour apprendre comment fonctionne l'entraînement ici. Tout ce que tu termines est reporté dans ton plan d'entraînement complet, qui se débloque à la fin.",
                 "progress": "{done} tâches sur {total} terminées",
                 "stepNumber": "Étape {number}",
                 "stepProgress": "{done} sur {total} terminées",
