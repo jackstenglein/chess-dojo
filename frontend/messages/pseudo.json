@@ -300,6 +300,10 @@
                     "description": "[T] Finish the starter plan to unlock your full training plan. Everything you mark done here will be checked off for you."
                 },
                 "skip": "[T] Already know the Dojo? Skip to the full training plan",
+                "buildOwn": {
+                    "description": "[T] Want to train your own way? Build your own plan instead, with up to 3 tasks in each category.",
+                    "action": "[T] Build my own plan"
+                },
                 "welcomeKinds": {
                     "guide": {
                         "label": "[T] Guide",

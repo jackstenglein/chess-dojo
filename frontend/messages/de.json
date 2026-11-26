@@ -300,6 +300,10 @@
                     "description": "Schließe den Startplan ab, um deinen vollständigen Trainingsplan freizuschalten. Alles, was du hier abhakst, wird dort für dich abgehakt."
                 },
                 "skip": "Kennst du das Dojo schon? Direkt zum vollständigen Trainingsplan",
+                "buildOwn": {
+                    "description": "Willst du auf deine eigene Art trainieren? Erstelle stattdessen deinen eigenen Plan mit bis zu 3 Aufgaben pro Kategorie.",
+                    "action": "Eigenen Plan erstellen"
+                },
                 "welcomeKinds": {
                     "guide": {
                         "label": "Leitfaden",

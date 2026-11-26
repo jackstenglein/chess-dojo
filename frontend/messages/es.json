@@ -300,6 +300,10 @@
                     "description": "Termina el plan de inicio para desbloquear tu plan de entrenamiento completo. Todo lo que marques aquí quedará marcado allí."
                 },
                 "skip": "¿Ya conoces el Dojo? Salta al plan de entrenamiento completo",
+                "buildOwn": {
+                    "description": "¿Quieres entrenar a tu manera? Crea tu propio plan, con hasta 3 tareas en cada categoría.",
+                    "action": "Crear mi propio plan"
+                },
                 "welcomeKinds": {
                     "guide": {
                         "label": "Guía",
