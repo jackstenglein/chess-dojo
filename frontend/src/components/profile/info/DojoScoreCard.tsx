@@ -32,6 +32,7 @@ import React, { useMemo } from 'react';
 import { useTimelineContext } from '../activity/useTimeline';
 import { getBucketCategory, getBucketColor } from '../trainingPlan/custom/bucketColors';
 import { getPlanProgress } from '../trainingPlan/custom/bucketProgress';
+import { sortFreePlanBuckets } from '../trainingPlan/custom/freePlan';
 import { getActivePlan, resolvePlanTasks } from '../trainingPlan/customPlan';
 import { CLASSICAL_GAMES_TASK_ID } from '../trainingPlan/suggestedTasks';
 import { TrainingPlanIcon } from '../trainingPlan/TrainingPlanIcon';
@@ -41,9 +42,9 @@ import { TimeManagementRatingRow } from './TimeManagementRatingRow';
 const categories = [
     RequirementCategory.Games,
     RequirementCategory.Tactics,
+    RequirementCategory.Opening,
     RequirementCategory.Middlegames,
     RequirementCategory.Endgame,
-    RequirementCategory.Opening,
 ] as const;
 
 /**
@@ -152,7 +153,7 @@ const DojoScoreCard: React.FC<DojoScoreCardProps> = ({ user, cohort }) => {
         }
         const tasks = resolvePlanTasks(activePlan, allRequirements, user.customTasks ?? []);
         const overall = getPlanProgress([...tasks.values()], user, cohort, timeline);
-        const buckets = activePlan.buckets.map((bucket, index) => {
+        const buckets = sortFreePlanBuckets(activePlan.buckets).map((bucket, index) => {
             const bucketTasks = bucket.taskIds.map((id) => tasks.get(id)).filter((t) => !!t);
             return {
                 bucket,

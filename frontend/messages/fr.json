@@ -179,6 +179,7 @@
             },
             "daily": {
                 "today": "Aujourd'hui",
+                "emptyPlan": "Ajoute des tâches à ton plan d'entraînement ci-dessous pour créer ton programme d'entraînement quotidien et hebdomadaire.",
                 "summary": "{done} sur {total} tâches faites · {worked} sur {goal}",
                 "allDone": "Terminé pour aujourd'hui · {worked} enregistré",
                 "goalMet": "Objectif de temps atteint",
@@ -370,8 +371,8 @@
                 "bucketGames": "Parties + Analyse",
                 "bucketTactics": "Tactique",
                 "bucketMiddlegames": "Milieu de partie",
-                "bucketEndgames": "Finales",
-                "bucketOpenings": "Ouvertures",
+                "bucketEndgames": "Finale",
+                "bucketOpenings": "Ouverture",
                 "subheading": "Choisis jusqu'à {max} tâches par catégorie. Tes plans Aujourd'hui et Cette semaine sont construits à partir d'elles.",
                 "taskCount": "{count}/{max} tâches",
                 "emptyBucket": "Pas encore de tâches. Ajoutes-en une pour entraîner cette catégorie.",

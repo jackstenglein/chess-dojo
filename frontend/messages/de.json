@@ -179,6 +179,7 @@
             },
             "daily": {
                 "today": "Heute",
+                "emptyPlan": "Füge unten Aufgaben zu deinem Trainingsplan hinzu, um deinen täglichen und wöchentlichen Trainingsplan zu erstellen.",
                 "summary": "{done} von {total} Aufgaben erledigt · {worked} von {goal}",
                 "allDone": "Fertig für heute · {worked} eingetragen",
                 "goalMet": "Zeitziel erreicht",
@@ -371,7 +372,7 @@
                 "bucketTactics": "Taktik",
                 "bucketMiddlegames": "Mittelspiel",
                 "bucketEndgames": "Endspiel",
-                "bucketOpenings": "Eröffnungen",
+                "bucketOpenings": "Eröffnung",
                 "subheading": "Wähle bis zu {max} Aufgaben pro Kategorie. Deine Pläne für Heute und Diese Woche werden daraus erstellt.",
                 "taskCount": "{count}/{max} Aufgaben",
                 "emptyBucket": "Noch keine Aufgaben. Füge eine hinzu, um diese Kategorie zu trainieren.",

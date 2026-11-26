@@ -1,21 +1,15 @@
-import { RequirementCategory } from '@/database/requirement';
 import { CategoryColors } from '@/style/ThemeProvider';
 import { Add } from '@mui/icons-material';
 import { alpha, Box, Button, Card, Stack, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
-import { FREE_PLAN_CATEGORIES, FREE_PLAN_MAX_TASKS_PER_BUCKET } from './freePlan';
+import {
+    FREE_BUCKET_NAME_KEYS,
+    FREE_PLAN_CATEGORIES,
+    FREE_PLAN_MAX_TASKS_PER_BUCKET,
+} from './freePlan';
 import { FreePlanSwitch } from './FreePlanSwitch';
 import { PlanTypeIcon } from './PlanTypeIcon';
 import { useFreePlanEditor } from './useFreePlanEditor';
-
-/** The translation key of each category's bucket name. */
-const BUCKET_NAME_KEYS = {
-    [RequirementCategory.Games]: 'bucketGames',
-    [RequirementCategory.Tactics]: 'bucketTactics',
-    [RequirementCategory.Middlegames]: 'bucketMiddlegames',
-    [RequirementCategory.Endgame]: 'bucketEndgames',
-    [RequirementCategory.Opening]: 'bucketOpenings',
-} as const;
 
 /**
  * Shown when a free-tier user without a custom plan picks Custom Plan: what a
@@ -65,7 +59,7 @@ export function CreateFreePlan() {
                                 }}
                             >
                                 <Typography variant='body2' sx={{ fontWeight: 600 }}>
-                                    {t(BUCKET_NAME_KEYS[category])}
+                                    {t(FREE_BUCKET_NAME_KEYS[category])}
                                 </Typography>
                                 <Typography variant='caption' sx={{ color: 'text.secondary' }}>
                                     {t('taskCount', {

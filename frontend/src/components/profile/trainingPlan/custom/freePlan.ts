@@ -26,6 +26,15 @@ export const FREE_PLAN_CATEGORIES: CustomTaskCategory[] = [
     RequirementCategory.Endgame,
 ];
 
+/** The translation key (in profile.trainingPlan.freePlan) of each category's bucket name. */
+export const FREE_BUCKET_NAME_KEYS = {
+    [RequirementCategory.Games]: 'bucketGames',
+    [RequirementCategory.Tactics]: 'bucketTactics',
+    [RequirementCategory.Opening]: 'bucketOpenings',
+    [RequirementCategory.Middlegames]: 'bucketMiddlegames',
+    [RequirementCategory.Endgame]: 'bucketEndgames',
+} as const satisfies Record<CustomTaskCategory, string>;
+
 /**
  * Returns the plan's buckets in FREE_PLAN_CATEGORIES order, so plans saved with an
  * older order show like new ones. Buckets of other categories go last, in their order.
