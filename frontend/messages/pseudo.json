@@ -420,7 +420,7 @@
                 "customOptionBody": "[T] Keep training for free with a plan you put together yourself.",
                 "customOptionBullet1": "[T] 5 categories with up to 3 tasks each",
                 "customOptionBullet2": "[T] Track games, hours, puzzles, and more",
-                "customOptionBullet3": "[T] Track your progress and see your activity on the heatmap",
+                "customOptionBullet3": "[T] Log your progress and see your activity on the heatmap",
                 "buildOwnCta": "[T] Build my own plan (free)",
                 "createTitle": "[T] Build your own training plan",
                 "createBody": "[T] Start from scratch: add up to {max} tasks to each category, and measure them however you like — games, minutes, pages, puzzles and more.",
