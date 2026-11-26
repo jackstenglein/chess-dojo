@@ -236,6 +236,7 @@ function AuthProfilePage({ currentUser, username }: { currentUser: User; usernam
                                     label={t('tabClubs')}
                                     value='clubs'
                                     icon={<Groups fontSize='small' />}
+                                    data-testid='profile-tab-clubs'
                                 />
                             </Tabs>
                         </Box>

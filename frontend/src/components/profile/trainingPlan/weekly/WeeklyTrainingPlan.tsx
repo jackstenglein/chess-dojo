@@ -3,13 +3,12 @@ import LoadingPage from '@/loading/LoadingPage';
 import { categoryTextColor } from '@/style/categoryText';
 import { CategoryColors } from '@/style/ThemeProvider';
 import { useTranslatedRequirement } from '@/translation/useTranslatedRequirement';
-import { Check, ExpandMore } from '@mui/icons-material';
+import { Check } from '@mui/icons-material';
 import {
     alpha,
     Box,
     ButtonBase,
     Collapse,
-    IconButton,
     LinearProgress,
     Stack,
     Tooltip,
@@ -20,6 +19,8 @@ import { use, useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { CategoryLabel } from '../CategoryLabel';
 import { OverbookedDayAlert } from '../OverbookedDayAlert';
+import { useTrainingPlanSections } from '../PlanMenu';
+import { SECTION_TITLE_WIDTH, SectionHeader } from '../SectionHeader';
 import { TaskDialog, TaskDialogView } from '../TaskDialog';
 import { taskDisplayName } from '../taskDisplayName';
 import { splitDisplayName } from '../taskVerb';
@@ -27,7 +28,7 @@ import { TaskVerbIcon } from '../TaskVerbIcon';
 import { TrainingPlanIcon } from '../TrainingPlanIcon';
 import { TrainingPlanContext } from '../TrainingPlanTab';
 import { useTrainingPlanProgress } from '../useTrainingPlan';
-import { WorkGoalSettingsEditor } from '../WorkGoalSettingsEditor';
+import { getWeeklyGoalMinutes } from '../workGoal';
 import {
     CategoryTotal,
     getCategoryTotals,
@@ -38,6 +39,7 @@ import {
     WeekCell,
     WeekDay,
     WeekRow,
+    withoutSuggestions,
 } from './weekPlan';
 
 const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat'];
@@ -47,28 +49,35 @@ const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat'];
  * row, so its name has room to be read and a task planned on several days shows as
  * one row rather than being repeated in every column.
  */
+/**
+ * The width of the category name column in the weekly totals. With the list's
+ * 8px inset, the category bars start where the goal bar in the header starts.
+ */
+const CATEGORY_NAME_WIDTH = SECTION_TITLE_WIDTH - 8;
+
 export function WeeklyTrainingPlan() {
     const t = useTranslations('profile.trainingPlan.weekly');
-    const tCommon = useTranslations('profile.trainingPlan.common');
     const {
         startDate,
         endDate,
         weekSuggestions,
         suggestionsByDay,
         planTimeline: timeline,
-        isCurrentUser,
         isLoading,
         user,
         allRequirements,
         pinnedTasks,
     } = use(TrainingPlanContext);
 
-    const [goalTime, _, workedTime] = useTrainingPlanProgress({
+    const [, , workedTime] = useTrainingPlanProgress({
         startDate,
         endDate,
         tasks: weekSuggestions,
         timeline,
     });
+    // The weekly goal is the user's whole goal for the week, not just the time
+    // planned on the days left, and every task logged this week counts towards it.
+    const goalTime = getWeeklyGoalMinutes(user.workGoal);
 
     const [expanded, setExpanded] = useLocalStorage<boolean>('training-plan-weekly-expanded', true);
 
@@ -80,7 +89,9 @@ export function WeeklyTrainingPlan() {
         [startDate, user.weekStart],
     );
 
-    const rows = useMemo(
+    const { showSuggestions } = useTrainingPlanSections();
+    // Every task in the week's plan; the category goals always count all of them.
+    const allRows = useMemo(
         () =>
             getWeekRows({
                 weekDays,
@@ -93,6 +104,15 @@ export function WeeklyTrainingPlan() {
             }),
         [weekDays, suggestionsByDay, timeline, pinnedTasks, user.customTasks, allRequirements],
     );
+    // The calendar's tasks: the Plan menu can hide the plan's suggestions there,
+    // leaving pinned and logged tasks.
+    const rows = useMemo(
+        () =>
+            showSuggestions
+                ? allRows
+                : withoutSuggestions(allRows, new Set(pinnedTasks.map((p) => p.id))),
+        [allRows, showSuggestions, pinnedTasks],
+    );
 
     const onOpenTask = (task: Requirement | CustomTask, view: TaskDialogView) => {
         setSelectedTask(task);
@@ -101,32 +121,15 @@ export function WeeklyTrainingPlan() {
 
     return (
         <Stack spacing={2} sx={{ width: 1 }}>
-            <Stack direction='row' sx={{ alignItems: 'center', width: 1 }}>
-                <Tooltip title={expanded ? tCommon('hide') : tCommon('show')}>
-                    <IconButton onClick={() => setExpanded((v) => !v)}>
-                        <ExpandMore
-                            sx={{
-                                transform: expanded ? 'rotate(180deg)' : undefined,
-                                transition: 'transform 150ms cubic-bezier(0.4, 0, 0.2, 1) 0ms',
-                            }}
-                        />
-                    </IconButton>
-                </Tooltip>
-
-                <Typography variant='h5' sx={{ fontWeight: 'bold', ml: 0.5, mr: 2 }}>
-                    {t('thisWeek')}
-                </Typography>
-
-                <WorkGoalSettingsEditor
-                    currentGoal={goalTime}
-                    currentValue={workedTime}
-                    disabled={!isCurrentUser}
-                    initialWeekStart={user.weekStart}
-                    workGoal={user.workGoal}
-                    workGoalHistory={user.workGoalHistory}
-                    variant='icon'
-                />
-            </Stack>
+            <SectionHeader
+                title={t('thisWeek')}
+                expanded={expanded}
+                onToggle={() => setExpanded((v) => !v)}
+                goal={goalTime}
+                worked={workedTime}
+                showProgress={!isLoading}
+                testId='week'
+            />
 
             <Collapse in={expanded}>
                 <Stack spacing={1.5}>
@@ -138,7 +141,7 @@ export function WeeklyTrainingPlan() {
                                 <OverbookedDayAlert key={day.dayIndex} dayIndex={day.dayIndex} />
                             ))}
 
-                    {!isLoading && <CategoryTotals totals={getCategoryTotals(rows)} />}
+                    {!isLoading && <CategoryTotals totals={getCategoryTotals(allRows)} />}
 
                     {isLoading ? (
                         <LoadingPage />
@@ -146,7 +149,6 @@ export function WeeklyTrainingPlan() {
                         <WeekCalendar
                             weekDays={weekDays}
                             rows={rows}
-                            isCurrentUser={isCurrentUser}
                             cohort={user.dojoCohort}
                             onOpenTask={onOpenTask}
                         />
@@ -178,13 +180,11 @@ export function WeeklyTrainingPlan() {
 function WeekCalendar({
     weekDays,
     rows,
-    isCurrentUser,
     cohort,
     onOpenTask,
 }: {
     weekDays: WeekDay[];
     rows: WeekRow[];
-    isCurrentUser: boolean;
     cohort: string;
     onOpenTask: (task: Requirement | CustomTask, view: TaskDialogView) => void;
 }) {
@@ -211,7 +211,6 @@ function WeekCalendar({
                     items={rows
                         .map((row) => ({ row, cell: row.cells[i] }))
                         .filter(({ cell }) => getCellState(cell, day) !== 'none')}
-                    isCurrentUser={isCurrentUser}
                     cohort={cohort}
                     onOpenTask={onOpenTask}
                 />
@@ -250,16 +249,14 @@ function CategoryTotals({ totals }: { totals: CategoryTotal[] }) {
                         key={total.category}
                         sx={{
                             display: 'grid',
-                            // Phones: name and time on one line, the bar under them.
-                            // Wider: name, bar and time on one line, bars aligned.
+                            // Name, a short bar and the time on one line, kept close
+                            // together so each category and its goal read at a glance.
                             gridTemplateColumns: {
-                                xs: 'minmax(0, 1fr) auto',
-                                sm: '200px minmax(0, 1fr) 110px',
+                                xs: 'minmax(0, 1fr) 56px auto',
+                                sm: `${CATEGORY_NAME_WIDTH}px 120px auto`,
                             },
-                            gridTemplateAreas: {
-                                xs: '"name time" "bar bar"',
-                                sm: '"name bar time"',
-                            },
+                            gridTemplateAreas: '"name bar time"',
+                            justifyContent: 'start',
                             alignItems: 'center',
                             columnGap: 2,
                             rowGap: 0.75,
@@ -290,7 +287,7 @@ function CategoryTotals({ totals }: { totals: CategoryTotal[] }) {
                                 fontWeight: 600,
                                 fontVariantNumeric: 'tabular-nums',
                                 whiteSpace: 'nowrap',
-                                textAlign: 'right',
+                                textAlign: 'left',
                                 ...(done
                                     ? categoryTextColor(theme, color)
                                     : { color: 'text.secondary' }),
@@ -308,13 +305,11 @@ function CategoryTotals({ totals }: { totals: CategoryTotal[] }) {
 function WeekCalendarDay({
     day,
     items,
-    isCurrentUser,
     cohort,
     onOpenTask,
 }: {
     day: WeekDay;
     items: { row: WeekRow; cell: WeekCell }[];
-    isCurrentUser: boolean;
     cohort: string;
     onOpenTask: (task: Requirement | CustomTask, view: TaskDialogView) => void;
 }) {
@@ -378,7 +373,6 @@ function WeekCalendarDay({
                             row={row}
                             cell={cell}
                             day={day}
-                            isCurrentUser={isCurrentUser}
                             cohort={cohort}
                             onOpenTask={onOpenTask}
                         />
@@ -393,14 +387,12 @@ function WeekCalendarChip({
     row,
     cell,
     day,
-    isCurrentUser,
     cohort,
     onOpenTask,
 }: {
     row: WeekRow;
     cell: WeekCell;
     day: WeekDay;
-    isCurrentUser: boolean;
     cohort: string;
     onOpenTask: (task: Requirement | CustomTask, view: TaskDialogView) => void;
 }) {
@@ -434,12 +426,8 @@ function WeekCalendarChip({
     return (
         <Tooltip title={`${fullName} · ${status}`}>
             <ButtonBase
-                onClick={() =>
-                    onOpenTask(
-                        task,
-                        isCurrentUser ? TaskDialogView.Progress : TaskDialogView.Details,
-                    )
-                }
+                // Clicking a task shows its details; logging is done from the details.
+                onClick={() => onOpenTask(task, TaskDialogView.Details)}
                 data-testid={`weekly-chip-${state}`}
                 sx={(theme) => ({
                     position: 'relative',

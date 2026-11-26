@@ -1,4 +1,5 @@
 import { useRequirements } from '@/api/cache/requirements';
+import { RequestSnackbar } from '@/api/Request';
 import { useAuth, useFreeTier } from '@/auth/Auth';
 import { formatTime } from '@/board/pgn/boardTools/underboard/clock/ClockUsage';
 import { Link } from '@/components/navigation/Link';
@@ -26,10 +27,14 @@ import { AccessAlarm, Check, Lock, Loop, Pause, PlayArrow, Scoreboard } from '@m
 import { Box, Button, Chip, Dialog, DialogContent, Grid, Stack, Tooltip } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { use, useMemo, useState } from 'react';
+import { useDoneColor } from './barColor';
 import CustomTaskEditor from './CustomTaskEditor';
+import { completedButtonStyles } from './daily/DailyCard';
+import { isCheckOffTask, isTaskFinished } from './daily/todayCards';
 import { ForgerGoalDialog, TACTICS_FORGER_TASK_ID } from './ForgerGoalDialog';
 import { TaskDescription } from './TaskDescription';
 import { TaskDialogFooter, TaskDialogHeader, taskDialogPrimaryButtonSx } from './TaskDialogFrame';
+import { useMarkComplete } from './useMarkComplete';
 
 export enum TaskDialogView {
     Details = 'DETAILS',
@@ -218,6 +223,9 @@ function DetailsDialog({
         getLabel: getTimerLabel,
     } = use(TimerContext);
     const timerIsOtherTask = timerTask && timerTask.id !== task.id;
+    const tDaily = useTranslations('profile.trainingPlan.daily');
+    const { markComplete, request: markCompleteRequest } = useMarkComplete(task);
+    const doneColor = useDoneColor();
 
     const selectedCohort = useMemo(() => {
         if (!task) {
@@ -235,6 +243,10 @@ function DetailsDialog({
 
         return cohortOptions.sort(compareCohorts)[0];
     }, [task, user?.dojoCohort, cohort]);
+
+    // Welcome to the Dojo tasks and single checkboxes are marked complete directly.
+    const checkOff = isCheckOffTask(task, selectedCohort ?? cohort);
+    const finished = !!user && isTaskFinished(user, task, timeline);
 
     const { requirements } = useRequirements(ALL_COHORTS, false);
 
@@ -419,13 +431,15 @@ function DetailsDialog({
                         ))}
                 </Stack>
             </DialogContent>
+            <RequestSnackbar request={markCompleteRequest} />
             {/* Only the profile owner can log progress; the starter plan is always theirs. */}
             {isOwner && (
                 <TaskDialogFooter
                     view={TaskDialogView.Details}
                     setView={starterMode ? undefined : setView}
                     extra={
-                        starterMode ? undefined : timerRunning ? (
+                        // Check-off tasks are just done or not, so there's no time to track.
+                        starterMode || checkOff ? undefined : timerRunning ? (
                             <Button
                                 color='warning'
                                 size='small'
@@ -476,6 +490,27 @@ function DetailsDialog({
                                 </Button>
                             )}
                         </>
+                    ) : checkOff ? (
+                        <Button
+                            variant='contained'
+                            color={finished ? 'success' : 'primary'}
+                            disableElevation
+                            startIcon={<Check />}
+                            disabled={finished}
+                            loading={markCompleteRequest.isLoading()}
+                            onClick={async () => {
+                                if (await markComplete()) {
+                                    onClose();
+                                }
+                            }}
+                            sx={(theme) => ({
+                                ...taskDialogPrimaryButtonSx,
+                                ...(finished ? completedButtonStyles(theme, doneColor) : {}),
+                            })}
+                            data-testid='task-dialog-mark-complete'
+                        >
+                            {finished ? tDaily('completed') : tDaily('markComplete')}
+                        </Button>
                     ) : (
                         <Button
                             variant='contained'

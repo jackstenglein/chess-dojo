@@ -49,3 +49,23 @@ export function splitDisplayName(name: string): { verb?: TaskVerb; rest: string 
     }
     return { verb, rest };
 }
+
+/**
+ * Returns the action a check-off task asks for, like "Read" or "Watch", taken from
+ * the start of its name; tasks without one get "To do".
+ * @param name The task's name.
+ * @param t The translations for Today.
+ */
+export function getCheckOffVerbLabel(
+    name: string,
+    t: (key: 'verbRead' | 'verbWatch' | 'toDo') => string,
+): string {
+    const { verb } = splitTaskVerb(name);
+    if (verb === 'read') {
+        return t('verbRead');
+    }
+    if (verb === 'watch') {
+        return t('verbWatch');
+    }
+    return t('toDo');
+}

@@ -183,6 +183,14 @@
                 "summary": "{done} sur {total} tâches faites · {worked} sur {goal}",
                 "allDone": "Terminé pour aujourd'hui · {worked} enregistré",
                 "goalMet": "Objectif de temps atteint",
+                "loggedTime": "{time} enregistrées",
+                "notPlanned": "Non prévue",
+                "doneLabel": "Terminée",
+                "toDo": "À faire",
+                "markComplete": "Marquer comme terminée",
+                "completed": "Terminée",
+                "verbRead": "Lire",
+                "verbWatch": "Regarder",
                 "skippedHeading": "Ignorées cette semaine ({count})",
                 "restore": "Rétablir {name}",
                 "skippedToast": "{name} ignorée pour le reste de la semaine",
@@ -212,11 +220,8 @@
                 "partialTime": "{worked} / {goal}"
             },
             "full": {
-                "heading": "Plan d'entraînement complet",
+                "heading": "Plan d'entraînement",
                 "cohort": "Cohorte",
-                "showCompletedTasks": "Afficher les tâches terminées",
-                "hideCompletedTasksTooltip": "Masquer les tâches terminées",
-                "showCompletedTasksTooltip": "Afficher les tâches terminées",
                 "expandAll": "Tout développer",
                 "collapseAll": "Tout réduire",
                 "completedTasks": "Tâches terminées",
@@ -470,8 +475,27 @@
                 "body": "Cette tâche personnalisée sera supprimée de ton profil, et tout le temps enregistré sera perdu. Cette action est irréversible.",
                 "delete": "Supprimer la tâche"
             },
+            "planMenu": {
+                "plan": "Plan",
+                "tooltip": "Options du plan d'entraînement",
+                "show": "Afficher",
+                "today": "Aujourd'hui",
+                "thisWeek": "Cette semaine",
+                "suggestedTasks": "Tâches suggérées",
+                "workGoal": "Définir l'objectif hebdomadaire",
+                "resetProgress": "Réinitialiser la progression",
+                "barColor": "Couleur de la barre",
+                "barColors": {
+                    "multicolor": "Multicolore",
+                    "teal": "Bleu canard",
+                    "blue": "Bleu",
+                    "purple": "Violet",
+                    "pink": "Rose",
+                    "orange": "Orange",
+                    "green": "Vert"
+                }
+            },
             "workGoal": {
-                "editGoalTooltip": "Modifier l'objectif de travail",
                 "startWeekOn": "Commencer la semaine le",
                 "Sunday": "Dimanche",
                 "Monday": "Lundi",
