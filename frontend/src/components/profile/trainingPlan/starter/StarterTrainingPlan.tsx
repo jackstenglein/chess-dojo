@@ -539,9 +539,6 @@ function StarterHero({
                         >
                             {t('planName')}
                         </Typography>
-                        <Typography color='text.secondary' sx={{ maxWidth: 680, lineHeight: 1.6 }}>
-                            {t('subtitle')}
-                        </Typography>
                     </Stack>
 
                     <SenseiGreeting />
