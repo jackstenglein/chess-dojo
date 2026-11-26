@@ -1,6 +1,6 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 
@@ -61,4 +61,24 @@ export function useStarterPlanPreview(): StarterPreviewMode {
     return param === StarterPreviewMode.On || stored
         ? StarterPreviewMode.On
         : StarterPreviewMode.Off;
+}
+
+/**
+ * Returns a function that turns ?starterPlan=reset into ?starterPlan=on, for once the
+ * previewed starter plan is finished: the reset preview always shows the starter plan
+ * and clears it again on reload, which would hide what finishing leads to.
+ */
+export function useLeaveStarterReset(): () => void {
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+
+    return () => {
+        if (searchParams.get(STARTER_PREVIEW_PARAM) !== StarterPreviewMode.Reset) {
+            return;
+        }
+        const params = new URLSearchParams(searchParams.toString());
+        params.set(STARTER_PREVIEW_PARAM, StarterPreviewMode.On);
+        router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    };
 }
