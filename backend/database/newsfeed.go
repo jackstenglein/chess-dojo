@@ -12,9 +12,6 @@ var NewsfeedBlockedRequirements = []string{
 	"Graduation",                           // Graduations are pulled from the GRADUATIONS newsfeed so all users can see them
 }
 
-// TacticsForgerRequirementId is the Dojo Tactics Forger's task on each user's training plan.
-const TacticsForgerRequirementId = "dojo-tactics-forger"
-
 const NewsfeedIdAllUsers = "ALL_USERS"
 const NewsfeedIdGraduations = "GRADUATIONS"
 
