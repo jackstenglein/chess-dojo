@@ -86,6 +86,8 @@ import {
 } from './lichessFeed';
 import { LiveBoard } from './LiveBoard';
 import {
+    ANALYSIS_LANDSCAPE_BOARD,
+    ANALYSIS_PHONE_LANDSCAPE,
     FAN_LANDSCAPE_BOARD,
     FAN_TABLET_BOARD,
     fanLandscapeGrid,
@@ -999,15 +1001,13 @@ export function LiveMatchPage() {
                           }
                         : {
                               xs: '1fr',
-                              // On a tablet on its side, or in a short window, the fan view's
-                              // board is no taller than the screen has room for. The header,
-                              // the tabs, the player bars and the move buttons take the rest.
+                              // On a tablet on its side, or in a short window, the board is
+                              // no taller than the screen has room for. The header, the
+                              // tabs, the player bars and the move buttons take the rest.
                               // Besides the header that is 225px, less the 46px that the eval
                               // bar adds to the column. The column beside the board takes the
                               // width that frees up.
-                              md: streamView
-                                  ? 'minmax(0, max(406px, calc(100dvh - var(--navbar-height) - 179px))) minmax(340px, 1fr)'
-                                  : 'minmax(0, 1fr) 340px',
+                              md: 'minmax(0, max(406px, calc(100dvh - var(--navbar-height) - 179px))) minmax(340px, 1fr)',
                               // The leaderboard needs no more than this; wider only spreads it out.
                               lg: 'minmax(0, 620px) 340px minmax(280px, 360px)',
                           },
@@ -1094,14 +1094,20 @@ export function LiveMatchPage() {
                                 maxWidth: playerColumn
                                     ? { md: 'max(360px, calc(100dvh - 230px))' }
                                     : undefined,
-                                ...(streamView && {
-                                    [TABLET_UPRIGHT]: { maxWidth: FAN_TABLET_BOARD },
-                                    [PHONE_LANDSCAPE]: {
-                                        flexGrow: 0,
-                                        width: FAN_LANDSCAPE_BOARD,
-                                        maxWidth: 'none',
-                                    },
-                                }),
+                                ...(streamView
+                                    ? {
+                                          [TABLET_UPRIGHT]: { maxWidth: FAN_TABLET_BOARD },
+                                          [PHONE_LANDSCAPE]: {
+                                              flexGrow: 0,
+                                              width: FAN_LANDSCAPE_BOARD,
+                                              maxWidth: 'none',
+                                          },
+                                      }
+                                    : {
+                                          [ANALYSIS_PHONE_LANDSCAPE]: {
+                                              maxWidth: ANALYSIS_LANDSCAPE_BOARD,
+                                          },
+                                      }),
                             }}
                         >
                             <LiveBoard

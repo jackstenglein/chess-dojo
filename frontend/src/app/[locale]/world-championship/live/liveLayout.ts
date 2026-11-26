@@ -130,6 +130,20 @@ export const fanTabletSidesSx = {
 };
 
 /**
+ * A phone on its side in the two analysis views, where it has the one column
+ * of a phone held upright. A screen 900px wide or more has two columns there.
+ */
+export const ANALYSIS_PHONE_LANDSCAPE =
+    '@media (orientation: landscape) and (max-height: 500px) and (max-width: 899.95px)';
+
+/**
+ * Nobody analyses on a phone, so on such a screen the analysis views do no more
+ * than keep the board from being taller than the screen. It leaves the site's
+ * header and a margin.
+ */
+export const ANALYSIS_LANDSCAPE_BOARD = 'max(240px, calc(100dvh - var(--navbar-height) - 16px))';
+
+/**
  * On a phone the two columns of the fan view have no box of their own, so the
  * page can place their parts one by one.
  */
