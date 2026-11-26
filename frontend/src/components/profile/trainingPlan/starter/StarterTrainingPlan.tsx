@@ -394,10 +394,10 @@ export function StarterTrainingPlan({
                 // Free-tier members can't skip to the full plan, so they're offered
                 // their own custom plan instead.
                 <Stack
-                    direction={{ xs: 'column', md: 'row' }}
+                    direction='row'
                     sx={{
                         width: 1,
-                        alignItems: { xs: 'stretch', md: 'center' },
+                        alignItems: 'start',
                         gap: 1.5,
                         p: 2,
                         borderRadius: 3,
@@ -407,22 +407,23 @@ export function StarterTrainingPlan({
                     }}
                     data-testid='starter-build-own-plan'
                 >
-                    <Stack direction='row' sx={{ alignItems: 'center', gap: 1.5, flexGrow: 1 }}>
-                        <DashboardCustomize sx={{ color: 'primary.main' }} />
-                        <Typography variant='body2' color='text.secondary'>
-                            {t('buildOwn.description')}
-                        </Typography>
-                    </Stack>
-                    <Button
-                        variant='outlined'
-                        endIcon={<ArrowForward />}
-                        disabled={request.isLoading()}
-                        onClick={() => void onBuildOwnPlan()}
-                        sx={{ textTransform: 'none', flexShrink: 0 }}
-                        data-testid='starter-build-own-plan-button'
+                    <DashboardCustomize sx={{ color: 'primary.main', mt: 0.25 }} />
+                    <Stack
+                        sx={{ gap: 1.5, flexGrow: 1, alignItems: { xs: 'stretch', sm: 'start' } }}
                     >
-                        {t('buildOwn.action')}
-                    </Button>
+                        <Typography color='text.secondary'>{t('buildOwn.description')}</Typography>
+                        <Button
+                            variant='contained'
+                            size='large'
+                            endIcon={<ArrowForward />}
+                            disabled={request.isLoading()}
+                            onClick={() => void onBuildOwnPlan()}
+                            sx={{ textTransform: 'none' }}
+                            data-testid='starter-build-own-plan-button'
+                        >
+                            {t('buildOwn.action')}
+                        </Button>
+                    </Stack>
                 </Stack>
             ) : (
                 <Stack
