@@ -30,7 +30,7 @@ functions:
     memorySize: 1024
     events:
       - httpApi:
-          path: /admin/statistics
+          path: /admin/site-stats
           method: get
           authorizer:
             type: jwt
