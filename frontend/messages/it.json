@@ -300,6 +300,10 @@
                     "description": "Completa il piano iniziale per sbloccare il tuo piano di allenamento completo. Tutto ciò che segni qui verrà spuntato lì per te."
                 },
                 "skip": "Conosci già il Dojo? Passa al piano di allenamento completo",
+                "buildOwn": {
+                    "description": "Vuoi allenarti a modo tuo? Crea invece il tuo piano, con fino a 3 attività per categoria.",
+                    "action": "Crea il mio piano"
+                },
                 "welcomeKinds": {
                     "guide": {
                         "label": "Guida",
