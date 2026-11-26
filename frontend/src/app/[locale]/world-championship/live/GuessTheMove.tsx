@@ -8,7 +8,7 @@ import InfoIcon from '@mui/icons-material/InfoOutlined';
 import { Alert, Box, Button, IconButton, Paper, Popover, Stack, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
-import { PHONE } from './liveLayout';
+import { BELOW_THREE_COLUMNS, PHONE } from './liveLayout';
 
 export type GuessState =
     | { kind: 'signed-out' }
@@ -29,17 +29,22 @@ interface GuessPanelProps {
     onGoLive: () => void;
     /** Right guesses and moves guessed among the moves played. */
     score?: { correct: number; guessed: number };
+    /**
+     * The panel sits above the stream in the fan view's two columns. It takes
+     * its short form there too, which leaves the stream more of the screen.
+     */
+    shortInTwoColumns?: boolean;
 }
 
-/**
- * On a phone the title and the guess share a line, which keeps the panel short
- * enough to sit under the board or beside it. These are the lines after that
- * one.
- */
-const ownLine = { [PHONE]: { flexBasis: '100%' } };
-const lowerLine = { [PHONE]: { flexBasis: '100%', order: 1 } };
+export function GuessPanel({ state, onGoLive, score, shortInTwoColumns }: GuessPanelProps) {
+    // In its short form the title and the guess share a line, which keeps the
+    // panel low enough to sit under the board or beside it. A phone always has
+    // the short form.
+    const short = shortInTwoColumns ? BELOW_THREE_COLUMNS : PHONE;
+    // The lines after the first one.
+    const ownLine = { [short]: { flexBasis: '100%' } };
+    const lowerLine = { [short]: { flexBasis: '100%', order: 1 } };
 
-export function GuessPanel({ state, onGoLive, score }: GuessPanelProps) {
     // Once hidden, the instructions stay hidden; the ⓘ by the leaderboard has them all.
     // Someone who has guessed once knows how it works, so a guess hides them too.
     const [hideHowTo, setHideHowTo] = useLocalStorage('wcLive.hideHowTo', false);
@@ -59,10 +64,10 @@ export function GuessPanel({ state, onGoLive, score }: GuessPanelProps) {
                 border: 2,
                 borderColor: 'primary.main',
                 borderRadius: 2,
-                [PHONE]: {
+                [short]: {
                     px: 1.5,
                     py: 1,
-                    // The blue border is enough to find the panel on a phone.
+                    // The blue border is enough to find the short panel.
                     boxShadow: 'none',
                     display: 'flex',
                     flexWrap: 'wrap',
@@ -75,13 +80,13 @@ export function GuessPanel({ state, onGoLive, score }: GuessPanelProps) {
                 variant='subtitle1'
                 sx={{
                     fontWeight: 700,
-                    [PHONE]: { fontSize: '0.875rem', flexGrow: hasScore ? 0 : 1 },
+                    [short]: { fontSize: '0.875rem', flexGrow: hasScore ? 0 : 1 },
                 }}
             >
                 Guess the move
             </Typography>
             {hasScore && (
-                // On a phone the score is short and shares the title's line.
+                // In the short form the score is short too and shares the title's line.
                 <Typography
                     variant='body2'
                     color='text.secondary'
@@ -90,7 +95,7 @@ export function GuessPanel({ state, onGoLive, score }: GuessPanelProps) {
                     sx={{
                         display: 'none',
                         fontVariantNumeric: 'tabular-nums',
-                        [PHONE]: { display: 'block', flexGrow: 1 },
+                        [short]: { display: 'block', flexGrow: 1 },
                     }}
                 >
                     {score.correct}/{score.guessed}
@@ -153,7 +158,7 @@ export function GuessPanel({ state, onGoLive, score }: GuessPanelProps) {
                             mt: 1,
                             fontSize: '1.25rem',
                             fontWeight: 800,
-                            [PHONE]: { mt: 0, fontSize: '1rem' },
+                            [short]: { mt: 0, fontSize: '1rem' },
                         }}
                     >
                         {state.saving
@@ -173,7 +178,7 @@ export function GuessPanel({ state, onGoLive, score }: GuessPanelProps) {
                 <Typography
                     variant='body2'
                     color='text.secondary'
-                    sx={{ mt: 1, [PHONE]: { display: 'none' } }}
+                    sx={{ mt: 1, [short]: { display: 'none' } }}
                 >
                     This game: {score.correct} of {score.guessed} guessed right
                 </Typography>
