@@ -266,7 +266,7 @@
                         "description": "[T] Go through one classical game from your cohort's master games study. Look for the plans and ideas behind the moves."
                     },
                     "endgameAlgorithm": {
-                        "title": "[T] Play 1 endgame algorithm position",
+                        "title": "[T] Complete 1 Endgame Algorithm",
                         "description": "[T] Play the first position of your cohort's first endgame algorithm until you can win it. The time you spend carries over to the full algorithm."
                     }
                 },
