@@ -71,6 +71,11 @@ func processTimelineRecord(record events.DynamoDBEventRecord) (int, error) {
 		return 0, nil
 	}
 
+	if isPastForgerEntry(record, time.Now()) {
+		log.Infof("Skipping record for a past Tactics Forger session")
+		return 0, nil
+	}
+
 	poster := record.Change.Keys["owner"].String()
 	id := record.Change.Keys["id"].String()
 	createdAt := time.Now().Format(time.RFC3339)
@@ -131,6 +136,17 @@ func processTimelineRecord(record events.DynamoDBEventRecord) (int, error) {
 		return success, fmt.Errorf("success (%d) < attempted (%d) for record: %#v", success, len(entries), record)
 	}
 	return success, nil
+}
+
+// isPastForgerEntry reports whether the record is a Dojo Tactics Forger entry dated well before
+// now: past sessions the Forger adds to the training plan in one go. They stay on the timeline
+// but don't go to the newsfeed, where they would all show up at once.
+func isPastForgerEntry(record events.DynamoDBEventRecord, now time.Time) bool {
+	if record.Change.NewImage["requirementId"].String() != database.TacticsForgerRequirementId {
+		return false
+	}
+	date, err := time.Parse(time.RFC3339, record.Change.NewImage["date"].String())
+	return err == nil && now.Sub(date) > 12*time.Hour
 }
 
 func processGraduationRecord(record events.DynamoDBEventRecord) (int, error) {
