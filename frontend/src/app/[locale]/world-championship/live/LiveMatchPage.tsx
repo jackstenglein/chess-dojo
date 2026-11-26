@@ -842,7 +842,13 @@ export function LiveMatchPage() {
                 py: { xs: 2, md: 3 },
                 // A phone gives the board the width that wider margins would take.
                 px: { xs: 1.5, sm: 3 },
-                ...(streamView && { [PHONE_LANDSCAPE]: { py: 1 } }),
+                ...(streamView && {
+                    // The board's column ends 5px above the bottom of the screen. With
+                    // the same margin under the page, the board is still in its place
+                    // when the page has scrolled to its end.
+                    [TWO_COLUMNS]: { pb: '5px' },
+                    [PHONE_LANDSCAPE]: { py: 1 },
+                }),
             }}
         >
             {/* The two views differ in height. Reserving room for the scrollbar stops
