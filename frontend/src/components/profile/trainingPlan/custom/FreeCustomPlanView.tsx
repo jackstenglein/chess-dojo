@@ -52,7 +52,7 @@ export function FreeCustomPlanView({ plan }: { plan: CustomPlan }) {
                     </Typography>
                     {isCurrentUser && <ResetProgressButton plan={plan} />}
                 </Stack>
-                <Typography sx={{ color: 'text.secondary' }}>
+                <Typography sx={{ color: 'text.primary' }}>
                     {t('subheading', { max: FREE_PLAN_MAX_TASKS_PER_BUCKET })}
                 </Typography>
             </Stack>
@@ -188,7 +188,7 @@ function BucketCard({
 
             <Box sx={{ px: 2 }}>
                 {bucketTasks.length === 0 && (
-                    <Typography variant='body2' sx={{ color: 'text.secondary', py: 1.5 }}>
+                    <Typography sx={{ color: 'text.primary', py: 1.5 }}>
                         {t('emptyBucket')}
                     </Typography>
                 )}

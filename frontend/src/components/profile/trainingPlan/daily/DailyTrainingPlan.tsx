@@ -316,7 +316,7 @@ function DailyTrainingPlanInternal({
 
             {isEmptyPlan && (
                 <Typography
-                    sx={{ color: 'text.secondary', py: 1, pl: 1 }}
+                    sx={{ color: 'text.primary', fontWeight: 500, py: 1, pl: 1 }}
                     data-testid='daily-empty-plan'
                 >
                     {t('emptyPlan')}
