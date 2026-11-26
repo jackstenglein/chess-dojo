@@ -4,9 +4,10 @@ import { Request } from '@/api/Request';
 import { useAuth } from '@/auth/Auth';
 import { CustomTask, Requirement } from '@/database/requirement';
 import { TimelineEntry } from '@/database/timeline';
-import { ALL_COHORTS, User, WeeklyPlan, WorkGoalSettings } from '@/database/user';
+import { ALL_COHORTS, CustomPlan, User, WeeklyPlan, WorkGoalSettings } from '@/database/user';
 import { useEffect, useMemo, useState } from 'react';
 import { useTimelineContext } from '../activity/useTimeline';
+import { filterTimelineForPlan, getActivePlan, getPlanTaskIds } from './customPlan';
 import { pinnedMinutesMatch } from './pinSchedule';
 import { planTasksToSave } from './planTasksToSave';
 import { restoreToToday, toggleSkippedIds } from './skippedTasks';
@@ -42,6 +43,8 @@ export interface UseTrainingPlanResponse {
     closePinEditor: () => void;
     /** The user passed as a parameter, unchanged. */
     user: User;
+    /** The user's active custom plan, if any. Undefined means the Dojo plan is active. */
+    activePlan?: CustomPlan;
     /** Whether the provided user is the current logged in user. */
     isCurrentUser: boolean;
     /** The ids of tasks the user has skipped for the current week. */
@@ -80,17 +83,21 @@ export function useTrainingPlan(user: User, cohort?: string): UseTrainingPlanRes
     const api = useApi();
     const { request, requirements: allRequirements } = useRequirements(ALL_COHORTS, false);
     const { requirements } = useRequirements(cohort || user.dojoCohort, false);
+    const activePlan = useMemo(() => getActivePlan(user), [user]);
     const pinnedTasks = useMemo(() => {
+        // Pins belong to a plan: with a custom plan active, only its tasks can be pinned.
+        const planTaskIds = activePlan ? getPlanTaskIds(activePlan) : undefined;
         return (
             user.pinnedTasks
-                ?.map(
+                ?.filter((id) => !planTaskIds || planTaskIds.has(id))
+                .map(
                     (id) =>
                         user.customTasks?.find((task) => task.id === id) ||
                         allRequirements.find((task) => task.id === id),
                 )
                 .filter((t) => !!t) ?? []
         );
-    }, [user, allRequirements]);
+    }, [user, allRequirements, activePlan]);
 
     const togglePin = (task: Requirement | CustomTask) => {
         const isPinned = pinnedTasks.some((t) => t.id === task.id);
@@ -203,6 +210,7 @@ export function useTrainingPlan(user: User, cohort?: string): UseTrainingPlanRes
         request,
         requirements,
         allRequirements,
+        activePlan,
         pinnedTasks,
         togglePin,
         savePin,
@@ -237,21 +245,50 @@ export interface UseWeeklyTrainingPlanResponse extends UseTrainingPlanResponse {
     isLoading: boolean;
     /** The user's timeline. */
     timeline: TimelineEntry[];
+    /**
+     * The user's timeline entries logged on the active plan only. Used for this
+     * week's logged progress, so switching plans doesn't show other plans' work.
+     */
+    planTimeline: TimelineEntry[];
 }
 
 export function useWeeklyTrainingPlan(user: User): UseWeeklyTrainingPlanResponse {
     const api = useApi();
     const trainingPlan = useTrainingPlan(user);
-    const { pinnedTasks, requirements, allRequirements, isCurrentUser } = trainingPlan;
+    const { pinnedTasks, requirements, allRequirements, activePlan, isCurrentUser } = trainingPlan;
     const { entries: timeline } = useTimelineContext();
+
+    const planTaskIds = useMemo(
+        () => (activePlan ? getPlanTaskIds(activePlan) : undefined),
+        [activePlan],
+    );
+    const planTimeline = useMemo(
+        () => filterTimelineForPlan(timeline, activePlan?.id ?? ''),
+        [timeline, activePlan],
+    );
 
     const { suggestionsByDay, weekSuggestions, endDate, progressUpdatedAt, nextGame } =
         useMemo(() => {
+            // When a custom plan is active, only its tasks are suggested. Pinned
+            // tasks are resolved separately and stay available as explicit overrides.
+            const algorithmUser = planTaskIds
+                ? {
+                      ...user,
+                      customTasks: user.customTasks?.filter((t) => planTaskIds.has(t.id)),
+                  }
+                : user;
+            // A custom plan can hold any task the user picked, including tasks
+            // from other cohorts, so its tasks come from all requirements.
+            const algorithmRequirements = planTaskIds
+                ? allRequirements.filter((r) => planTaskIds.has(r.id))
+                : requirements;
+
             const result = new TaskSuggestionAlgorithm(
-                user,
-                requirements,
+                algorithmUser,
+                algorithmRequirements,
                 allRequirements,
-                timeline,
+                planTimeline,
+                activePlan?.buckets.map((b) => b.taskIds),
             ).getWeeklySuggestions();
 
             const weekSuggestions: SuggestedTask[] = [];
@@ -267,7 +304,7 @@ export function useWeeklyTrainingPlan(user: User): UseWeeklyTrainingPlanResponse
             }
 
             return { ...result, weekSuggestions };
-        }, [user, requirements, allRequirements, timeline]);
+        }, [user, requirements, allRequirements, planTimeline, planTaskIds, activePlan]);
 
     const savedPlan = user.weeklyPlan;
     const isLoading = requirements.length === 0;
@@ -330,6 +367,7 @@ export function useWeeklyTrainingPlan(user: User): UseWeeklyTrainingPlanResponse
         startDate: startDate.toISOString(),
         isLoading,
         timeline,
+        planTimeline,
     };
 }
 

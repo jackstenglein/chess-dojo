@@ -3,8 +3,10 @@ import {
     applyPuzzleRushSummary,
     isValidTimeZone,
     puzzleRushPeriods,
+    puzzleRushRunCount,
     puzzleRushStanding,
     PuzzleRushSummaryRecord,
+    puzzleRushUtcMonth,
     summarizePuzzleRushRuns,
     visiblePuzzleRushBests,
 } from './summary';
@@ -41,6 +43,13 @@ describe('puzzleRushPeriods', () => {
         });
     });
 
+    it('places a run in its UTC month even when the local date is different', () => {
+        expect(puzzleRushUtcMonth(new Date('2026-11-01T02:00:00+05:00'))).toBe('2026-10');
+        expect(puzzleRushUtcMonth(new Date('2026-11-01T02:00:00-05:00'))).toBe('2026-11');
+        expect(puzzleRushRunCount({ '5': 2, '3': 1, bad: Number.NaN })).toBe(3);
+        expect(puzzleRushRunCount(undefined)).toBe(0);
+    });
+
     it('accepts IANA timezones and rejects names Intl does not know', () => {
         expect(isValidTimeZone('UTC')).toBe(true);
         expect(isValidTimeZone('Etc/GMT+5')).toBe(true);
@@ -63,6 +72,12 @@ describe('applyPuzzleRushSummary', () => {
         });
         expect(summary.allTimeCounts).toEqual({ '8': 1 });
         expect(summary.dayCounts).toEqual({ period: '2026-10-26', counts: { '8': 1 } });
+        expect(summary.month).toEqual({
+            score: 8,
+            sessionCreatedAt: '2026-10-26T15:00:00.000Z',
+            period: '2026-10',
+        });
+        expect(summary.monthCounts).toEqual({ period: '2026-10', counts: { '8': 1 } });
         expect(standing.index).toEqual({ allTime: 1, week: 1, day: 1 });
         expect(standing.newBest).toEqual({ allTime: true, week: true, day: true });
     });
@@ -111,6 +126,8 @@ describe('applyPuzzleRushSummary', () => {
         );
 
         expect(nextWeek.summary.weekCounts).toEqual({ period: '2026-W45', counts: { '2': 1 } });
+        expect(nextWeek.summary.month).toMatchObject({ score: 2, period: '2026-11' });
+        expect(nextWeek.summary.monthCounts).toEqual({ period: '2026-11', counts: { '2': 1 } });
         expect(nextWeek.summary.allTime?.score).toBe(9);
         expect(nextWeek.standing.index.allTime).toBe(2);
         expect(nextWeek.standing.index.week).toBe(1);

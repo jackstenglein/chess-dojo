@@ -14,6 +14,7 @@ import {
     ShowInlineCommentsInPgn,
     ShowSuggestedVariations,
 } from '../boardTools/underboard/settings/ViewerSettings';
+import { scalePgnRem } from '../boardTools/underboard/settings/viewerSettingsConstants';
 import { useChess } from '../PgnBoard';
 import { Comments } from './Comments';
 import MoveButton, { MoveButtonSlotProps } from './MoveButton';
@@ -139,7 +140,7 @@ export const Line: React.FC<LineProps> = ({
                     display: 'inline-block',
                     position: 'absolute',
                     left: 0,
-                    top: '0.65rem',
+                    top: scalePgnRem(0.65),
                 }}
             />
 
@@ -294,6 +295,7 @@ const Lines: React.FC<LinesProps> = ({
                                 sx={{
                                     color: 'background.paper',
                                     mx: '2px',
+                                    fontSize: scalePgnRem(0.75),
                                 }}
                             >
                                 +{lines.length}

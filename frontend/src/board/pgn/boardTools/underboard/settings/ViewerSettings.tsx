@@ -20,9 +20,19 @@ import {
 import { useTranslations } from 'next-intl';
 import { useLocalStorage } from 'usehooks-ts';
 import KeyboardShortcuts, { KeyboardShortcutsProps } from './KeyboardShortcuts';
-import { CoordinateSize, CoordinateSizeKey } from './viewerSettingsConstants';
+import {
+    CoordinateSize,
+    CoordinateSizeKey,
+    PgnTextFontSize,
+    PgnTextFontSizeKey,
+} from './viewerSettingsConstants';
 
-export { CoordinateSize, CoordinateSizeKey } from './viewerSettingsConstants';
+export {
+    CoordinateSize,
+    CoordinateSizeKey,
+    PgnTextFontSize,
+    PgnTextFontSizeKey,
+} from './viewerSettingsConstants';
 
 export const BoardStyleKey = 'boardStyle';
 export const PieceStyleKey = 'pieceStyle';
@@ -146,14 +156,21 @@ export enum ViewerSetting {
     CorrectSolitaireMoveSound,
     IncorrectSolitaireMoveSound,
     InlineNotation,
+    PgnTextFontSize,
 }
 
 const ViewerSettings = ({
     enabledSettings,
     keyboardShortcutsProps,
+    compact,
+    defaultCoordinateSize = CoordinateSize.Standard,
 }: {
     enabledSettings?: Partial<Record<ViewerSetting, boolean>>;
     keyboardShortcutsProps?: KeyboardShortcutsProps;
+    /** Leaves out the title and the keyboard shortcuts, for when the settings sit in a dialog. */
+    compact?: boolean;
+    /** How big the coordinates are for someone who has not chosen. */
+    defaultCoordinateSize?: CoordinateSize;
 }) => {
     const t = useTranslations('analysisBoard.underboard.settings');
     const [boardStyle, setBoardStyle] = useLocalStorage<string>(BoardStyleKey, BoardStyle.Standard);
@@ -164,7 +181,7 @@ const ViewerSettings = ({
     );
     const [coordinateSize, setCoordinateSize] = useLocalStorage<CoordinateSize>(
         CoordinateSizeKey,
-        CoordinateSize.Standard,
+        defaultCoordinateSize,
     );
     const [goToEndBehavior, setGoToEndBehavior] = useLocalStorage<string>(
         GoToEndButtonBehaviorKey,
@@ -221,6 +238,10 @@ const ViewerSettings = ({
         InlineNotationSetting.key,
         InlineNotationSetting.default,
     );
+    const [pgnTextFontSize, setPgnTextFontSize] = useLocalStorage<PgnTextFontSize>(
+        PgnTextFontSizeKey,
+        PgnTextFontSize.Standard,
+    );
 
     const [correctSound, setCorrectSound] = useLocalStorage(
         CORRECT_SOUND_KEY,
@@ -233,7 +254,7 @@ const ViewerSettings = ({
 
     return (
         <Stack spacing={3}>
-            <Typography variant='h5'>{t('viewerSettingsTitle')}</Typography>
+            {!compact && <Typography variant='h5'>{t('viewerSettingsTitle')}</Typography>}
 
             <Box id='chessdojo-integrations' sx={{ '&:empty': { mt: '0 !important' } }}></Box>
 
@@ -409,6 +430,28 @@ const ViewerSettings = ({
                         {t('pgnTextSectionHeader')}
                     </Typography>
                 )}
+                {(!enabledSettings || enabledSettings[ViewerSetting.PgnTextFontSize]) && (
+                    <TextField
+                        select
+                        label={t('pgnTextFontSizeLabel')}
+                        value={pgnTextFontSize}
+                        onChange={(e) => setPgnTextFontSize(e.target.value as PgnTextFontSize)}
+                        sx={{ mt: 2, mb: 1 }}
+                    >
+                        <MenuItem value={PgnTextFontSize.Small}>
+                            {t('pgnTextFontSizeSmall')}
+                        </MenuItem>
+                        <MenuItem value={PgnTextFontSize.Standard}>
+                            {t('pgnTextFontSizeStandard')}
+                        </MenuItem>
+                        <MenuItem value={PgnTextFontSize.Large}>
+                            {t('pgnTextFontSizeLarge')}
+                        </MenuItem>
+                        <MenuItem value={PgnTextFontSize.ExtraLarge}>
+                            {t('pgnTextFontSizeExtraLarge')}
+                        </MenuItem>
+                    </TextField>
+                )}
                 {(!enabledSettings || enabledSettings[ViewerSetting.InlineNotation]) && (
                     <FormControlLabel
                         control={
@@ -578,7 +621,7 @@ const ViewerSettings = ({
                 )}
             </Stack>
 
-            <KeyboardShortcuts {...keyboardShortcutsProps} />
+            {!compact && <KeyboardShortcuts {...keyboardShortcutsProps} />}
         </Stack>
     );
 };

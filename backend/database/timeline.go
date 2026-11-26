@@ -36,6 +36,17 @@ type TimelineEntry struct {
 	// Whether the requirement is custom or not.
 	IsCustomRequirement bool `dynamodbav:"isCustomRequirement" json:"isCustomRequirement"`
 
+	// The id of the custom plan that was active when the progress was logged.
+	// Empty means the Dojo plan.
+	PlanId string `dynamodbav:"planId,omitempty" json:"planId,omitempty"`
+
+	// The name of the plan bucket the task was in when the progress was logged,
+	// kept so the entry still shows its bucket after the plan changes.
+	PlanBucketName string `dynamodbav:"planBucketName,omitempty" json:"planBucketName,omitempty"`
+
+	// The color of the plan bucket the task was in when the progress was logged.
+	PlanBucketColor string `dynamodbav:"planBucketColor,omitempty" json:"planBucketColor,omitempty"`
+
 	// How the requirement should be displayed on the scoreboard.
 	ScoreboardDisplay ScoreboardDisplay `dynamodbav:"scoreboardDisplay" json:"scoreboardDisplay"`
 

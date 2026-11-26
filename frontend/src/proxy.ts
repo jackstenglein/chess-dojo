@@ -46,6 +46,8 @@ const publicPaths = [
     /^\/games\/.*\/.*$/,
     /^\/profile\/.*\/postmortem\/.*$/,
     /^\/calendar.*$/,
+    /^\/world-championship$/,
+    /^\/world-championship\/live$/,
     /^\/live-classes$/,
     /^\/class$/,
     /^\/privacy-policy$/,

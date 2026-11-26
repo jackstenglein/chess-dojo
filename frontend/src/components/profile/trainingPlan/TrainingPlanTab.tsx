@@ -1,12 +1,22 @@
 import { RequestSnackbar } from '@/api/Request';
-import { User } from '@/database/user';
+import { isFree, User } from '@/database/user';
 import { Box, Stack } from '@mui/material';
-import { createContext, useEffect, useState } from 'react';
+import { createContext, useEffect, useMemo, useState } from 'react';
+import { CreateFreePlan } from './custom/CreateFreePlan';
+import { getLockedTaskCount, isFreeStarterPlanDone } from './custom/freePlan';
+import { FreePlanSwitch } from './custom/FreePlanSwitch';
+import { StarterPlanComplete } from './custom/StarterPlanComplete';
+import { FreePlanDraftContext } from './custom/useFreePlanEditor';
 import { DailyTrainingPlan } from './daily/DailyTrainingPlan';
 import { FullTrainingPlan } from './full/FullTrainingPlan';
 import { MiniScoreboard } from './MiniScoreboard';
 import { PinTaskDialog } from './PinTaskDialog';
 import { PlanMenu, useTrainingPlanSections } from './PlanMenu';
+import { isStarterPlanActive } from './starter/starterPlan';
+import { StarterPlanSuggestion } from './starter/StarterPlanSuggestion';
+import { StarterPreviewMode, useStarterPlanPreview } from './starter/starterPreview';
+import { isStarterPlanFinished } from './starter/starterProgress';
+import { StarterTrainingPlan } from './starter/StarterTrainingPlan';
 import { useWeeklyTrainingPlan, UseWeeklyTrainingPlanResponse } from './useTrainingPlan';
 import { WeeklyTrainingPlan } from './weekly/WeeklyTrainingPlan';
 
@@ -16,15 +26,54 @@ export const TrainingPlanContext = createContext<UseWeeklyTrainingPlanResponse>(
 export function TrainingPlanTab({ user }: { user: User }) {
     const trainingPlan = useWeeklyTrainingPlan(user);
     const [cohort, setCohort] = useState(user.dojoCohort);
+    const preview = useStarterPlanPreview();
+    // New members work through the starter plan before the full training plan.
+    // Its progress checks need the member's own data, so others see the usual plan.
+    // On a local dev server, the preview shows it to any account for testing.
+    const showStarterPlan =
+        trainingPlan.isCurrentUser &&
+        (isStarterPlanActive(user) ||
+            preview === StarterPreviewMode.Reset ||
+            (preview === StarterPreviewMode.On && !isStarterPlanFinished(user.tutorials)));
+
+    // Past the starter plan, free-tier members choose between building their own
+    // custom plan and the Dojo plan (FreePlanSwitch), which asks them to join once
+    // they have done its free part.
+    const isFreeMember = trainingPlan.isCurrentUser && isFree(user) && !showStarterPlan;
+    const freeStarterDone = useMemo(
+        () => isFreeStarterPlanDone(user, trainingPlan.allRequirements, trainingPlan.timeline),
+        [user, trainingPlan.allRequirements, trainingPlan.timeline],
+    );
+    const showJoinPrompt = isFreeMember && !trainingPlan.activePlan && freeStarterDone;
+    // Picking Custom Plan before having one offers to create it from scratch.
+    const [creatingPlan, setCreatingPlan] = useState(false);
+    const showCreatePlan = isFreeMember && !trainingPlan.activePlan && creatingPlan;
+    const freePlanDraft = useMemo(
+        () => ({ creating: creatingPlan, setCreating: setCreatingPlan }),
+        [creatingPlan],
+    );
     const sections = useTrainingPlanSections();
 
     useEffect(() => {
         setCohort(user.dojoCohort);
     }, [user.dojoCohort]);
 
-    const anySection = sections.showToday || sections.showWeek;
+    // The plan options belong to the plan itself, so the starter plan, the create
+    // plan page and the join page go without them.
+    const showPlan = !showStarterPlan && !showCreatePlan && !showJoinPrompt;
+    const anySection = showPlan && (sections.showToday || sections.showWeek);
     const planMenu = (
-        <PlanMenu user={user} isCurrentUser={trainingPlan.isCurrentUser} sections={sections} />
+        <Stack direction='row' spacing={1} sx={{ alignItems: 'center' }}>
+            {/* Free members switch between their custom plan and the Dojo plan here. */}
+            {isFreeMember && (
+                <TrainingPlanContext value={trainingPlan}>
+                    <FreePlanDraftContext value={freePlanDraft}>
+                        <FreePlanSwitch />
+                    </FreePlanDraftContext>
+                </TrainingPlanContext>
+            )}
+            <PlanMenu user={user} isCurrentUser={trainingPlan.isCurrentUser} sections={sections} />
+        </Stack>
     );
 
     return (
@@ -65,15 +114,52 @@ export function TrainingPlanTab({ user }: { user: User }) {
                 <RequestSnackbar request={trainingPlan.request} />
 
                 <TrainingPlanContext value={trainingPlan}>
-                    {sections.showToday && <DailyTrainingPlan />}
-                    {sections.showWeek && <WeeklyTrainingPlan />}
-                    <FullTrainingPlan
-                        cohort={cohort}
-                        setCohort={setCohort}
-                        headerAction={anySection ? undefined : planMenu}
-                    />
-                    <MiniScoreboard cohort={cohort} />
-                    <PinTaskDialog />
+                    <FreePlanDraftContext value={freePlanDraft}>
+                        {showStarterPlan ? (
+                            // The full training plan stays locked until the starter plan is done.
+                            <StarterTrainingPlan
+                                preview={
+                                    preview === StarterPreviewMode.Suggest ? undefined : preview
+                                }
+                            />
+                        ) : showCreatePlan ? (
+                            <>
+                                <CreateFreePlan />
+                                <MiniScoreboard cohort={cohort} />
+                                <PinTaskDialog />
+                            </>
+                        ) : showJoinPrompt ? (
+                            <>
+                                <StarterPlanComplete
+                                    cohort={user.dojoCohort}
+                                    lockedCount={getLockedTaskCount(
+                                        user,
+                                        trainingPlan.allRequirements,
+                                    )}
+                                />
+                                <MiniScoreboard cohort={cohort} />
+                                <PinTaskDialog />
+                            </>
+                        ) : (
+                            <>
+                                {/* Inactive members who have done little are offered the starter plan. */}
+                                {!trainingPlan.activePlan && (
+                                    <StarterPlanSuggestion
+                                        force={preview === StarterPreviewMode.Suggest}
+                                    />
+                                )}
+                                {sections.showToday && <DailyTrainingPlan />}
+                                {sections.showWeek && <WeeklyTrainingPlan />}
+                                <FullTrainingPlan
+                                    cohort={cohort}
+                                    setCohort={setCohort}
+                                    headerAction={anySection ? undefined : planMenu}
+                                />
+                                <MiniScoreboard cohort={cohort} />
+                                <PinTaskDialog />
+                            </>
+                        )}
+                    </FreePlanDraftContext>
                 </TrainingPlanContext>
             </Stack>
         </Box>

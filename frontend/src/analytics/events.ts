@@ -28,6 +28,9 @@ export enum EventType {
     CreateNondojoTask = 'create_nondojo_task',
     EditNondojoTask = 'edit_nondojo_task',
     DeleteNondojoTask = 'delete_nondojo_task',
+    CreateCustomPlan = 'create_custom_plan',
+    DeleteCustomPlan = 'delete_custom_plan',
+    SwitchTrainingPlan = 'switch_training_plan',
     ViewTaskDetails = 'view_task_details',
     OpenProgramTips = 'open_program_tips',
 
@@ -46,6 +49,13 @@ export enum EventType {
     // Material actions
     CreateSparringLink = 'create_sparring_link',
     CopyFen = 'copy_fen',
+
+    // World Championship prediction contest
+    WcPickStart = 'wc_pick_start',
+    WcPickStep = 'wc_pick_step',
+    WcPredictionSubmit = 'wc_prediction_submit',
+    WcShare = 'wc_share',
+    WcOfferClick = 'wc_offer_click',
 
     // Class landing page
     ClassLead = 'class_lead',

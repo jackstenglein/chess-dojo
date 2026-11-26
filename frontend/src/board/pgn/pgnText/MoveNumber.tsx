@@ -1,4 +1,5 @@
 import { Divider, Grid, Stack, Typography } from '@mui/material';
+import { scalePgnRem } from '../boardTools/underboard/settings/viewerSettingsConstants';
 
 interface MoveNumberProps {
     ply: number;
@@ -23,6 +24,7 @@ const MoveNumber: React.FC<MoveNumberProps> = ({ ply }) => {
                 <Typography
                     sx={{
                         color: 'text.secondary',
+                        fontSize: scalePgnRem(1),
                     }}
                 >
                     {moveNumber}

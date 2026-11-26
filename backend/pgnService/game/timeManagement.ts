@@ -7,6 +7,7 @@ import {
     MY_GAMES_DIRECTORY_ID,
 } from '@jackstenglein/chess-dojo-common/src/database/directory';
 import { Game, GameKey } from '@jackstenglein/chess-dojo-common/src/database/game';
+import { RatingHistory } from '@jackstenglein/chess-dojo-common/src/database/user';
 import { clockToSeconds } from '@jackstenglein/chess-dojo-common/src/pgn/clock';
 import {
     calculateTimeRating,
@@ -18,6 +19,7 @@ import {
 } from '@jackstenglein/chess-dojo-common/src/ratings/timeManagement';
 import { GetItemBuilder, UpdateItemBuilder } from '../../directoryService/database';
 import { directoriesTable, dynamo, gamesTable, usersTable } from './database';
+import { isValidDate } from './types';
 
 interface TimeManagementGameRating {
     rating: number;
@@ -90,12 +92,8 @@ export function rateGameTimeManagement(chess: Chess): TimeManagementRatings {
 export async function rebuildUserTimeManagementRating(owner: string): Promise<void> {
     try {
         const gameKeys = await getGameKeys(owner);
-        if (gameKeys.length === 0) {
-            return;
-        }
-
-        const rating = await rateAllGamesTimeManagement(gameKeys);
-        await saveUserTimeManagementRating(owner, rating);
+        const { rating, history } = await rateAllGamesTimeManagement(gameKeys);
+        await saveUserTimeManagementRating(owner, rating, history);
     } catch (err) {
         console.error('Failed to rebuild user time management rating: ', err);
     }
@@ -157,13 +155,64 @@ type PartialGame = Pick<
 >;
 
 /**
+ * Replays the existing aggregate calculation and records its final value each day.
+ * Games older than the displayed year still contribute to the aggregate.
+ * @param games The saved games with cached time management ratings.
+ * @param now The end of the displayed year.
+ * @returns The current rating and daily history for the past year.
+ */
+export function aggregateTimeManagementRatings(games: PartialGame[], now = new Date()) {
+    const orderedGames = games
+        .map((game) => ({
+            game,
+            date: isValidDate(game.date)
+                ? game.date.replaceAll('.', '-')
+                : (game.createdAt?.slice(0, 10) ?? ''),
+        }))
+        .sort(
+            (lhs, rhs) =>
+                lhs.date.localeCompare(rhs.date) ||
+                (lhs.game.createdAt ?? '').localeCompare(rhs.game.createdAt ?? ''),
+        );
+    let rating: TimeManagementRating = { currentRating: 0, numGames: 0 };
+    const history = new Map<string, number>();
+    const start = new Date(now);
+    start.setUTCFullYear(start.getUTCFullYear() - 1);
+    const startDate = start.toISOString().slice(0, 10);
+    const endDate = now.toISOString().slice(0, 10);
+
+    for (const { game, date } of orderedGames) {
+        const ownerRating =
+            game.orientation === 'black'
+                ? game.timeManagementRatingBlack
+                : game.timeManagementRatingWhite;
+        const ownerArea =
+            game.orientation === 'black'
+                ? game.timeManagementAreaBlack
+                : game.timeManagementAreaWhite;
+
+        if (ownerRating !== undefined && ownerRating >= 0) {
+            rating = newTimeManagementRating(rating, ownerRating, ownerArea ?? 0);
+            if (date >= startDate && date <= endDate) {
+                history.set(date, rating.currentRating);
+            }
+        }
+    }
+
+    return {
+        rating,
+        history: Array.from(history, ([date, rating]) => ({ date, rating })),
+    };
+}
+
+/**
  * Gets time management ratings for the given games and computes the aggregate. The time
  * management ratings for individual games are taken from the cached values on the game objects,
  * rather than being recalculated on the fly here.
  * @param gameKeys The games to get the time management ratings for.
- * @returns The aggregate time management rating.
+ * @returns The aggregate time management rating and its daily history.
  */
-async function rateAllGamesTimeManagement(gameKeys: GameKey[]): Promise<TimeManagementRating> {
+async function rateAllGamesTimeManagement(gameKeys: GameKey[]) {
     const games: PartialGame[] = [];
 
     for (let i = 0; i < gameKeys.length; i += 100) {
@@ -190,38 +239,24 @@ async function rateAllGamesTimeManagement(gameKeys: GameKey[]): Promise<TimeMana
         }
     }
 
-    games.sort((lhs, rhs) => (lhs.date || lhs.createdAt).localeCompare(rhs.date || rhs.createdAt));
-    let aggregate: TimeManagementRating = { currentRating: 0, numGames: 0 };
-    for (const game of games) {
-        const ownerRating =
-            game.orientation === 'black'
-                ? game.timeManagementRatingBlack
-                : game.timeManagementRatingWhite;
-        const ownerArea =
-            game.orientation === 'black'
-                ? game.timeManagementAreaBlack
-                : game.timeManagementAreaWhite;
-
-        if (ownerRating !== undefined && ownerRating >= 0) {
-            aggregate = newTimeManagementRating(aggregate, ownerRating, ownerArea ?? 0);
-        }
-    }
-
-    return aggregate;
+    return aggregateTimeManagementRatings(games);
 }
 
 /**
  * Updates the given user to set their time management rating in the database.
  * @param username The user to set the time management rating for.
  * @param aggregate The aggregate time management rating to save on the user.
+ * @param history The daily rating history for the past year.
  */
 async function saveUserTimeManagementRating(
     username: string,
     aggregate: TimeManagementRating,
+    history: RatingHistory[],
 ): Promise<void> {
     await new UpdateItemBuilder()
         .key('username', username)
         .set('timeManagementRating', aggregate)
+        .set('timeManagementRatingHistory', history)
         .table(usersTable)
         .send();
 }

@@ -16,7 +16,14 @@ import { ALL_COHORTS, User } from '@/database/user';
 import ScoreboardProgress, { ProgressText } from '@/scoreboard/ScoreboardProgress';
 import { CategoryColors } from '@/style/ThemeProvider';
 import { useTranslatedRequirement } from '@/translation/useTranslatedRequirement';
-import { AddCircle, Lock, PushPin, PushPinOutlined } from '@mui/icons-material';
+import {
+    AddCircle,
+    DeleteOutlined,
+    EditOutlined,
+    Lock,
+    PushPin,
+    PushPinOutlined,
+} from '@mui/icons-material';
 import {
     Box,
     Checkbox,
@@ -43,6 +50,12 @@ interface FullTrainingPlanItemProps {
     isCurrentUser: boolean;
     onPinClick: (req: Requirement | CustomTask) => void;
     isPinned: boolean;
+    /** If provided, renders a button to remove the task from the custom plan. */
+    onRemove?: () => void;
+    /** If provided, renders a button to edit the task. */
+    onEdit?: () => void;
+    /** The label of the remove button. Defaults to removing the task from the plan. */
+    removeLabel?: string;
 }
 
 export const FullTrainingPlanItem = ({
@@ -53,10 +66,14 @@ export const FullTrainingPlanItem = ({
     isCurrentUser,
     onPinClick,
     isPinned,
+    onRemove,
+    onEdit,
+    removeLabel,
 }: FullTrainingPlanItemProps) => {
     const requirement = useTranslatedRequirement(rawRequirement) ?? rawRequirement;
     const t = useTranslations('profile.trainingPlan.full');
     const tCommon = useTranslations('profile.trainingPlan.common');
+    const tPlan = useTranslations('profile.trainingPlan.customPlan');
     const tTime = useTranslations('common');
     const [taskDialogView, setTaskDialogView] = useState<TaskDialogView>();
     const { requirements } = useRequirements(ALL_COHORTS, false);
@@ -79,7 +96,7 @@ export const FullTrainingPlanItem = ({
         case ScoreboardDisplay.Hidden:
         case ScoreboardDisplay.Checkbox:
             UpdateElement = (
-                <Tooltip title={tCommon('logTraining')}>
+                <Tooltip title={isCurrentUser ? tCommon('logTraining') : ''}>
                     <Checkbox
                         aria-label={t('checkboxAriaLabel', { name: requirement.name })}
                         checked={currentCount >= totalCount}
@@ -96,7 +113,7 @@ export const FullTrainingPlanItem = ({
         case ScoreboardDisplay.Yearly:
             UpdateElement =
                 currentCount >= totalCount && !isMinimumTask ? (
-                    <Tooltip title={tCommon('logTraining')}>
+                    <Tooltip title={isCurrentUser ? tCommon('logTraining') : ''}>
                         <Checkbox
                             checked
                             onClick={() => setTaskDialogView(TaskDialogView.Progress)}
@@ -117,7 +134,7 @@ export const FullTrainingPlanItem = ({
             break;
 
         case ScoreboardDisplay.NonDojo:
-            UpdateElement = (
+            UpdateElement = !isCurrentUser ? null : (
                 <Tooltip title={tCommon('logTraining')}>
                     <IconButton
                         aria-label={`Update ${requirement.name}`}
@@ -299,6 +316,30 @@ export const FullTrainingPlanItem = ({
                                 <Box sx={{ display: { xs: 'none', sm: 'unset' } }}>
                                     <TaskTimerIconButton taskId={requirement.id} />
                                 </Box>
+                            )}
+
+                            {onEdit && (
+                                <Tooltip title={tPlan('editTask')}>
+                                    <IconButton
+                                        onClick={onEdit}
+                                        aria-label={tPlan('editTask')}
+                                        data-testid='edit-plan-task-button'
+                                    >
+                                        <EditOutlined sx={{ color: 'text.secondary' }} />
+                                    </IconButton>
+                                </Tooltip>
+                            )}
+
+                            {onRemove && (
+                                <Tooltip title={removeLabel ?? tPlan('removeTask')}>
+                                    <IconButton
+                                        onClick={onRemove}
+                                        aria-label={removeLabel ?? tPlan('removeTask')}
+                                        data-testid='remove-task-from-plan-button'
+                                    >
+                                        <DeleteOutlined sx={{ color: 'text.secondary' }} />
+                                    </IconButton>
+                                </Tooltip>
                             )}
                         </Stack>
                     </Grid>

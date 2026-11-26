@@ -187,6 +187,10 @@
                 "completed": "Concluída",
                 "verbRead": "Ler",
                 "verbWatch": "Assistir",
+                "emptyPlan": "Adicione tarefas ao seu plano de treino abaixo para criar sua agenda de treino diária e semanal.",
+                "summary": "{done} de {total} tarefas feitas · {worked} de {goal}",
+                "allDone": "Concluído por hoje · {worked} registrados",
+                "goalMet": "Meta de tempo atingida",
                 "skippedHeading": "Puladas nesta semana ({count})",
                 "restore": "Restaurar {name}",
                 "skippedToast": "{name} pulada pelo resto da semana",
@@ -239,10 +243,200 @@
                 "graduate": "Graduar-se",
                 "success": "Parabéns! Você se formou com sucesso!"
             },
+            "starter": {
+                "title": "Tutorial",
+                "planName": "Plano de treino do Dojo",
+                "progress": "{done} de {total} tarefas concluídas",
+                "stepNumber": "Passo {number}",
+                "stepProgress": "{done} de {total} concluídas",
+                "steps": {
+                    "welcome": {
+                        "title": "Conclui as tarefas de Bem-vindo ao Dojo",
+                        "description": "Tarefas curtas de introdução que te mostram o Dojo."
+                    },
+                    "classicalGame": {
+                        "title": "Joga 1 partida clássica",
+                        "description": "Joga uma partida lenta, online ou no tabuleiro. As partidas clássicas são o centro do programa de treino do Dojo.",
+                        "timeControl": "Ritmo de jogo sugerido: {timeControl} ou mais longo"
+                    },
+                    "annotateGame": {
+                        "title": "Anota 1 partida",
+                        "description": "Importa uma das tuas partidas e analisa-a antes de usar um motor. Regista o que pensavas, as decisões-chave e os teus erros."
+                    },
+                    "dojoRush": {
+                        "title": "Faz uma ronda de Dojo Rush",
+                        "description": "Resolve o maior número de problemas possível contra o relógio. Este passo fica marcado sozinho depois da tua primeira sessão."
+                    },
+                    "masterGame": {
+                        "title": "Estuda 1 partida de mestres",
+                        "description": "Analisa uma partida clássica do estudo de partidas de mestres da tua coorte. Procura os planos e as ideias por trás dos lances."
+                    },
+                    "endgameAlgorithm": {
+                        "title": "Completa 1 algoritmo de finais",
+                        "description": "Joga a primeira posição do primeiro algoritmo de finais da tua coorte até a ganhares. O tempo que gastares passa para o algoritmo completo."
+                    }
+                },
+                "actions": {
+                    "details": "Detalhes",
+                    "markDone": "Marcar como feita",
+                    "undo": "Desfazer",
+                    "minutesSpent": "{minutes} min",
+                    "importGame": "Importar uma partida",
+                    "viewTournaments": "Ver torneios",
+                    "startRush": "Começar Dojo Rush",
+                    "firstPosition": "{name}, posição 1",
+                    "completed": "Concluída",
+                    "playBot": "Jogar contra o bot"
+                },
+                "markDone": {
+                    "title": "Marcar tarefa como feita",
+                    "minutesLabel": "Minutos gastos",
+                    "minutesHelper": "Mais ou menos quanto tempo levou. É somado ao teu tempo de treino quando concluis o plano inicial.",
+                    "minutesInvalid": "Introduz um número inteiro de minutos.",
+                    "save": "Marcar como feita",
+                    "cancel": "Cancelar"
+                },
+                "complete": {
+                    "title": "Plano inicial concluído!",
+                    "description": "Bom trabalho. Ao continuar, tudo o que fizeste aqui fica marcado no teu plano de treino completo."
+                },
+                "continue": "Continuar para o plano de treino completo",
+                "locked": {
+                    "title": "Plano de treino completo bloqueado",
+                    "description": "Conclui o plano inicial para desbloquear o teu plano de treino completo. Tudo o que marcares aqui ficará marcado lá."
+                },
+                "skip": "Já conheces o Dojo? Salta para o plano de treino completo",
+                "buildOwn": {
+                    "description": "Queres treinar à tua maneira? Cria antes o teu próprio plano, com até 3 tarefas em cada categoria.",
+                    "action": "Criar o meu plano"
+                },
+                "welcomeKinds": {
+                    "guide": {
+                        "label": "Guia",
+                        "action": "Ler o guia"
+                    },
+                    "video": {
+                        "label": "Vídeo",
+                        "action": "Ver"
+                    },
+                    "community": {
+                        "label": "Comunidade",
+                        "action": "Entrar"
+                    },
+                    "task": {
+                        "label": "Tarefa",
+                        "action": "Abrir"
+                    }
+                },
+                "botGame": {
+                    "completed": "Passo do plano inicial concluído!",
+                    "backToPlan": "Voltar ao plano"
+                },
+                "sensei": {
+                    "name": "Sensei Jesse",
+                    "greeting": "Bem-vindo ao Dojo! Sou o Sensei Jesse. Antes de começares o teu plano de treino completo, vamos garantir que conheces o lugar. Conclui estas três etapas e vemo-nos do outro lado."
+                },
+                "stages": {
+                    "welcome": {
+                        "title": "Bem-vindo ao Dojo",
+                        "description": "Conhece o Dojo e a comunidade."
+                    },
+                    "training": {
+                        "title": "Treina",
+                        "description": "Experimenta os tipos de treino que vais fazer todas as semanas."
+                    },
+                    "games": {
+                        "title": "Partidas e análise",
+                        "description": "Joga uma partida lenta e aprende com ela."
+                    }
+                },
+                "stageNumber": "Etapa {number}",
+                "suggestion": {
+                    "title": "Novo no Dojo? Comece aqui",
+                    "description": "Um tutorial curto que mostra como o treino funciona aqui. O que você já fez continua concluído.",
+                    "start": "Comece aqui"
+                }
+            },
             "graduationTask": {
                 "title": "Forme-se em {cohort}",
                 "descriptionBase": "Parabéns por alcançar {rating} {system}! Use esta tarefa para passar para a próxima coorte, adicionar uma insígnia ao seu perfil e conseguir que uma das suas partidas comentadas seja analisada ao vivo!",
                 "descriptionWithName": "Parabéns por alcançar {rating} {system} ({name})! Use esta tarefa para passar para a próxima coorte, adicionar uma insígnia ao seu perfil e conseguir que uma das suas partidas comentadas seja analisada ao vivo!"
+            },
+            "customPlan": {
+                "officialPlan": "Plano oficial do Dojo",
+                "customPlanLabel": "Plano personalizado",
+                "removeTask": "Remover do plano",
+                "delete": "Excluir",
+                "editTask": "Editar tarefa"
+            },
+            "freePlan": {
+                "customTab": "Plano personalizado",
+                "dojoTab": "Plano Dojo",
+                "planName": "Meu plano",
+                "bucketGames": "Partidas + Análise",
+                "bucketTactics": "Tática",
+                "bucketMiddlegames": "Meio-jogo",
+                "bucketEndgames": "Final",
+                "bucketOpenings": "Abertura",
+                "subheading": "Escolha até {max} tarefas por categoria. Seus planos de Hoje e Esta semana são montados a partir delas.",
+                "taskCount": "{count}/{max} tarefas",
+                "emptyBucket": "Ainda não há tarefas. Adicione uma para treinar esta categoria.",
+                "addTask": "Adicionar tarefa",
+                "bucketFull": "Categoria cheia",
+                "deleteTask": "Excluir tarefa",
+                "limitReached": "Contas gratuitas podem ter {max} tarefas por categoria. Entre no programa completo para tarefas ilimitadas e o plano Dojo completo.",
+                "deleteTitle": "Excluir {name}?",
+                "deleteContent": "A tarefa é removida do seu plano. O tempo registrado continua no seu perfil.",
+                "addTitle": "Adicionar uma tarefa a {bucket}",
+                "editTitle": "Editar tarefa",
+                "taskName": "Nome da tarefa",
+                "description": "Notas (opcional)",
+                "measuredIn": "Medir o progresso em",
+                "unitGames": "Partidas",
+                "unitMinutes": "Minutos",
+                "unitPuzzles": "Problemas",
+                "unitPages": "Páginas",
+                "unitChapters": "Capítulos",
+                "unitExercises": "Exercícios",
+                "unitSessions": "Sessões",
+                "unitCheck": "Só marcar como feita",
+                "goal": "Meta ({unit})",
+                "startCount": "Já feitos",
+                "startCountHelper": "Opcional",
+                "nameRequired": "Digite um nome",
+                "goalError": "Digite um número inteiro",
+                "startCountError": "Deve ser menor que a meta",
+                "save": "Salvar",
+                "completeTitle": "Você terminou o Plano Inicial do Dojo!",
+                "completeBody": "Escolha como quer continuar treinando.",
+                "statAverageGain": "pontos de rating ganhos em média",
+                "statAverageGainDetail": "Siga um plano feito para o seu rating",
+                "statTotalPoints": "pontos de rating ganhos no total",
+                "statTotalPointsDetail": "Treine junto com uma comunidade de jogadores",
+                "statGraduations": "graduações no total",
+                "statGraduationsDetail": "Tenha suas partidas analisadas por um sensei",
+                "fullProgramTitle": "Entre no programa Dojo completo",
+                "fullProgramBody": "Desbloqueie mais {count} tarefas no plano de treino de {cohort}, e um plano novo a cada graduação.",
+                "fullProgramBullet1": "Planos de treino completos de 0‑2400+",
+                "fullProgramBullet2": "Tarefas diárias e semanais escolhidas para seu rating",
+                "fullProgramBullet3": "Suba de coorte em coorte e tenha suas partidas analisadas por um sensei",
+                "fullProgramBullet4": "Aulas, cursos, ferramentas de aberturas, problemas, bots e uma comunidade ativa",
+                "joinCta": "Entrar no programa completo",
+                "customOptionTitle": "Monte seu próprio plano",
+                "customOptionBody": "Continue treinando de graça com um plano que você mesmo monta.",
+                "customOptionBullet1": "5 categorias com até 3 tarefas cada",
+                "customOptionBullet2": "Acompanhe partidas, horas, problemas e mais",
+                "customOptionBullet3": "Registre seu progresso e veja sua atividade no mapa de calor",
+                "buildOwnCta": "Montar meu plano (grátis)",
+                "createTitle": "Cria o teu próprio plano de treino",
+                "createBody": "Começa do zero: adiciona até {max} tarefas a cada categoria e mede-as como quiseres — partidas, minutos, páginas, problemas e mais.",
+                "createCta": "Criar novo plano",
+                "resetProgress": "Repor progresso",
+                "resetTitle": "Repor o progresso do teu plano?",
+                "resetContent": "O progresso de cada tarefa do teu plano volta a 0. As tuas tarefas ficam, e o tempo registado fica no teu perfil.",
+                "resetConfirm": "Repor",
+                "resetNothing": "Ainda não há progresso para repor",
+                "resetNote": "Progresso reposto"
             },
             "customTask": {
                 "createTitle": "Criar tarefa personalizada?",
@@ -685,6 +879,7 @@
             "whenPlayWhite": "Quando você joga de brancas",
             "whenPlayBlack": "Quando você joga de pretas",
             "normalizedRatingTooltip": "O rating normalizado para o sistema do Dojo",
+            "timeManagementTooltip": "Calculado a partir dos jogos nesta pasta que incluem tempos de relógio.",
             "performanceByCohort": "Desempenho por coorte do adversário",
             "colOpponentCohort": "Coorte do adversário",
             "colPerformance": "Performance",
@@ -1574,7 +1769,9 @@
         "myCohort": "Minha coorte",
         "graduations": "Graduações",
         "viewAll": "Ver tudo",
+        "comment": "Comentar",
         "showPostsFrom": "Mostrar publicações de",
+        "showMyPosts": "Mostrar minhas publicações",
         "categories": "Categorias",
         "allCategories": "Todas as categorias",
         "annotations": "Anotações",
@@ -1583,6 +1780,8 @@
         "completedRequirement": "Concluiu <strong>{name}</strong>",
         "updated": "Atualizado",
         "updatedRequirement": "Atualizou <strong>{name}</strong>",
+        "dojoPointsGained": "+{count} pontos Dojo",
+        "markedNotDone": "Marcada como não feita",
         "dojoPoints": "Pontos Dojo:",
         "totalTime": "Tempo total:",
         "customTask": "Tarefa personalizada",
@@ -1601,7 +1800,9 @@
             "players": "Jogadores:",
             "date": "Data:",
             "result": "Resultado:",
-            "moves": "Lances:"
+            "moves": "Lances:",
+            "versus": "{white} x {black}",
+            "newAnalysis": "Nova análise de partida"
         },
         "graduation": {
             "graduated": "Graduou-se de <strong>{oldCohort}</strong> para <strong>{newCohort}</strong>",
@@ -3334,7 +3535,21 @@
             "loadMore": "Carregar mais",
             "incorrectMoveComment": "Palpite incorreto",
             "incorrectMoveCommentDuringRun": "Palpite incorreto durante a corrida",
-            "tooltipSettings": "Configurações"
+            "tooltipSettings": "Configurações",
+            "prevWrong": "Quebra-cabeça errado anterior",
+            "nextWrong": "Próximo quebra-cabeça errado",
+            "leaderboardTitle": "Classificação",
+            "leaderboardAllTime": "Todos os tempos",
+            "leaderboardMonth": "Este mês",
+            "leaderboardOverall": "Geral",
+            "leaderboardCohort": "Coorte",
+            "leaderboardMonthCaption": "{month} (UTC)",
+            "columnRank": "Posição",
+            "columnPlayer": "Jogador",
+            "columnScore": "Pontuação",
+            "columnRuns": "Partidas",
+            "leaderboardEmpty": "Ainda não há partidas concluídas.",
+            "leaderboardPartial": "Partidas anteriores ainda estão sendo adicionadas."
         },
         "squareColors": {
             "title": "Treino de cor das casas",
@@ -3421,6 +3636,8 @@
             "puzzleRush": "Dojo Rush",
             "endgameTests": "Testes de finais",
             "squareColorDrill": "Exercício de cor de casas",
+            "tacticsForger": "Dojo Tactics Forger",
+            "tacticsForgerDescription": "Táticas, aberturas e finais, 400–2000",
             "allRatings": "Todos os ratings",
             "beta": "Beta"
         },
@@ -3908,6 +4125,11 @@
                 "showGlyphsOnBoardLabel": "Mostrar símbolos no tabuleiro",
                 "scrollOnBoardLabel": "Rolar sobre o tabuleiro para ir ao lance seguinte/anterior",
                 "pgnTextSectionHeader": "Texto PGN",
+                "pgnTextFontSizeLabel": "Tamanho do texto PGN",
+                "pgnTextFontSizeSmall": "Pequeno",
+                "pgnTextFontSizeStandard": "Padrão",
+                "pgnTextFontSizeLarge": "Grande",
+                "pgnTextFontSizeExtraLarge": "Muito grande",
                 "showElapsedTimeLabel": "Mostrar o tempo decorrido ao lado do lance",
                 "displayOtherUsersSuggestionsLabel": "Exibir as variantes sugeridas por outros usuários no texto PGN",
                 "engineSectionHeader": "Módulo",

@@ -62,7 +62,7 @@ export function WeeklyTrainingPlan() {
         endDate,
         weekSuggestions,
         suggestionsByDay,
-        timeline,
+        planTimeline: timeline,
         isLoading,
         user,
         allRequirements,
@@ -191,11 +191,7 @@ function WeekCalendar({
     const t = useTranslations('profile.trainingPlan.weekly');
 
     if (rows.length === 0) {
-        return (
-            <Typography variant='body2' sx={{ p: 2, color: 'text.secondary' }}>
-                {t('empty')}
-            </Typography>
-        );
+        return <Typography sx={{ p: 2, color: 'text.primary' }}>{t('empty')}</Typography>;
     }
 
     return (

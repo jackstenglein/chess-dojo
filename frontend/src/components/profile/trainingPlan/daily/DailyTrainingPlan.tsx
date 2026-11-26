@@ -81,7 +81,7 @@ export function DailyTrainingPlan() {
         return [startDate.toISOString(), endDate.toISOString()];
     }, []);
 
-    const { suggestionsByDay, timeline, isLoading, user } = use(TrainingPlanContext);
+    const { suggestionsByDay, planTimeline: timeline, isLoading, user } = use(TrainingPlanContext);
 
     const [, , workedTime, extraTaskIds] = useTrainingPlanProgress({
         startDate,
@@ -141,8 +141,16 @@ function DailyTrainingPlanInternal({
     endDate: string;
     extraTaskIds: Set<string>;
 }) {
-    const { suggestionsByDay, user, skippedTaskIds, allRequirements, pinnedTasks, timeline } =
-        use(TrainingPlanContext);
+    const t = useTranslations('profile.trainingPlan.daily');
+    const {
+        suggestionsByDay,
+        user,
+        skippedTaskIds,
+        allRequirements,
+        pinnedTasks,
+        activePlan,
+        planTimeline: timeline,
+    } = use(TrainingPlanContext);
     const suggestedTasks = useMemo(() => suggestionsByDay[new Date().getDay()], [suggestionsByDay]);
     const [selectedTask, setSelectedTask] = useState<Requirement | CustomTask>();
     const [taskDialogView, setTaskDialogView] = useState<TaskDialogView>();
@@ -195,6 +203,9 @@ function DailyTrainingPlanInternal({
         setTaskDialogView(view);
     };
 
+    // A custom plan with no tasks yet has nothing to schedule.
+    const isEmptyPlan = !!activePlan && activePlan.buckets.every((b) => b.taskIds.length === 0);
+
     const onCloseTask = () => {
         setSelectedTask(undefined);
         setTaskDialogView(undefined);
@@ -217,6 +228,15 @@ function DailyTrainingPlanInternal({
                 />
             )}
 
+            {isEmptyPlan && (
+                <Typography
+                    sx={{ color: 'text.primary', fontWeight: 500, py: 1, pl: 1 }}
+                    data-testid='daily-empty-plan'
+                >
+                    {t('emptyPlan')}
+                </Typography>
+            )}
+
             {/*
              * A CSS grid rather than MUI's flex Grid so that on wider screens every
              * row is as tall as the tallest, keeping all of Today's cards the same size.
@@ -230,9 +250,10 @@ function DailyTrainingPlanInternal({
                     gridAutoRows: { md: '1fr' },
                 }}
             >
-                {shouldPromptGraduation(user) && !skippedTaskIds?.includes(GRADUATION_SKIP_ID) && (
-                    <GraduationTask />
-                )}
+                {/* Graduating is part of the Dojo plan, so it is not prompted from a custom plan. */}
+                {!activePlan &&
+                    shouldPromptGraduation(user) &&
+                    !skippedTaskIds?.includes(GRADUATION_SKIP_ID) && <GraduationTask />}
 
                 {cards.map(({ suggestion }) =>
                     suggestion.task.id === SCHEDULE_CLASSICAL_GAME_TASK_ID ? (
@@ -272,7 +293,7 @@ function DailyTrainingPlanItem({
     const tDaily = useTranslations('profile.trainingPlan.daily');
     const tTime = useTranslations('common');
     const task = useTranslatedRequirement(suggestion.task) ?? suggestion.task;
-    const { isCurrentUser, pinnedTasks, openPinEditor, timeline, user, toggleSkip } =
+    const { isCurrentUser, pinnedTasks, openPinEditor, timeline, planTimeline, user, toggleSkip } =
         use(TrainingPlanContext);
     const isPinned = pinnedTasks.some((t) => t.id === task.id);
 
@@ -282,7 +303,7 @@ function DailyTrainingPlanItem({
         startDate,
         endDate,
         tasks,
-        timeline,
+        timeline: planTimeline,
     });
 
     const currentCount = getCurrentCount({

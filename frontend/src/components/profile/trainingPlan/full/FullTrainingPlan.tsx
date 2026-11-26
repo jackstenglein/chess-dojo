@@ -18,6 +18,7 @@ import { IconButton, MenuItem, Stack, TextField, Tooltip, Typography } from '@mu
 import { useTranslations } from 'next-intl';
 import { ReactNode, use, useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
+import { FreeCustomPlanView } from '../custom/FreeCustomPlanView';
 import {
     getUpcomingGameSchedule,
     MINIMUM_TASKS,
@@ -42,6 +43,7 @@ export function FullTrainingPlan({
         timeline,
         request: requirementRequest,
         allRequirements,
+        activePlan,
         pinnedTasks,
         openPinEditor: onPinClick,
         isCurrentUser,
@@ -107,6 +109,11 @@ export function FullTrainingPlan({
         // so it isn't a section of the full plan.
         return sections.filter((section) => section.category !== RequirementCategory.Graduation);
     }, [allRequirements, user, cohort, timeline, t]);
+
+    if (activePlan) {
+        // Only free-tier users have custom plans (see getActivePlan).
+        return <FreeCustomPlanView plan={activePlan} />;
+    }
 
     if (requirementRequest.isLoading() || sections.length === 0) {
         return <LoadingPage />;

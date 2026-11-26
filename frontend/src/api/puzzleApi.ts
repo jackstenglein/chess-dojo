@@ -10,6 +10,7 @@ import {
     NextPuzzleResponse,
 } from '@jackstenglein/chess-dojo-common/src/puzzles/api';
 import {
+    GetPuzzleRushLeaderboardResponse,
     GetPuzzleRushPuzzleRequest,
     GetPuzzleRushPuzzleResponse,
     GetPuzzleRushSessionResponse,
@@ -23,6 +24,12 @@ import {
     SubmitSquareColorSessionRequest,
     SubmitSquareColorSessionResponse,
 } from '@jackstenglein/chess-dojo-common/src/squareColors/api';
+import {
+    GetTacticsForgerLeaderboardResponse,
+    GetTacticsForgerProgressResponse,
+    SaveTacticsForgerProgressRequest,
+    SaveTacticsForgerProgressResponse,
+} from '@jackstenglein/chess-dojo-common/src/tacticsTrainer/api';
 import { AxiosResponse } from 'axios';
 import { axiosService } from './axiosService';
 
@@ -127,6 +134,20 @@ export function getPuzzleRushSummary(
 }
 
 /**
+ * Fetches the Dojo puzzle rush leaderboard.
+ * The monthly board is the current UTC month. `complete` is false while runs saved
+ * before the leaderboard existed are still being added; call again until it is true.
+ * @returns Every player's all-time and monthly high score, with completed-run counts.
+ */
+export function getPuzzleRushLeaderboard(): Promise<
+    AxiosResponse<GetPuzzleRushLeaderboardResponse>
+> {
+    return axiosService.get<GetPuzzleRushLeaderboardResponse>(`/puzzle/rush/leaderboard`, {
+        functionName: 'getPuzzleRushLeaderboard',
+    });
+}
+
+/**
  * Fetches a single puzzle rush run belonging to the current user.
  * @param createdAt The createdAt timestamp of the run.
  * @returns A promise that resolves to the run.
@@ -151,5 +172,45 @@ export function listPuzzleRushSessions(
     return axiosService.get<ListPuzzleRushSessionsResponse>(`/puzzle/rush/history`, {
         params: request,
         functionName: 'listPuzzleRushSessions',
+    });
+}
+
+/**
+ * Fetches the current user's saved Dojo Tactics Forger progress.
+ * @returns The saved progress (null if never saved) and its version.
+ */
+export function getTacticsForgerProgress(): Promise<
+    AxiosResponse<GetTacticsForgerProgressResponse>
+> {
+    return axiosService.get<GetTacticsForgerProgressResponse>(`/tactics-trainer/progress`, {
+        functionName: 'getTacticsForgerProgress',
+    });
+}
+
+/**
+ * Saves the current user's Dojo Tactics Forger progress and leaderboard numbers.
+ * Fails with 409 if another device saved since `baseVersion`.
+ * @param request The progress, the version it is based on, and the leaderboard summary.
+ * @returns The new version.
+ */
+export function saveTacticsForgerProgress(
+    request: SaveTacticsForgerProgressRequest,
+): Promise<AxiosResponse<SaveTacticsForgerProgressResponse>> {
+    return axiosService.put<SaveTacticsForgerProgressResponse>(
+        `/tactics-trainer/progress`,
+        request,
+        { functionName: 'saveTacticsForgerProgress' },
+    );
+}
+
+/**
+ * Fetches the Dojo Tactics Forger leaderboard: every player who has saved progress.
+ * @returns All leaderboard rows.
+ */
+export function getTacticsForgerLeaderboard(): Promise<
+    AxiosResponse<GetTacticsForgerLeaderboardResponse>
+> {
+    return axiosService.get<GetTacticsForgerLeaderboardResponse>(`/tactics-trainer/leaderboard`, {
+        functionName: 'getTacticsForgerLeaderboard',
     });
 }

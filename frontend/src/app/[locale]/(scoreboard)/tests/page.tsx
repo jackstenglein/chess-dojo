@@ -1,6 +1,8 @@
 import { ExamCard } from '@/components/exams/ExamCard';
+import { PuzzleBaseCard } from '@/components/puzzles/base/PuzzleBaseCard';
+import { getConfig } from '@/config';
 import { KingIcon, QueenIcon, RookIcon } from '@/style/ChessIcons';
-import { Bolt, EmojiEvents, Visibility } from '@mui/icons-material';
+import { Bolt, EmojiEvents, Hardware, Visibility } from '@mui/icons-material';
 import { Chip, Container, Grid } from '@mui/material';
 import { useTranslations } from 'next-intl';
 
@@ -20,6 +22,16 @@ export default function ExamLandingPage() {
                     icon={Bolt}
                     badge={<Chip label={t('beta')} color='success' />}
                 />
+
+                {getConfig().isBeta && (
+                    <ExamCard
+                        name={t('tacticsForger')}
+                        description={t('tacticsForgerDescription')}
+                        href='/tactics-forger'
+                        icon={Hardware}
+                        badge={<Chip label={t('beta')} color='success' />}
+                    />
+                )}
 
                 <ExamCard
                     name={t('checkmatePuzzles')}
@@ -55,6 +67,8 @@ export default function ExamLandingPage() {
                     href='/puzzles/mate-in-one'
                     icon={EmojiEvents}
                 />
+
+                {getConfig().isBeta && <PuzzleBaseCard />}
             </Grid>
         </Container>
     );

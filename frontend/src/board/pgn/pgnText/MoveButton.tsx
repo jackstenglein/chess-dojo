@@ -35,6 +35,7 @@ import {
 } from '../boardTools/underboard/comments/suggestVariation';
 import { DeletePrompt, useDeletePrompt } from '../boardTools/underboard/DeletePrompt';
 import { ShowMoveTimesInPgn } from '../boardTools/underboard/settings/ViewerSettings';
+import { scalePgnRem } from '../boardTools/underboard/settings/viewerSettingsConstants';
 import { MergeLineDialog } from '../boardTools/underboard/share/MergeLineDialog';
 import { compareNags, getStandardNag, nags } from '../Nag';
 import { nagIcons } from '../NagIcon';
@@ -137,6 +138,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
             disableElevation
             sx={{
                 textTransform: 'none',
+                fontSize: scalePgnRem(0.875),
                 fontWeight: isCurrentMove ? 'bold' : getFontWeight(chess, move, inline),
                 color: isCurrentMove ? undefined : getTextColor(move, inline, highlightEngineLines),
                 backgroundColor: isCurrentMove ? 'primary' : undefined,
@@ -206,6 +208,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
                             variant='caption'
                             color={isCurrentMove ? 'primary.contrastText' : 'info.main'}
                             data-testid='elapsed-move-time'
+                            sx={{ fontSize: scalePgnRem(0.75) }}
                         >
                             {time}
                         </Typography>
@@ -224,7 +227,7 @@ interface MoveMenuProps {
 }
 
 const MoveMenu = ({ anchor, move, onClose }: MoveMenuProps) => {
-    const { chess, config } = useChess();
+    const { chess, config, slots } = useChess();
     const { game, onUpdateGame } = useGame();
     const { onDelete, deleteAction, onClose: onCloseDelete } = useDeletePrompt(chess, onClose);
     const [showMerge, setShowMerge] = useState(false);
@@ -351,6 +354,8 @@ const MoveMenu = ({ anchor, move, onClose }: MoveMenuProps) => {
                         </ListItemIcon>
                         <ListItemText>{t('mergeLineIntoGame')}</ListItemText>
                     </MenuItem>
+
+                    {slots?.moveMenuItems && <slots.moveMenuItems move={move} onClose={onClose} />}
 
                     {game && isUnsavedVariation(move) && (
                         <MenuItem

@@ -14,6 +14,7 @@ import {
     Button,
     Card,
     CardActionArea,
+    CardActions,
     CardContent,
     Chip,
     Container,
@@ -22,6 +23,8 @@ import {
     Typography,
 } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
+
+import { DeleteBlogButton } from './DeleteBlogButton';
 
 const PAGE_SIZE = 20;
 
@@ -170,6 +173,22 @@ export default function AdminBlogListPage() {
                                             </Stack>
                                         </CardContent>
                                     </CardActionArea>
+                                    <CardActions sx={{ justifyContent: 'flex-end' }}>
+                                        <DeleteBlogButton
+                                            owner={blog.owner}
+                                            id={blog.id}
+                                            title={blog.title}
+                                            onDeleted={() =>
+                                                setBlogs((prev) =>
+                                                    prev.filter(
+                                                        (post) =>
+                                                            post.id !== blog.id ||
+                                                            post.owner !== blog.owner,
+                                                    ),
+                                                )
+                                            }
+                                        />
+                                    </CardActions>
                                 </Card>
                             ))}
                         </Stack>

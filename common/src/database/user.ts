@@ -2,7 +2,7 @@ import { getNormalizedRating, isCustom } from '../ratings/ratings';
 import { TimeManagementRating } from '../ratings/timeManagement';
 import { ExamType } from './exam';
 import { RatingSystem } from './ratingSystem';
-import { CustomTask, RequirementProgress } from './requirement';
+import { CustomTask, RequirementCategory, RequirementProgress } from './requirement';
 
 export { RatingSystem };
 
@@ -37,6 +37,9 @@ export interface User {
     /** The user's aggregate time management rating. */
     timeManagementRating?: TimeManagementRating;
 
+    /** Daily aggregate time management ratings, dated by the games played. */
+    timeManagementRatingHistory?: RatingHistory[];
+
     progress: Record<string, RequirementProgress>;
     disableBookingNotifications: boolean;
     disableCancellationNotifications: boolean;
@@ -55,6 +58,11 @@ export interface User {
     enableLightMode: boolean;
     /** Whether to enable zen mode. */
     enableZenMode: boolean;
+    /**
+     * The layout the user last picked on the World Championship live page:
+     * stream, analysis or analysis2. Unset until they pick one.
+     */
+    wcLiveLayout?: string;
     timezoneOverride: string;
     timeFormat: TimeFormat;
 
@@ -125,6 +133,22 @@ export interface User {
 
     /** The user's weekly training plan. */
     weeklyPlan?: WeeklyPlan;
+
+    /** The user's custom training plans. */
+    customPlans?: CustomPlan[];
+
+    /**
+     * The id of the user's active custom plan. Unset or empty means the
+     * default Dojo plan is active.
+     */
+    activePlanId?: string;
+
+    /**
+     * The pinned tasks of the user's inactive plans, keyed by plan id ('dojo'
+     * for the Dojo plan). The active plan's pins are always in pinnedTasks and
+     * pinnedTaskMinutes; they are swapped in and out when the user switches plans.
+     */
+    planPins?: Record<string, PlanPins>;
 
     /** The user's schedule of upcoming classical games. */
     gameSchedule?: GameScheduleEntry[];
@@ -231,6 +255,53 @@ export interface GameScheduleEntry {
     date: string;
     /** The number of games that will be played. */
     count: number;
+}
+
+/** A bucket of tasks in a custom training plan. */
+export interface CustomPlanBucket {
+    /** The id of the bucket. */
+    id: string;
+    /** The name of the bucket. */
+    name: string;
+    /**
+     * The bucket's color, as a hex string like #faa137. If unset, a default is
+     * chosen from the bucket's name or position.
+     */
+    color?: string;
+    /**
+     * The Dojo category the bucket stands for, if any. Used for the bucket's
+     * icon, so it survives renames.
+     */
+    category?: RequirementCategory;
+    /**
+     * The ids of the tasks in the bucket, in display order. Each id refers to
+     * a requirement in the training plan or one of the user's custom tasks.
+     */
+    taskIds: string[];
+}
+
+/** The pinned tasks saved for a training plan while it is not active. */
+export interface PlanPins {
+    /** The ids of the plan's pinned tasks. */
+    pinnedTasks?: string[];
+    /** The minutes set aside for each pinned task, by day of the week. */
+    pinnedTaskMinutes?: Record<string, number[]>;
+}
+
+/** A user-created training plan. */
+export interface CustomPlan {
+    /** The id of the plan. */
+    id: string;
+    /** The username of the owner of the plan. */
+    owner: string;
+    /** The name of the plan. */
+    name: string;
+    /** The date the plan was created, in ISO 8601. */
+    createdAt: string;
+    /** The date the plan was last updated, in ISO 8601. */
+    updatedAt: string;
+    /** The buckets in the plan, in display order. */
+    buckets: CustomPlanBucket[];
 }
 
 export type UserSummary = Pick<User, 'username' | 'displayName' | 'dojoCohort'>;

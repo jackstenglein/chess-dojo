@@ -253,6 +253,10 @@ type User struct {
 	// Whether to enable zen mode on the site
 	EnableZenMode bool `dynamodbav:"enableZenMode,omitempty" json:"enableZenMode"`
 
+	// The layout the user last picked on the World Championship live page:
+	// stream, analysis or analysis2. Empty until they pick one.
+	WcLiveLayout string `dynamodbav:"wcLiveLayout,omitempty" json:"wcLiveLayout,omitempty"`
+
 	// The user's preferred timezone on the calendar
 	TimezoneOverride string `dynamodbav:"timezoneOverride" json:"timezoneOverride"`
 
@@ -347,6 +351,18 @@ type User struct {
 	// The user's weekly training plan
 	WeeklyPlan *WeeklyPlan `dynamodbav:"weeklyPlan,omitempty" json:"weeklyPlan,omitempty"`
 
+	// The user's custom training plans
+	CustomPlans []*CustomPlan `dynamodbav:"customPlans,omitempty" json:"customPlans,omitempty"`
+
+	// The id of the user's active custom plan. Unset or empty means the default
+	// Dojo plan is active.
+	ActivePlanId string `dynamodbav:"activePlanId,omitempty" json:"activePlanId,omitempty"`
+
+	// The pinned tasks of the user's inactive plans, keyed by plan id ("dojo"
+	// for the Dojo plan). The active plan's pins are always in PinnedTasks and
+	// PinnedTaskMinutes.
+	PlanPins map[string]*PlanPins `dynamodbav:"planPins,omitempty" json:"planPins,omitempty"`
+
 	// The user's schedule of upcoming classical games
 	GameSchedule []GameScheduleEntry `dynamodbav:"gameSchedule,omitempty" json:"gameSchedule"`
 
@@ -384,6 +400,9 @@ type User struct {
 
 	// The user's aggregate time management rating, computed from games in their mygames folder
 	TimeManagementRating *TimeManagementRating `dynamodbav:"timeManagementRating,omitempty" json:"timeManagementRating,omitempty"`
+
+	// Daily aggregate time management ratings, dated by the games played.
+	TimeManagementRatingHistory []RatingHistory `dynamodbav:"timeManagementRatingHistory,omitempty" json:"timeManagementRatingHistory,omitempty"`
 }
 
 // TimeManagementRating holds the user's aggregate time management rating.
@@ -502,6 +521,59 @@ type WeeklyPlan struct {
 
 	// The ids of the user's skipped tasks (in order) when the weekly plan was last generated.
 	SkippedTasks []string `dynamodbav:"skippedTasks,omitempty" json:"skippedTasks,omitempty"`
+}
+
+// CustomPlanBucket is a bucket of tasks in a custom training plan.
+type CustomPlanBucket struct {
+	// The id of the bucket.
+	Id string `dynamodbav:"id" json:"id"`
+
+	// The name of the bucket.
+	Name string `dynamodbav:"name" json:"name"`
+
+	// The bucket's color, as a hex string like #faa137. If unset, the frontend
+	// chooses a default.
+	Color string `dynamodbav:"color,omitempty" json:"color,omitempty"`
+
+	// The Dojo category the bucket stands for, if any. Used for its icon.
+	Category string `dynamodbav:"category,omitempty" json:"category,omitempty"`
+
+	// The ids of the tasks in the bucket, in display order. Each id refers to
+	// a requirement in the training plan or one of the user's custom tasks.
+	TaskIds []string `dynamodbav:"taskIds" json:"taskIds"`
+}
+
+// The PlanPins key for the default Dojo plan.
+const DojoPlanPinsKey = "dojo"
+
+// PlanPins holds the pinned tasks saved for a training plan while it is not active.
+type PlanPins struct {
+	// The ids of the plan's pinned tasks.
+	PinnedTasks []string `dynamodbav:"pinnedTasks,omitempty" json:"pinnedTasks,omitempty"`
+
+	// The minutes set aside for each pinned task, by day of the week.
+	PinnedTaskMinutes map[string][]int `dynamodbav:"pinnedTaskMinutes,omitempty" json:"pinnedTaskMinutes,omitempty"`
+}
+
+// CustomPlan is a user-created training plan.
+type CustomPlan struct {
+	// The id of the plan.
+	Id string `dynamodbav:"id" json:"id"`
+
+	// The username of the owner of the plan.
+	Owner string `dynamodbav:"owner" json:"owner"`
+
+	// The name of the plan.
+	Name string `dynamodbav:"name" json:"name"`
+
+	// The date the plan was created, in ISO 8601.
+	CreatedAt string `dynamodbav:"createdAt" json:"createdAt"`
+
+	// The date the plan was last updated, in ISO 8601.
+	UpdatedAt string `dynamodbav:"updatedAt" json:"updatedAt"`
+
+	// The buckets in the plan, in display order.
+	Buckets []*CustomPlanBucket `dynamodbav:"buckets" json:"buckets"`
 }
 
 type GameScheduleEntry struct {
@@ -656,6 +728,59 @@ func (u *User) CalculateScore(requirements []*Requirement) float32 {
 	return score
 }
 
+// GetActivePlan returns the user's active custom plan, or nil if the Dojo plan
+// is active (or the active plan id no longer refers to an existing plan).
+func (u *User) GetActivePlan() *CustomPlan {
+	// Custom plans are a free-tier feature: subscribers always train on the Dojo plan.
+	if u == nil || u.ActivePlanId == "" || u.IsSubscribed() {
+		return nil
+	}
+	for _, plan := range u.CustomPlans {
+		if plan != nil && plan.Id == u.ActivePlanId {
+			return plan
+		}
+	}
+	return nil
+}
+
+// FindBucket returns the first bucket in the plan containing the given task, or
+// nil if the task is not in the plan.
+func (p *CustomPlan) FindBucket(taskId string) *CustomPlanBucket {
+	if p == nil {
+		return nil
+	}
+	for _, bucket := range p.Buckets {
+		if bucket != nil && slices.Contains(bucket.TaskIds, taskId) {
+			return bucket
+		}
+	}
+	return nil
+}
+
+// CalculateTotalScore returns the user's total dojo score across all cohorts,
+// matching the nightly statistics calculation: each cohort a requirement has
+// progress in contributes its score for that cohort.
+func (u *User) CalculateTotalScore(requirements []*Requirement) float32 {
+	if u == nil {
+		return 0
+	}
+	var score float32 = 0
+	for _, requirement := range requirements {
+		p, ok := u.Progress[requirement.Id]
+		if !ok {
+			continue
+		}
+		for cohort := range p.Counts {
+			if cohort == AllCohorts {
+				score += requirement.CalculateScore(u.DojoCohort, p)
+			} else {
+				score += requirement.CalculateScore(cohort, p)
+			}
+		}
+	}
+	return score
+}
+
 func (u *User) TimeSpentOnReqs(requirements []*Requirement) int {
 	if u == nil {
 		return 0
@@ -802,6 +927,9 @@ type UserUpdate struct {
 	// Whether to enable zen mode on the site
 	EnableZenMode *bool `dynamodbav:"enableZenMode,omitempty" json:"enableZenMode,omitempty"`
 
+	// The layout the user last picked on the World Championship live page.
+	WcLiveLayout *string `dynamodbav:"wcLiveLayout,omitempty" json:"wcLiveLayout,omitempty"`
+
 	// The user's preferred timezone on the calendar
 	TimezoneOverride *string `dynamodbav:"timezoneOverride,omitempty" json:"timezoneOverride,omitempty"`
 
@@ -881,6 +1009,16 @@ type UserUpdate struct {
 
 	// The user's weekly training plan.
 	WeeklyPlan *WeeklyPlan `dynamodbav:"weeklyPlan,omitempty" json:"weeklyPlan,omitempty"`
+
+	// The user's custom training plans.
+	CustomPlans *[]*CustomPlan `dynamodbav:"customPlans,omitempty" json:"customPlans,omitempty"`
+
+	// The id of the user's active custom plan. An empty string switches back to
+	// the default Dojo plan.
+	ActivePlanId *string `dynamodbav:"activePlanId,omitempty" json:"activePlanId,omitempty"`
+
+	// The pinned tasks of the user's inactive plans, keyed by plan id.
+	PlanPins *map[string]*PlanPins `dynamodbav:"planPins,omitempty" json:"planPins,omitempty"`
 
 	// The user's schedule of upcoming classical games
 	GameSchedule *[]GameScheduleEntry `dynamodbav:"gameSchedule,omitempty" json:"gameSchedule,omitempty"`

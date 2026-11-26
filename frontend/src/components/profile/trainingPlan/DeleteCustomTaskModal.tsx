@@ -12,6 +12,7 @@ import {
     DialogTitle,
 } from '@mui/material';
 import { useTranslations } from 'next-intl';
+import { removeTaskFromPlans } from './customPlan';
 
 interface DeleteCustomTaskModalProps {
     task: CustomTask;
@@ -38,10 +39,14 @@ const DeleteCustomTaskModal: React.FC<DeleteCustomTaskModalProps> = ({
 
     const handleDelete = () => {
         const newTasks = user.customTasks?.filter((t) => t.id !== task.id) || [];
+        const newPlans = user.customPlans
+            ? removeTaskFromPlans(user.customPlans, task.id)
+            : undefined;
 
         request.onStart();
         api.updateUser({
             customTasks: newTasks,
+            ...(newPlans ? { customPlans: newPlans } : {}),
         })
             .then(() => {
                 trackEvent(EventType.DeleteNondojoTask, {

@@ -5,6 +5,8 @@ import {
 import {
     CoachInfo,
     User as CommonUser,
+    CustomPlan,
+    CustomPlanBucket,
     DiscordNotificationSettings,
     EmailNotificationSettings,
     GameScheduleEntry,
@@ -50,6 +52,8 @@ export {
 
 export type {
     CoachInfo,
+    CustomPlan,
+    CustomPlanBucket,
     DiscordNotificationSettings,
     EmailNotificationSettings,
     GameScheduleEntry,
