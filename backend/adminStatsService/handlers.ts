@@ -26,7 +26,7 @@ export const adminStatsHistoryTable = `${process.env.stage}-admin-stats-history`
 const HISTORY_KEY = 'DAILY';
 
 /**
- * Handles GET /admin/statistics. Admins only. Computes the account stats from
+ * Handles GET /admin/site-stats. Admins only. Computes the account stats from
  * the users table and returns them with the saved daily history.
  */
 export const getHandler: APIGatewayProxyHandlerV2 = async (event) => {

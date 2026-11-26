@@ -72,7 +72,7 @@ export interface AdminStatsSnapshot {
     active30: number;
 }
 
-/** The response of GET /admin/statistics. */
+/** The response of GET /admin/site-stats. */
 export interface GetAdminStatsResponse {
     /** When the numbers were computed, in ISO 8601. */
     generatedAt: string;

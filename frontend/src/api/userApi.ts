@@ -267,7 +267,7 @@ export function getAdminUser(username: string) {
  * @returns An AxiosResponse containing the stats.
  */
 export function getAdminStatistics() {
-    return axiosService.get<GetAdminStatsResponse>(`/admin/statistics`, {
+    return axiosService.get<GetAdminStatsResponse>(`/admin/site-stats`, {
         functionName: 'getAdminStatistics',
     });
 }
