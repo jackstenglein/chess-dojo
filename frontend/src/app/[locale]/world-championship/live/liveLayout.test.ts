@@ -59,8 +59,8 @@ describe('the fan view on a phone held upright', () => {
         }
     });
 
-    it('puts the stream above the moves, and the leaderboard and crosstable last', () => {
-        const order = (['evals', 'twitch', 'moves', 'leaders', 'cross'] as const).map(place);
+    it('puts the stream and the leaderboard above the moves, and the crosstable last', () => {
+        const order = (['evals', 'twitch', 'leaders', 'moves', 'cross'] as const).map(place);
         expect(order).toEqual([...order].sort((a, b) => a - b));
     });
 });
