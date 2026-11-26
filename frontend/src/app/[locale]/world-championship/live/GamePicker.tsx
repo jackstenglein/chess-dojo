@@ -7,7 +7,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { Box, Button, Chip, Divider, IconButton, Menu, MenuItem, Stack } from '@mui/material';
 import { useState } from 'react';
 import { MatchRound } from './lichessFeed';
-import { GAME_PICKER_HEIGHT, TABLET_UPRIGHT, TWO_COLUMNS } from './liveLayout';
+import { GAME_PICKER_HEIGHT, TABLET_UPRIGHT, TWO_COLUMNS, UPRIGHT_WIDE } from './liveLayout';
 
 interface GamePickerProps {
     rounds: MatchRound[];
@@ -118,6 +118,7 @@ export function GamePicker({
                 // name and do not go to the edges of the screen or of the column.
                 [TABLET_UPRIGHT]: { maxWidth: 420, mx: 'auto' },
                 [TWO_COLUMNS]: { maxWidth: 420, mx: 'auto' },
+                [UPRIGHT_WIDE]: { maxWidth: 420, mx: 'auto' },
             }}
         >
             <IconButton
