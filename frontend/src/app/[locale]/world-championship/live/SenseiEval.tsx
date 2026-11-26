@@ -99,6 +99,9 @@ function BeltIcon() {
 /** The eval bar's width. The player bars leave the same space, so they line up with the board. */
 export const EVAL_BAR_WIDTH = { xs: 20, sm: 38 };
 
+/** A phone on its side is wider than the sm breakpoint, and still has a phone's narrow bar. */
+const PHONE_BAR_WIDTH = EVAL_BAR_WIDTH.xs;
+
 /** The space between the eval bar and the board, in the theme's spacing units. */
 export const EVAL_BAR_GAP = { xs: 0.75, sm: 1 };
 
@@ -142,6 +145,7 @@ export function EvalBar({ average, pins, orientation }: EvalBarProps) {
             sx={{
                 position: 'relative',
                 width: EVAL_BAR_WIDTH,
+                [PHONE_LANDSCAPE]: { width: PHONE_BAR_WIDTH },
                 flexShrink: 0,
                 alignSelf: 'stretch',
             }}
@@ -229,6 +233,9 @@ export function EvalBar({ average, pins, orientation }: EvalBarProps) {
                                 xs: `calc(50% + ${4 + (p.column - (p.columns - 1) / 2) * 12}px)`,
                                 sm: `calc(50% + ${(p.column - (p.columns - 1) / 2) * 20}px)`,
                             },
+                            [PHONE_LANDSCAPE]: {
+                                left: `calc(50% + ${4 + (p.column - (p.columns - 1) / 2) * 12}px)`,
+                            },
                             transform: 'translate(-50%, -50%)',
                             transition: 'top 0.6s ease',
                             zIndex: 2,
@@ -267,9 +274,14 @@ export function EvalBar({ average, pins, orientation }: EvalBarProps) {
                     pointerEvents: 'none',
                     // A phone's bar is too narrow for the number, which EvalAverage
                     // shows under the bar. On its side the phone has nothing under
-                    // the bar, so the number stays here.
+                    // the bar, so the number stays here, as small as the bar needs.
                     display: { xs: 'none', sm: 'block' },
-                    [PHONE_LANDSCAPE]: { display: 'block', left: 0, right: 0 },
+                    [PHONE_LANDSCAPE]: {
+                        display: 'block',
+                        left: 0,
+                        right: 0,
+                        fontSize: '0.62rem',
+                    },
                 }}
             >
                 {formatEval(average)}

@@ -65,22 +65,30 @@ export const FAN_PARTS = [
 ] as const;
 export type FanPart = (typeof FAN_PARTS)[number];
 
+/** A cell of a grid is a part of the fan view, the game picker or nothing. */
+type Cell = FanPart | 'games' | '.';
+
 /**
- * The fan view on a phone on its side. The players, the guess and the move
- * buttons sit beside the board, as on Lichess, and the rest follows in two
- * columns. The dot is an empty cell. Every part has a place here. The grid
- * would put a part without one into the first empty row it finds.
+ * The fan view on a phone on its side. The board is as tall as the screen and
+ * stays in view. Beside it the first screen shows the game picker, the two
+ * players with their clocks, the stream and the guess, and the page scrolls
+ * the rest past the board. Every part has a place here. The grid would put a
+ * part without one into the first empty row it finds. The row of dots takes
+ * the height that is left over when the board is the taller side.
  */
-const FAN_LANDSCAPE_ROWS: readonly (readonly [FanPart | '.', FanPart | '.'])[] = [
-    ['board', 'top'],
-    ['board', 'guess'],
-    ['board', '.'],
-    ['board', 'nav'],
-    ['board', 'bottom'],
-    ['error', 'notice'],
-    ['moves', 'twitch'],
-    ['evals', 'leaders'],
-    ['cross', 'cross'],
+const FAN_LANDSCAPE_ROWS: readonly (readonly [Cell, Cell, Cell])[] = [
+    ['board', 'games', 'games'],
+    ['board', 'top', 'bottom'],
+    ['board', 'twitch', 'twitch'],
+    ['board', 'guess', 'guess'],
+    ['board', 'nav', 'nav'],
+    ['board', 'error', 'error'],
+    ['board', 'notice', 'notice'],
+    ['board', 'leaders', 'leaders'],
+    ['board', 'evals', 'evals'],
+    ['board', 'moves', 'moves'],
+    ['board', 'cross', 'cross'],
+    ['board', '.', '.'],
 ];
 
 /** How tall the GamePicker is, which a phone has in place of the game tabs. */
@@ -88,23 +96,65 @@ export const GAME_PICKER_HEIGHT = 36;
 
 /**
  * On a phone on its side the board is as tall as the screen has room for under
- * the site's header and the game picker, with 8px above the picker, under it
- * and under the board. It is never so wide that the players beside it have
- * less than about 220px.
+ * the site's header, with 8px above it and under it. Where the page has a row
+ * above the board, which holds a sensei's switch between the views, the board
+ * leaves room for that row too. The board is never so wide that the parts
+ * beside it have less than about 280px.
  */
-export const FAN_LANDSCAPE_BOARD = `min(calc(100dvh - var(--navbar-height) - ${GAME_PICKER_HEIGHT + 24}px), calc(100vw - 340px))`;
+export function fanLandscapeBoard(rowAbove: boolean) {
+    const taken = 16 + (rowAbove ? GAME_PICKER_HEIGHT + 8 : 0);
+    return `min(calc(100dvh - var(--navbar-height) - ${taken}px), calc(100vw - 340px))`;
+}
+
+/**
+ * A small phone on its side, such as an iPhone SE. Beside the board it has no
+ * room for both players in one line, so each has a line.
+ */
+export const SMALL_PHONE_LANDSCAPE =
+    '@media (orientation: landscape) and (max-height: 500px) and (max-width: 699.95px)';
+
+const FAN_SMALL_LANDSCAPE_ROWS = FAN_LANDSCAPE_ROWS.flatMap(
+    (row): (readonly [Cell, Cell, Cell])[] =>
+        row[1] === 'top'
+            ? [
+                  ['board', 'top', 'top'],
+                  ['board', 'bottom', 'bottom'],
+              ]
+            : [row],
+);
+
+/**
+ * On a phone on its side the stream fills what the game picker, the players
+ * and the guess leave of the first screen beside the board. Those take 149px
+ * with the gaps, and 36px more where each player has a line.
+ */
+export const fanLandscapeStreamSx = {
+    [PHONE_LANDSCAPE]: {
+        '--wc-stream-max-height': 'max(90px, calc(100dvh - var(--navbar-height) - 149px))',
+    },
+    [SMALL_PHONE_LANDSCAPE]: {
+        '--wc-stream-max-height': 'max(90px, calc(100dvh - var(--navbar-height) - 185px))',
+    },
+};
+
+function landscapeGrid(rows: readonly (readonly [Cell, Cell, Cell])[]) {
+    return {
+        gridTemplateAreas: rows.map((row) => `"${row.join(' ')}"`).join(' '),
+        gridTemplateRows: rows
+            .map(([, side]) => (side === '.' ? 'minmax(0, 1fr)' : 'auto'))
+            .join(' '),
+    };
+}
 
 /** The grid of the fan view on a phone on its side. */
 export const fanLandscapeGrid = {
-    gridTemplateColumns: 'auto minmax(0, 1fr)',
-    gridTemplateAreas: FAN_LANDSCAPE_ROWS.map((row) => `"${row.join(' ')}"`).join(' '),
-    // The row with the empty cell stretches. It takes the height the board has
-    // left over, so the bottom player is level with the board's bottom edge
-    // whenever the parts beside the board are no taller than the board.
-    gridTemplateRows: FAN_LANDSCAPE_ROWS.map(([, side]) =>
-        side === '.' ? 'minmax(0, 1fr)' : 'auto',
-    ).join(' '),
+    gridTemplateColumns: 'auto minmax(0, 1fr) minmax(0, 1fr)',
+    ...landscapeGrid(FAN_LANDSCAPE_ROWS),
+    columnGap: 1.5,
 };
+
+/** The grid on a small phone, with a line for each player. */
+export const fanSmallLandscapeGrid = landscapeGrid(FAN_SMALL_LANDSCAPE_ROWS);
 
 /**
  * A tablet held upright, or any other screen that has one column like a phone
@@ -305,11 +355,6 @@ export const FAN_STREAM_MAX_HEIGHT = 'max(150px, calc(100dvh - var(--navbar-heig
 
 /** Where a part of the fan view goes on a phone. A wide screen keeps the place it has. */
 export function fanPartSx(part: FanPart) {
-    // The board alone sets the width of its column. A part under it takes that
-    // width and cannot make the column wider.
-    const underBoard =
-        part !== 'board' &&
-        FAN_LANDSCAPE_ROWS.some(([left, right]) => left === part && right !== part);
     return {
         // A part goes to the place with its name wherever the page's grid has
         // one. Inside a column, as on a wide screen, the name does nothing.
@@ -321,7 +366,12 @@ export function fanPartSx(part: FanPart) {
         // A phone on its side matches both rules. This one comes last, so it wins.
         [PHONE_LANDSCAPE]: {
             gridArea: part,
-            ...(underBoard && { width: 0, minWidth: '100%' }),
+            // The board stays in view while the page scrolls the parts beside it.
+            ...(part === 'board' && {
+                alignSelf: 'start',
+                position: 'sticky',
+                top: 'calc(var(--navbar-height) + 8px)',
+            }),
         },
     };
 }

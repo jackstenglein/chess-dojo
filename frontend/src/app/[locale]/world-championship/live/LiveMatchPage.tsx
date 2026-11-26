@@ -89,14 +89,16 @@ import {
     ANALYSIS_LANDSCAPE_BOARD,
     ANALYSIS_PHONE_LANDSCAPE,
     boardColumnWidth,
-    FAN_LANDSCAPE_BOARD,
     FAN_STREAM_MAX_HEIGHT,
     FAN_TABLET_BOARD,
     FAN_UPRIGHT_WIDE_BOARD,
     fanBoardBlockSx,
+    fanLandscapeBoard,
     fanLandscapeGrid,
+    fanLandscapeStreamSx,
     FanPart,
     fanPartSx,
+    fanSmallLandscapeGrid,
     fanTabletSidesSx,
     fanTopBarSx,
     fanTwoColumnGrid,
@@ -106,6 +108,7 @@ import {
     PHONE,
     PHONE_LANDSCAPE,
     resolveLayout,
+    SMALL_PHONE_LANDSCAPE,
     TABLET_UPRIGHT,
     TWO_COLUMNS,
     UPRIGHT_WIDE,
@@ -424,18 +427,20 @@ export function LiveMatchPage() {
     const phone = useMediaQuery(PHONE, { noSsr: true });
     const twoColumns = useMediaQuery(TWO_COLUMNS, { noSsr: true });
     const uprightWide = useMediaQuery(UPRIGHT_WIDE, { noSsr: true });
+    const phoneLandscape = useMediaQuery(PHONE_LANDSCAPE, { noSsr: true });
     /** Only the fan view rearranges its parts on a phone. */
     const fan = (part: FanPart) => (streamView ? fanPartSx(part) : {});
 
     // The Admin tab. The page always opens on a game, never here.
     const canAdmin = !!user?.isAdmin || (!!actAs && isSensei);
     const [adminOpen, setAdminOpen] = useState(false);
-    // In two columns a fan has no row of tabs above the board. The game picker
-    // sits beside the top player's bar, and the board gets the height. A sensei
-    // keeps the row, which also holds the switch between the views. So does the
-    // Admin view, which hides everything under the row.
+    // In two columns, and on a phone on its side, a fan has no row above the
+    // board. The game picker is beside the board, which gets the height. A
+    // sensei keeps the row, which also holds the switch between the views. So
+    // does the Admin view, which hides everything under the row.
     const fanWithoutTabs = streamView && !canAnalyze;
-    const pickerBeside = fanWithoutTabs && twoColumns && !(adminOpen && canAdmin);
+    const pickerBeside =
+        fanWithoutTabs && (twoColumns || phoneLandscape) && !(adminOpen && canAdmin);
     // One column has the game picker above the board. In the fan view so does a
     // large tablet held upright.
     const picker = phone || (streamView && uprightWide);
@@ -784,8 +789,9 @@ export function LiveMatchPage() {
                     selectRound(r.id);
                 }
             }}
-            // In two columns of the fan view the table is in the column beside the board.
-            narrow={streamView && twoColumns}
+            // In two columns and on a phone on its side, the fan view has the table in
+            // the narrow column beside the board.
+            narrow={streamView && (twoColumns || phoneLandscape)}
         />
     );
 
@@ -807,8 +813,8 @@ export function LiveMatchPage() {
         }
         return byId;
     }, [rounds, roundId, feed.result, crosstable]);
-    // The picker stands above the board on a phone and on a tablet held upright,
-    // and beside the top player's bar in two columns.
+    // The picker stands above the board on a screen with one column, and beside
+    // the board in two columns and on a phone on its side.
     const gamePicker = (
         <GamePicker
             rounds={rounds}
@@ -1062,6 +1068,7 @@ export function LiveMatchPage() {
                     ...(streamView && {
                         [UPRIGHT_WIDE]: fanUprightWideGrid,
                         [PHONE_LANDSCAPE]: fanLandscapeGrid,
+                        [SMALL_PHONE_LANDSCAPE]: fanSmallLandscapeGrid,
                     }),
                 }}
             >
@@ -1142,7 +1149,7 @@ export function LiveMatchPage() {
                                               },
                                               [PHONE_LANDSCAPE]: {
                                                   flexGrow: 0,
-                                                  width: FAN_LANDSCAPE_BOARD,
+                                                  width: fanLandscapeBoard(!fanWithoutTabs),
                                                   maxWidth: 'none',
                                               },
                                           }
@@ -1368,14 +1375,18 @@ export function LiveMatchPage() {
                 </Stack>
 
                 <Box
-                    sx={{
-                        minWidth: 0,
-                        gridArea: 'twitch',
-                        ...fan('twitch'),
-                        ...(streamView && {
+                    sx={[
+                        { minWidth: 0, gridArea: 'twitch' },
+                        fan('twitch'),
+                        // The stream is short enough for the first screen to hold
+                        // what comes with it. This is an entry of its own, so it adds
+                        // to the rules above for the same screens and does not
+                        // replace them.
+                        streamView && {
                             [TWO_COLUMNS]: { '--wc-stream-max-height': FAN_STREAM_MAX_HEIGHT },
-                        }),
-                    }}
+                        },
+                        streamView && fanLandscapeStreamSx,
+                    ]}
                 >
                     <StreamEmbed minimizable={streamView} />
                 </Box>
@@ -1451,8 +1462,20 @@ function PlayerBar({
                     ...(beside && { [PHONE_LANDSCAPE]: { maxWidth: 'none' } }),
                 }}
             >
-                <Stack direction='row' spacing={1} sx={{ alignItems: 'center', minWidth: 0 }}>
-                    <PlayerPhoto name={player?.name} size={36} />
+                <Stack
+                    direction='row'
+                    spacing={1}
+                    sx={{
+                        alignItems: 'center',
+                        minWidth: 0,
+                        // On a phone on its side the two players share a line, which
+                        // has no room for the photos, nor for the space after them.
+                        ...(beside && {
+                            [PHONE_LANDSCAPE]: { '& > :not(style) ~ :not(style)': { ml: 0 } },
+                        }),
+                    }}
+                >
+                    <PlayerPhoto name={player?.name} size={36} hiddenOnPhoneOnItsSide={beside} />
                     <Typography
                         sx={{
                             fontWeight: 700,
@@ -1462,11 +1485,20 @@ function PlayerBar({
                                 fontSize: '0.9375rem',
                                 '& .rating': { display: 'none' },
                             },
+                            // Where two players share a line on a phone on its side, the
+                            // name also does without the title.
+                            '@container (max-width: 220px)': {
+                                '& .title': { display: 'none' },
+                            },
                         }}
                         noWrap
                     >
                         {player?.title && (
-                            <Box component='span' sx={{ color: 'warning.main', mr: 0.75 }}>
+                            <Box
+                                component='span'
+                                className='title'
+                                sx={{ color: 'warning.main', mr: 0.75 }}
+                            >
                                 {player.title}
                             </Box>
                         )}
@@ -1499,6 +1531,15 @@ function PlayerBar({
                         fontVariantNumeric: 'tabular-nums',
                         bgcolor: running ? 'text.primary' : 'action.hover',
                         color: running ? 'background.paper' : 'text.primary',
+                        // On a phone on its side the two players share a line, so the
+                        // clock is the small one there whatever the width.
+                        ...(beside && {
+                            [PHONE_LANDSCAPE]: {
+                                px: 1,
+                                fontSize: '1.1rem',
+                                '@supports (text-box: trim-both cap alphabetic)': { py: '8px' },
+                            },
+                        }),
                     }}
                     data-testid='player-clock'
                 >
