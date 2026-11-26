@@ -2,8 +2,10 @@ import { RequestSnackbar } from '@/api/Request';
 import { isFree, User } from '@/database/user';
 import { Stack } from '@mui/material';
 import { createContext, useEffect, useMemo, useState } from 'react';
+import { CreateFreePlan } from './custom/CreateFreePlan';
 import { getLockedTaskCount, isFreeStarterPlanDone } from './custom/freePlan';
 import { StarterPlanComplete } from './custom/StarterPlanComplete';
+import { FreePlanDraftContext } from './custom/useFreePlanEditor';
 import { DailyTrainingPlan } from './daily/DailyTrainingPlan';
 import { FullTrainingPlan } from './full/FullTrainingPlan';
 import { MiniScoreboard } from './MiniScoreboard';
@@ -41,6 +43,13 @@ export function TrainingPlanTab({ user }: { user: User }) {
         [user, trainingPlan.allRequirements, trainingPlan.timeline],
     );
     const showJoinPrompt = isFreeMember && !trainingPlan.activePlan && freeStarterDone;
+    // Picking Custom Plan before having one offers to create it from scratch.
+    const [creatingPlan, setCreatingPlan] = useState(false);
+    const showCreatePlan = isFreeMember && !trainingPlan.activePlan && creatingPlan;
+    const freePlanDraft = useMemo(
+        () => ({ creating: creatingPlan, setCreating: setCreatingPlan }),
+        [creatingPlan],
+    );
 
     useEffect(() => {
         setCohort(user.dojoCohort);
@@ -56,35 +65,42 @@ export function TrainingPlanTab({ user }: { user: User }) {
             <RequestSnackbar request={trainingPlan.request} />
 
             <TrainingPlanContext value={trainingPlan}>
-                {showStarterPlan ? (
-                    // The full training plan stays locked until the starter plan is done.
-                    <StarterTrainingPlan
-                        preview={preview === StarterPreviewMode.Suggest ? undefined : preview}
-                    />
-                ) : (
-                    <>
-                        {showJoinPrompt ? (
-                            <StarterPlanComplete
-                                cohort={user.dojoCohort}
-                                lockedCount={getLockedTaskCount(user, trainingPlan.allRequirements)}
-                            />
-                        ) : (
-                            <>
-                                {/* Inactive members who have done little are offered the starter plan. */}
-                                {!trainingPlan.activePlan && (
-                                    <StarterPlanSuggestion
-                                        force={preview === StarterPreviewMode.Suggest}
-                                    />
-                                )}
-                                <DailyTrainingPlan />
-                                <WeeklyTrainingPlan />
-                                <FullTrainingPlan cohort={cohort} setCohort={setCohort} />
-                            </>
-                        )}
-                        <MiniScoreboard cohort={cohort} />
-                        <PinTaskDialog />
-                    </>
-                )}
+                <FreePlanDraftContext value={freePlanDraft}>
+                    {showStarterPlan ? (
+                        // The full training plan stays locked until the starter plan is done.
+                        <StarterTrainingPlan
+                            preview={preview === StarterPreviewMode.Suggest ? undefined : preview}
+                        />
+                    ) : (
+                        <>
+                            {showCreatePlan ? (
+                                <CreateFreePlan />
+                            ) : showJoinPrompt ? (
+                                <StarterPlanComplete
+                                    cohort={user.dojoCohort}
+                                    lockedCount={getLockedTaskCount(
+                                        user,
+                                        trainingPlan.allRequirements,
+                                    )}
+                                />
+                            ) : (
+                                <>
+                                    {/* Inactive members who have done little are offered the starter plan. */}
+                                    {!trainingPlan.activePlan && (
+                                        <StarterPlanSuggestion
+                                            force={preview === StarterPreviewMode.Suggest}
+                                        />
+                                    )}
+                                    <DailyTrainingPlan />
+                                    <WeeklyTrainingPlan />
+                                    <FullTrainingPlan cohort={cohort} setCohort={setCohort} />
+                                </>
+                            )}
+                            <MiniScoreboard cohort={cohort} />
+                            <PinTaskDialog />
+                        </>
+                    )}
+                </FreePlanDraftContext>
             </TrainingPlanContext>
         </Stack>
     );

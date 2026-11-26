@@ -179,6 +179,7 @@
             },
             "daily": {
                 "today": "[T] Today",
+                "emptyPlan": "[T] Add tasks to your training plan below to create your daily and weekly training schedule.",
                 "summary": "[T] {done} of {total} tasks done · {worked} of {goal}",
                 "allDone": "[T] Done for today · {worked} logged",
                 "goalMet": "[T] Time goal met",
@@ -240,7 +241,6 @@
             "starter": {
                 "title": "[T] Tutorial",
                 "planName": "[T] Dojo Training Plan",
-                "subtitle": "[T] Three short stages to learn how training works here. Everything you complete carries over to your full training plan, which unlocks when you finish.",
                 "progress": "[T] {done} of {total} tasks done",
                 "stepNumber": "[T] Step {number}",
                 "stepProgress": "[T] {done} of {total} done",
@@ -259,7 +259,7 @@
                         "description": "[T] Import one of your games and go through it before using an engine. Note what you were thinking, your key decisions and your mistakes."
                     },
                     "dojoRush": {
-                        "title": "[T] Try the Dojo Rush trainer",
+                        "title": "[T] Do one run of Dojo Rush",
                         "description": "[T] Solve as many puzzles as you can against the clock. This step ticks off by itself after your first run."
                     },
                     "masterGame": {
@@ -267,7 +267,7 @@
                         "description": "[T] Go through one classical game from your cohort's master games study. Look for the plans and ideas behind the moves."
                     },
                     "endgameAlgorithm": {
-                        "title": "[T] Play 1 endgame algorithm position",
+                        "title": "[T] Complete 1 Endgame Algorithm",
                         "description": "[T] Play the first position of your cohort's first endgame algorithm until you can win it. The time you spend carries over to the full algorithm."
                     }
                 },
@@ -301,6 +301,10 @@
                     "description": "[T] Finish the starter plan to unlock your full training plan. Everything you mark done here will be checked off for you."
                 },
                 "skip": "[T] Already know the Dojo? Skip to the full training plan",
+                "buildOwn": {
+                    "description": "[T] Want to train your own way? Build your own plan instead, with up to 3 tasks in each category.",
+                    "action": "[T] Create my own plan"
+                },
                 "welcomeKinds": {
                     "guide": {
                         "label": "[T] Guide",
@@ -329,7 +333,7 @@
                 },
                 "stages": {
                     "welcome": {
-                        "title": "[T] Welcome",
+                        "title": "[T] Welcome to the Dojo",
                         "description": "[T] Get to know the Dojo and the community."
                     },
                     "training": {
@@ -366,18 +370,9 @@
                 "planName": "[T] My Plan",
                 "bucketGames": "[T] Games + Analysis",
                 "bucketTactics": "[T] Tactics",
-                "bucketMiddlegames": "[T] Middlegames",
-                "bucketEndgames": "[T] Endgames",
-                "bucketOpenings": "[T] Openings",
-                "sampleGamesName": "[T] Play classical games",
-                "sampleGamesDescription": "[T] Play long time control games and analyze each one afterwards.",
-                "sampleTacticsName": "[T] Dojo Rush",
-                "sampleTacticsDescription": "[T] Solve as many puzzles as you can against the clock in Dojo Rush.",
-                "sampleBookName": "[T] Sample book",
-                "sampleMiddlegamesDescription": "[T] Replace this with the middlegame book you're working through.",
-                "sampleEndgamesDescription": "[T] Replace this with the endgame book you're working through.",
-                "sampleOpeningsName": "[T] Najdorf Prep",
-                "sampleOpeningsDescription": "[T] Build and review your Najdorf repertoire.",
+                "bucketMiddlegames": "[T] Middlegame",
+                "bucketEndgames": "[T] Endgame",
+                "bucketOpenings": "[T] Opening",
                 "subheading": "[T] Pick up to {max} tasks for each category. Your Today and This Week plans are built from them.",
                 "taskCount": "[T] {count}/{max} tasks",
                 "emptyBucket": "[T] No tasks yet. Add one to start training this category.",
@@ -407,7 +402,6 @@
                 "goalError": "[T] Enter a whole number",
                 "startCountError": "[T] Must be less than the goal",
                 "save": "[T] Save",
-                "completeEyebrow": "[T] Dojo Starter Plan complete",
                 "completeTitle": "[T] You finished the Dojo Starter Plan!",
                 "completeBody": "[T] Choose how you want to keep training.",
                 "statAverageGain": "[T] average rating points gained",
@@ -418,17 +412,26 @@
                 "statGraduationsDetail": "[T] Get your games reviewed by a sensei",
                 "fullProgramTitle": "[T] Join the full Dojo program",
                 "fullProgramBody": "[T] Unlock {count} more tasks in the {cohort} training plan, and a new plan every time you graduate.",
-                "fullProgramBullet1": "[T] A complete training plan from 0 to 2400+",
-                "fullProgramBullet2": "[T] Daily and weekly tasks picked for your cohort",
-                "fullProgramBullet3": "[T] Graduations, the Dojo community, classes and courses",
-                "fullProgramBullet4": "[T] Access to opening tools, puzzles, bots and more",
+                "fullProgramBullet1": "[T] Complete training plans from 0‑2400+",
+                "fullProgramBullet2": "[T] Daily and weekly tasks picked for your rating",
+                "fullProgramBullet3": "[T] Graduate up the cohorts and get your games reviewed by a sensei",
+                "fullProgramBullet4": "[T] Classes, courses, opening tools, puzzles, bots and an active community",
                 "joinCta": "[T] Join the full program",
                 "customOptionTitle": "[T] Build your own plan",
                 "customOptionBody": "[T] Keep training for free with a plan you put together yourself.",
                 "customOptionBullet1": "[T] 5 categories with up to 3 tasks each",
-                "customOptionBullet2": "[T] Track games, minutes, pages, puzzles and more",
-                "customOptionBullet3": "[T] Your Today and This Week plans are built from your tasks",
-                "buildOwnCta": "[T] Build my own plan (free)"
+                "customOptionBullet2": "[T] Track games, hours, puzzles, and more",
+                "customOptionBullet3": "[T] Log your progress and see your activity on the heatmap",
+                "buildOwnCta": "[T] Build my own plan (free)",
+                "createTitle": "[T] Build your own training plan",
+                "createBody": "[T] Start from scratch: add up to {max} tasks to each category, and measure them however you like — games, minutes, pages, puzzles and more.",
+                "createCta": "[T] Create New Plan",
+                "resetProgress": "[T] Reset progress",
+                "resetTitle": "[T] Reset your plan's progress?",
+                "resetContent": "[T] Progress on every task in your plan goes back to 0. Your tasks stay, and time you've logged stays on your profile.",
+                "resetConfirm": "[T] Reset",
+                "resetNothing": "[T] No progress to reset yet",
+                "resetNote": "[T] Progress reset"
             },
             "customTask": {
                 "createTitle": "[T] Create Custom Task?",

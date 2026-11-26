@@ -13,8 +13,9 @@ import {
     FREE_PLAN_CATEGORIES,
     getFreeTaskFields,
     getLockedTaskCount,
+    getProgressResets,
     isFreeStarterPlanDone,
-    SampleTasks,
+    sortFreePlanBuckets,
 } from './freePlan';
 
 const cohort = '1000-1100';
@@ -112,28 +113,70 @@ describe('buildFreeTask', () => {
 });
 
 describe('buildFreePlan', () => {
-    it('makes one bucket per category with its sample task', () => {
-        const sample = {
-            name: 'Sample',
-            description: '',
-            goal: 10,
-            startCount: 0,
-            unit: 'Games' as const,
-        };
-        const samples = Object.fromEntries(
-            FREE_PLAN_CATEGORIES.map((c) => [c, sample]),
-        ) as SampleTasks;
+    it('makes one empty bucket per category', () => {
         const names = Object.fromEntries(FREE_PLAN_CATEGORIES.map((c) => [c, c])) as Record<
             string,
             string
         >;
-        const { plan, tasks } = buildFreePlan('u', 'My Plan', names, samples);
+        const plan = buildFreePlan('u', 'My Plan', names);
+        expect(plan.name).toBe('My Plan');
         expect(plan.buckets.map((b) => b.category)).toEqual(FREE_PLAN_CATEGORIES);
-        expect(tasks).toHaveLength(5);
-        plan.buckets.forEach((b, i) => {
-            expect(b.taskIds).toEqual([tasks[i].id]);
-            expect(tasks[i].category).toBe(b.category);
-        });
+        expect(plan.buckets.map((b) => b.name)).toEqual(FREE_PLAN_CATEGORIES);
+        plan.buckets.forEach((b) => expect(b.taskIds).toEqual([]));
+    });
+});
+
+describe('sortFreePlanBuckets', () => {
+    it('puts openings before middlegames and endgames, other buckets last', () => {
+        const bucket = (name: string, category?: RequirementCategory) => ({ name, category });
+        const sorted = sortFreePlanBuckets([
+            bucket('Extra'),
+            bucket('E', RequirementCategory.Endgame),
+            bucket('M', RequirementCategory.Middlegames),
+            bucket('O', RequirementCategory.Opening),
+            bucket(RequirementCategory.Tactics),
+            bucket('G', RequirementCategory.Games),
+        ]);
+        expect(sorted.map((b) => b.name)).toEqual([
+            'G',
+            RequirementCategory.Tactics,
+            'O',
+            'M',
+            'E',
+            'Extra',
+        ]);
+    });
+});
+
+describe('getProgressResets', () => {
+    it('lists the plan tasks with a count above 0', () => {
+        const names = Object.fromEntries(FREE_PLAN_CATEGORIES.map((c) => [c, c])) as Record<
+            string,
+            string
+        >;
+        const plan = buildFreePlan('u', 'My Plan', names);
+        plan.buckets[0].taskIds = ['a', 'b'];
+        plan.buckets[1].taskIds = ['c', 'd'];
+        const progress = {
+            a: { requirementId: 'a', counts: { ALL_COHORTS: 4 }, minutesSpent: {}, updatedAt: '' },
+            b: {
+                requirementId: 'b',
+                counts: { ALL_COHORTS: 0 },
+                minutesSpent: { x: 30 },
+                updatedAt: '',
+            },
+            c: { requirementId: 'c', counts: { '1500-1600': 1 }, minutesSpent: {}, updatedAt: '' },
+            outside: {
+                requirementId: 'outside',
+                counts: { ALL_COHORTS: 9 },
+                minutesSpent: {},
+                updatedAt: '',
+            },
+        } as unknown as User['progress'];
+        expect(getProgressResets(plan, progress)).toEqual([
+            { requirementId: 'a', previousCount: 4 },
+            { requirementId: 'c', previousCount: 1 },
+        ]);
     });
 });
 

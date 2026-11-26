@@ -1,6 +1,5 @@
 import { ChessDojoIcon } from '@/style/ChessDojoIcon';
 import {
-    CheckCircle,
     Checklist,
     EditNote,
     Groups,
@@ -10,7 +9,7 @@ import {
     Whatshot,
     WorkspacePremium,
 } from '@mui/icons-material';
-import { alpha, Box, Button, Card, Chip, Grid, Stack, Typography } from '@mui/material';
+import { alpha, Box, Button, Card, Grid, Stack, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { ReactNode } from 'react';
 import { FreePlanSwitch } from './FreePlanSwitch';
@@ -36,7 +35,7 @@ export function StarterPlanComplete({
 }) {
     const t = useTranslations('profile.trainingPlan.freePlan');
     const tStats = useTranslations('landing.hero.stats');
-    const { openCustomPlan } = useFreePlanEditor();
+    const { createPlan } = useFreePlanEditor();
 
     const stats: StatTileProps[] = [
         {
@@ -68,43 +67,32 @@ export function StarterPlanComplete({
     return (
         <Card
             variant='outlined'
-            sx={{ width: 1, borderRadius: 3, p: { xs: 2.5, sm: 4 } }}
+            sx={{ width: 1, borderRadius: 3, p: { xs: 2.5, sm: 3 } }}
             data-testid='starter-plan-complete'
         >
-            <Stack spacing={3}>
-                <Stack spacing={1.5} sx={{ alignItems: 'start' }}>
+            <Stack spacing={2}>
+                <Stack spacing={1} sx={{ alignItems: 'start' }}>
                     <Stack
                         direction='row'
-                        sx={{
-                            width: 1,
-                            alignItems: 'center',
-                            flexWrap: 'wrap',
-                            gap: 1,
-                        }}
+                        sx={{ width: 1, alignItems: 'center', flexWrap: 'wrap', gap: 1.5 }}
                     >
-                        <Chip
-                            icon={<CheckCircle />}
-                            label={t('completeEyebrow')}
-                            color='success'
-                            variant='outlined'
-                            size='small'
-                        />
-                        <FreePlanSwitch />
-                    </Stack>
-                    <Stack direction='row' spacing={1.5} sx={{ alignItems: 'center' }}>
                         <ChessDojoIcon
-                            sx={{ fontSize: { xs: '2rem', sm: '2.5rem' }, color: 'primary.main' }}
+                            sx={{ fontSize: { xs: '2rem', sm: '2.25rem' }, color: 'primary.main' }}
                         />
-                        <Typography variant='h4' sx={{ fontWeight: 'bold' }}>
+                        <Typography
+                            variant='h4'
+                            sx={{ fontWeight: 'bold', fontSize: { xs: '1.6rem', md: '1.85rem' } }}
+                        >
                             {t('completeTitle')}
                         </Typography>
+                        <FreePlanSwitch />
                     </Stack>
                     <Typography sx={{ color: 'text.secondary', maxWidth: 640 }}>
                         {t('completeBody')}
                     </Typography>
                 </Stack>
 
-                <Grid container spacing={2}>
+                <Grid container spacing={1.5}>
                     {stats.map((stat) => (
                         <Grid key={stat.label} size={{ xs: 12, sm: 4 }}>
                             <StatTile {...stat} />
@@ -112,7 +100,7 @@ export function StarterPlanComplete({
                     ))}
                 </Grid>
 
-                <Grid container spacing={2}>
+                <Grid container spacing={1.5}>
                     <Grid size={{ xs: 12, md: 6 }}>
                         <OptionCard
                             highlighted
@@ -150,7 +138,7 @@ export function StarterPlanComplete({
                             action={
                                 <Button
                                     variant='outlined'
-                                    onClick={openCustomPlan}
+                                    onClick={createPlan}
                                     fullWidth
                                     data-testid='starter-build-own-button'
                                 >
@@ -180,10 +168,11 @@ interface StatTileProps {
 function StatTile({ icon, color, value, label, detail, detailIcon }: StatTileProps) {
     return (
         <Stack
-            spacing={1.25}
+            spacing={1}
             sx={{
                 height: 1,
-                p: 2,
+                px: 2,
+                py: 1.5,
                 borderRadius: 2,
                 border: 1,
                 borderColor: alpha(color, 0.35),
@@ -192,32 +181,35 @@ function StatTile({ icon, color, value, label, detail, detailIcon }: StatTilePro
                 overflow: 'hidden',
             }}
         >
-            <Box
-                sx={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color,
-                    backgroundColor: alpha(color, 0.18),
-                    boxShadow: `0 0 0 4px ${alpha(color, 0.06)}`,
-                }}
-            >
-                {icon}
-            </Box>
-            <Box>
-                <Typography
-                    variant='h4'
-                    sx={{ fontWeight: 800, color, lineHeight: 1.1, letterSpacing: '-0.02em' }}
+            <Stack direction='row' spacing={1.5} sx={{ alignItems: 'center' }}>
+                <Box
+                    sx={{
+                        width: 40,
+                        height: 40,
+                        flexShrink: 0,
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color,
+                        backgroundColor: alpha(color, 0.18),
+                        boxShadow: `0 0 0 4px ${alpha(color, 0.06)}`,
+                    }}
                 >
-                    {value}
-                </Typography>
-                <Typography variant='body2' sx={{ color: 'text.secondary', mt: 0.5 }}>
-                    {label}
-                </Typography>
-            </Box>
+                    {icon}
+                </Box>
+                <Box>
+                    <Typography
+                        variant='h4'
+                        sx={{ fontWeight: 800, color, lineHeight: 1.1, letterSpacing: '-0.02em' }}
+                    >
+                        {value}
+                    </Typography>
+                    <Typography variant='body2' sx={{ color: 'text.secondary' }}>
+                        {label}
+                    </Typography>
+                </Box>
+            </Stack>
             {detail && (
                 <Stack
                     direction='row'
@@ -225,7 +217,7 @@ function StatTile({ icon, color, value, label, detail, detailIcon }: StatTilePro
                     sx={{
                         // Lines up the highlight across tiles of different heights.
                         mt: 'auto !important',
-                        pt: 1,
+                        pt: 0.5,
                         alignItems: 'center',
                         color,
                         '& svg': { fontSize: '1rem' },
@@ -258,7 +250,7 @@ function OptionCard({
 }) {
     return (
         <Stack
-            spacing={2}
+            spacing={1.5}
             sx={{
                 height: 1,
                 p: 2.5,
@@ -274,7 +266,7 @@ function OptionCard({
                 </Typography>
             </Stack>
             <Typography sx={{ color: 'text.secondary' }}>{body}</Typography>
-            <Stack component='ul' spacing={0.75} sx={{ m: 0, pl: 2.5, flexGrow: 1 }}>
+            <Stack component='ul' spacing={0.5} sx={{ m: 0, pl: 2.5, flexGrow: 1 }}>
                 {bullets.map((b) => (
                     <Typography component='li' key={b} variant='body2'>
                         {b}

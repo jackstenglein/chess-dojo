@@ -264,6 +264,7 @@ function DailyTrainingPlanInternal({
     endDate: string;
     extraTaskIds: Set<string>;
 }) {
+    const t = useTranslations('profile.trainingPlan.daily');
     const { suggestionsByDay, user, skippedTaskIds, allRequirements, pinnedTasks, activePlan } =
         use(TrainingPlanContext);
     const suggestedTasks = useMemo(() => suggestionsByDay[new Date().getDay()], [suggestionsByDay]);
@@ -288,6 +289,9 @@ function DailyTrainingPlanInternal({
         setTaskDialogView(view);
     };
 
+    // A custom plan with no tasks yet has nothing to schedule.
+    const isEmptyPlan = !!activePlan && activePlan.buckets.every((b) => b.taskIds.length === 0);
+
     const onCloseTask = () => {
         setSelectedTask(undefined);
         setTaskDialogView(undefined);
@@ -308,6 +312,15 @@ function DailyTrainingPlanInternal({
                     progress={user.progress[selectedTask.id]}
                     cohort={user.dojoCohort}
                 />
+            )}
+
+            {isEmptyPlan && (
+                <Typography
+                    sx={{ color: 'text.primary', fontWeight: 500, py: 1, pl: 1 }}
+                    data-testid='daily-empty-plan'
+                >
+                    {t('emptyPlan')}
+                </Typography>
             )}
 
             <Grid container sx={{ width: 1 }} columnSpacing={2} rowSpacing={2}>
