@@ -160,14 +160,6 @@ export function MarkdownEditor({
                 >
                     <BlogContainer>
                         <Header title={title} subtitle={subtitle} />
-                        {coverImage && (
-                            <Box
-                                component='img'
-                                src={coverImage}
-                                alt={title ?? ''}
-                                sx={{ width: '100%', borderRadius: 2, mb: 3 }}
-                            />
-                        )}
 
                         {value.trim() ? (
                             <BlogMarkdown>{value}</BlogMarkdown>
