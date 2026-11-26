@@ -346,29 +346,37 @@ export function StarterTrainingPlan({
             {allDone && (
                 <Card variant='outlined' sx={dailyCardSx(true)} data-testid='starter-plan-done'>
                     <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
-                        <Stack
-                            direction={{ xs: 'column', md: 'row' }}
-                            sx={{ alignItems: { xs: 'start', sm: 'center' }, gap: 2 }}
-                        >
+                        <Stack direction='row' sx={{ alignItems: 'start', gap: 2 }}>
                             <EmojiEvents color='success' sx={{ fontSize: '2.25rem' }} />
-                            <Stack spacing={0.5} sx={{ flexGrow: 1 }}>
-                                <Typography sx={{ fontWeight: 700, fontSize: '1.1rem' }}>
-                                    {t('complete.title')}
-                                </Typography>
-                                <Typography variant='body2' color='text.secondary'>
-                                    {t('complete.description')}
-                                </Typography>
-                            </Stack>
-                            <Button
-                                variant='contained'
-                                color='success'
-                                disableElevation
-                                loading={request.isLoading()}
-                                onClick={() => void onFinish()}
-                                sx={dailyPrimaryButtonSx}
+                            <Stack
+                                sx={{
+                                    gap: 1.5,
+                                    flexGrow: 1,
+                                    alignItems: { xs: 'stretch', sm: 'start' },
+                                }}
                             >
-                                {t('continue')}
-                            </Button>
+                                <Stack spacing={0.5}>
+                                    <Typography sx={{ fontWeight: 700, fontSize: '1.1rem' }}>
+                                        {t('complete.title')}
+                                    </Typography>
+                                    <Typography variant='body2' color='text.secondary'>
+                                        {t('complete.description')}
+                                    </Typography>
+                                </Stack>
+                                <Button
+                                    variant='contained'
+                                    color='success'
+                                    size='large'
+                                    disableElevation
+                                    endIcon={<ArrowForward />}
+                                    loading={request.isLoading()}
+                                    onClick={() => void onFinish()}
+                                    sx={{ textTransform: 'none', fontWeight: 600 }}
+                                    data-testid='starter-continue-button'
+                                >
+                                    {t('continue')}
+                                </Button>
+                            </Stack>
                         </Stack>
                     </CardContent>
                 </Card>
