@@ -122,3 +122,27 @@ export function deleteBlogComment(
         functionName: 'deleteBlogComment',
     });
 }
+
+/** Uploads an image to permanent blog storage. */
+export async function uploadBlogImage(file: File): Promise<string> {
+    const data = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result).split(',')[1]);
+        reader.onerror = () => reject(new Error('Could not read image'));
+        reader.readAsDataURL(file);
+    });
+    const response = await axiosService.post<{ url: string }>(
+        '/blog/images',
+        { contentType: file.type, data },
+        { functionName: 'uploadBlogImage' },
+    );
+    return response.data.url;
+}
+
+/** Permanently deletes a stored blog and its comments. Requires admin access. */
+export function deleteBlog({ owner, id }: GetBlogRequest): Promise<AxiosResponse<GetBlogRequest>> {
+    return axiosService.delete<GetBlogRequest>(
+        `/blog/${encodeURIComponent(owner)}/${id.split('/').map(encodeURIComponent).join('/')}`,
+        { functionName: 'deleteBlog' },
+    );
+}
