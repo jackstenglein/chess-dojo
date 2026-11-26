@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
@@ -78,7 +77,7 @@ func (repo *dynamoRepository) getItem(input *dynamodb.GetItemInput, out any) err
 // which must be a non-nil pointer to a slice. startKey is an optional parameter that can be used to perform
 // pagination. The next startKey is returned. If startKey cannot be unmarshalled, a 400 error is returned.
 // All other errors result in a 500.
-func (repo *dynamoRepository) query(input *dynamodb.QueryInput, startKey string, out interface{}) (string, error) {
+func (repo *dynamoRepository) query(input *dynamodb.QueryInput, startKey string, out any) (string, error) {
 	if startKey != "" {
 		var exclusiveStartKey map[string]*dynamodb.AttributeValue
 		err := json.Unmarshal([]byte(startKey), &exclusiveStartKey)
@@ -112,7 +111,7 @@ func (repo *dynamoRepository) query(input *dynamodb.QueryInput, startKey string,
 // must be a non-nil pointer to a slice. startKey is an optional parameter that can be used to perform pagination.
 // The next startKey is returned. If startKey cannot be unmarshalled, a 400 error is returned. All other errors
 // result in a 500.
-func (repo *dynamoRepository) scan(input *dynamodb.ScanInput, startKey string, out interface{}) (string, error) {
+func (repo *dynamoRepository) scan(input *dynamodb.ScanInput, startKey string, out any) (string, error) {
 	if startKey != "" {
 		var exclusiveStartKey map[string]*dynamodb.AttributeValue
 		err := json.Unmarshal([]byte(startKey), &exclusiveStartKey)
@@ -191,7 +190,7 @@ func (repo *dynamoRepository) batchWrite(reqs []*dynamodb.WriteRequest, tableNam
 		RequestItems: map[string][]*dynamodb.WriteRequest{
 			tableName: reqs,
 		},
-		ReturnConsumedCapacity: aws.String("NONE"),
+		ReturnConsumedCapacity: new("NONE"),
 	}
 
 	output, err := repo.svc.BatchWriteItem(input)
@@ -206,7 +205,7 @@ func (repo *dynamoRepository) batchWrite(reqs []*dynamodb.WriteRequest, tableNam
 
 // handles sending a DynamoDB UpdateItem request using the provided input. The result is unmarshaled
 // into the provided output value, which must be a non-nil pointer.
-func (repo *dynamoRepository) updateItem(input *dynamodb.UpdateItemInput, out interface{}) error {
+func (repo *dynamoRepository) updateItem(input *dynamodb.UpdateItemInput, out any) error {
 	result, err := repo.svc.UpdateItem(input)
 	if err != nil {
 		return err

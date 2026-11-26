@@ -4,10 +4,11 @@ import { Api as BoardApi } from '@lichess-org/chessground/api';
 import { Config } from '@lichess-org/chessground/config';
 import { DrawShape } from '@lichess-org/chessground/draw';
 import { Color, Key } from '@lichess-org/chessground/types';
-import { Box, Button, Dialog, DialogContent, Stack } from '@mui/material';
+import { Box } from '@mui/material';
 import { RefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { Resizable, ResizeCallbackData } from 'react-resizable';
 import { useLocalStorage } from 'usehooks-ts';
+import { PromotionDialog, type PrePromotionMove } from './PromotionDialog';
 import './board.css';
 import { getBoardSx, getCoordinateSx, getPieceSx } from './boardThemes';
 import { compareNags, getNagGlyph } from './pgn/Nag';
@@ -221,12 +222,6 @@ export function checkPromotion(
     onMove(board, chess, { orig, dest });
 }
 
-interface PrePromotionMove {
-    orig: Square;
-    dest: Square;
-    color: Color;
-}
-
 export interface PrimitiveMove {
     orig: Square;
     dest: Square;
@@ -252,30 +247,13 @@ interface BoardProps {
     onMove?: onMoveFunc;
 }
 
-const promotionPieces = [
-    {
-        key: 'q',
-        name: 'queen',
-    },
-    {
-        key: 'n',
-        name: 'knight',
-    },
-    {
-        key: 'r',
-        name: 'rook',
-    },
-    {
-        key: 'b',
-        name: 'bishop',
-    },
-] as const;
-
 const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, onMove }) => {
-    const { chess, config: chessConfig } = useChess();
+    const { chess, config: chessConfig, slotProps, orientation } = useChess();
     const [board, setBoard] = useState<BoardApi | null>(null);
     const boardRef = useRef<HTMLDivElement>(null);
-    const [isInitialized, setIsInitialized] = useState(false);
+    // Last initialized key, fen and pgn. A ref rather than state, so a changed
+    // position re-initializes in the same commit, before parent effects redraw.
+    const initialized = useRef<{ initKey?: string; fen?: string; pgn?: string } | null>(null);
     const [promotion, setPromotion] = useState<PrePromotionMove | null>(null);
     const [boardStyle] = useLocalStorage<BoardStyle>(BoardStyleKey, BoardStyle.Standard);
     const [pieceStyle] = useLocalStorage<PieceStyle>(PieceStyleKey, PieceStyle.Standard);
@@ -285,7 +263,7 @@ const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, 
     );
     const [coordinateSize] = useLocalStorage<CoordinateSize>(
         CoordinateSizeKey,
-        CoordinateSize.Standard,
+        slotProps?.board?.defaultCoordinateSize ?? CoordinateSize.Standard,
     );
     const [showLegalMoves] = useLocalStorage(ShowLegalMovesKey, true);
     const [showGlyphs] = useLocalStorage(ShowGlyphsKey, false);
@@ -319,12 +297,23 @@ const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, 
         reconcile(chess, board, showGlyphs, playSound);
     }, [board, chess, showGlyphs, playSound]);
 
+    const fen = config?.fen;
+    const pgn = config?.pgn;
+    const initKey = chessConfig?.initKey;
+
     useEffect(() => {
+        const needsInit =
+            !initialized.current ||
+            initialized.current.initKey !== initKey ||
+            initialized.current.fen !== fen ||
+            initialized.current.pgn !== pgn;
+
         if (boardRef.current && !board) {
             const chessgroundApi = Chessground(boardRef.current, config);
+            chessgroundApi.set({ addDimensionsCssVarsTo: boardRef.current });
             setBoard(chessgroundApi);
             window.chessground = chessgroundApi;
-        } else if (boardRef.current && board && chess && !isInitialized) {
+        } else if (boardRef.current && board && chess && needsInit) {
             if (config?.pgn) {
                 chess.loadPgn(config.pgn);
                 chess.seek(null);
@@ -334,6 +323,9 @@ const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, 
 
             board.set({
                 ...config,
+                // Loading a position must not animate, or the pieces fly in from
+                // the default position or from the previous one.
+                animation: { enabled: false },
                 fen: chess.fen(),
                 turnColor: config?.turnColor || toColor(chess),
                 movable: {
@@ -365,19 +357,22 @@ const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, 
             });
 
             onInitialize?.(board, chess, boardRef);
-            setIsInitialized(true);
-        } else if (boardRef.current && board && !isInitialized) {
+            // onInitialize may load a position too, so re-enable animation after it.
+            board.set({ animation: { enabled: true, ...config?.animation } });
+            initialized.current = { initKey, fen, pgn };
+        } else if (boardRef.current && board && needsInit) {
             board.set({ ...config });
             onInitializeBoard?.(board);
-            setIsInitialized(true);
+            initialized.current = { initKey, fen, pgn };
         }
     }, [
         boardRef,
         board,
         chess,
         config,
-        isInitialized,
-        setIsInitialized,
+        initKey,
+        fen,
+        pgn,
         onMove,
         onInitialize,
         onInitializeBoard,
@@ -386,15 +381,6 @@ const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, 
         showGlyphs,
         playSound,
     ]);
-
-    const fen = config?.fen;
-    const pgn = config?.pgn;
-    const initKey = chessConfig?.initKey;
-    useEffect(() => {
-        if (initKey || fen || pgn) {
-            setIsInitialized(false);
-        }
-    }, [initKey, fen, pgn, setIsInitialized]);
 
     useEffect(() => {
         if (chess && board) {
@@ -460,29 +446,16 @@ const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, 
             <div
                 data-testid='chessground-board'
                 ref={boardRef}
-                style={{ width: '100%', height: '100%' }}
-            />
-
-            <Dialog open={promotion !== null} onClose={onCancelPromotion}>
-                <DialogContent>
-                    <Stack direction='row'>
-                        {promotionPieces.map((piece) => (
-                            <Button key={piece.key} onClick={() => onFinishPromotion(piece.key)}>
-                                <Box
-                                    sx={{
-                                        width: '75px',
-                                        aspectRatio: 1,
-                                        backgroundSize: 'cover',
-                                        backgroundImage: promotion
-                                            ? pieceSx[`--${promotion.color}-${piece.name}`]
-                                            : '',
-                                    }}
-                                />
-                            </Button>
-                        ))}
-                    </Stack>
-                </DialogContent>
-            </Dialog>
+                style={{ width: '100%', height: '100%', position: 'relative' }}
+            >
+                <PromotionDialog
+                    promotion={promotion}
+                    orientation={orientation}
+                    onFinishPromotion={onFinishPromotion}
+                    onCancelPromotion={onCancelPromotion}
+                    pieceSx={pieceSx}
+                />
+            </div>
         </Box>
     );
 };

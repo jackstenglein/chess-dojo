@@ -6,11 +6,13 @@ import {
     WifiProtectedSetup as Flip,
     LastPage,
 } from '@mui/icons-material';
-import { IconButton, Stack, Tooltip } from '@mui/material';
+import { IconButton, IconButtonProps, Stack, Tooltip } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { useLocalStorage } from 'usehooks-ts';
 import { useReconcile } from '../../../Board';
 import { useChess } from '../../PgnBoard';
+import { solitaireBlocksAction } from '../../solitaire/solitaireFrontier';
+import { ShortcutAction } from '../underboard/settings/ShortcutAction';
 import {
     GoToEndButtonBehavior,
     GoToEndButtonBehaviorKey,
@@ -22,7 +24,7 @@ const ControlButtons = () => {
         GoToEndButtonBehaviorKey,
         GoToEndButtonBehavior.SingleClick,
     );
-    const { chess, toggleOrientation, solitaire } = useChess();
+    const { chess, solitaire } = useChess();
     const reconcile = useReconcile();
 
     const onClickMove = (move: Move | null) => {
@@ -41,27 +43,21 @@ const ControlButtons = () => {
     };
 
     const onNextMove = () => {
-        if (
-            solitaire?.enabled &&
-            !solitaire.complete &&
-            chess?.currentMove() === solitaire.currentMove
-        ) {
+        if (!chess || solitaireBlocksAction(ShortcutAction.NextMove, chess, solitaire)) {
             return;
         }
 
-        const nextMove = chess?.nextMove();
+        const nextMove = chess.nextMove();
         if (nextMove) {
             onClickMove(nextMove);
         }
     };
 
     const onLastMove = () => {
-        if (solitaire?.enabled && !solitaire.complete) {
+        if (!chess || solitaireBlocksAction(ShortcutAction.LastMove, chess, solitaire)) {
             return;
         }
-        if (chess) {
-            onClickMove(chess.lastMove());
-        }
+        onClickMove(chess.lastMove());
     };
 
     return (
@@ -124,15 +120,25 @@ const ControlButtons = () => {
                 </Tooltip>
             )}
 
-            {toggleOrientation && (
-                <Tooltip title={t('flipBoard')}>
-                    <IconButton aria-label={t('flipBoardAria')} onClick={toggleOrientation}>
-                        <Flip sx={{ color: 'text.secondary' }} />
-                    </IconButton>
-                </Tooltip>
-            )}
+            <FlipBoardButton />
         </Stack>
     );
 };
 
 export default ControlButtons;
+
+export function FlipBoardButton(props: IconButtonProps) {
+    const t = useTranslations('analysisBoard.boardButtons');
+    const { toggleOrientation } = useChess();
+    if (!toggleOrientation) {
+        return null;
+    }
+
+    return (
+        <Tooltip title={t('flipBoard')}>
+            <IconButton {...props} aria-label={t('flipBoardAria')} onClick={toggleOrientation}>
+                <Flip sx={{ color: 'text.secondary' }} />
+            </IconButton>
+        </Tooltip>
+    );
+}

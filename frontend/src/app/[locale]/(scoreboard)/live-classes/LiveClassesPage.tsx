@@ -35,7 +35,7 @@ const SAMPLE_CLASSES: Partial<LiveClass>[] = [
         recordings: [{ date: '2026-03-15', s3Key: SAMPLE_LIVE_CLASS_S3_KEY }],
     },
     {
-        name: 'Starting Out in the Najdorf',
+        name: 'Game & Profile Review',
         type: SubscriptionTier.GameReview,
         cohortRange: '1000-1500',
         description: `GM Jesse Kraai reviews a Dojo member's first game in the Najdorf.`,

@@ -1,6 +1,6 @@
 import { expect, Locator, Page, test } from '@playwright/test';
 import { getEnv } from '../../../lib/env';
-import { interceptApi } from '../../../lib/helpers';
+import { interceptApi, useUserOverride } from '../../../lib/helpers';
 import { dateMapper, Event } from '../../../lib/utils';
 import { events as initialEvents } from './events';
 
@@ -19,7 +19,7 @@ function fixEventDates(events: Event[]) {
     });
 }
 
-const events = fixEventDates(initialEvents);
+const events: Event[] = fixEventDates(initialEvents);
 
 /** Desktop sidebar filters (mobile drawer keeps a hidden duplicate in the DOM). */
 function visibleFilters(page: Page): Locator {
@@ -44,6 +44,7 @@ test.describe('Calendar Page', () => {
             statusCode: 200,
             body: { events },
         });
+        await useUserOverride(page, { dojoCohort: '1500-1600', timezoneOverride: 'Etc/GMT+0' });
         await page.goto('/calendar');
         await expect(visibleFilters(page)).toBeVisible();
     });

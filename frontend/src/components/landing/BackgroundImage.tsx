@@ -1,13 +1,15 @@
-import { Box, Container, SxProps } from '@mui/material';
+import { Box, Container, ContainerProps, SxProps } from '@mui/material';
 import Image from 'next/image';
 import { CSSProperties, type JSX } from 'react';
 
 export function BackgroundImageContainer({
+    id,
     src,
     background,
     children,
     slotProps,
 }: {
+    id?: string;
     src: string;
     background: string;
     children: JSX.Element | JSX.Element[];
@@ -18,15 +20,18 @@ export function BackgroundImageContainer({
         };
         container?: {
             sx?: SxProps;
+            maxWidth?: ContainerProps['maxWidth'];
         };
     };
 }) {
     return (
         <Box
+            id={id}
             sx={{
                 position: 'relative',
                 overflow: 'hidden',
                 background,
+                scrollMarginTop: { xs: 0, md: 'var(--navbar-height)' },
             }}
         >
             <Image
@@ -44,7 +49,7 @@ export function BackgroundImageContainer({
             />
 
             <Container
-                maxWidth='lg'
+                maxWidth={slotProps?.container?.maxWidth ?? 'lg'}
                 sx={{ py: '5.5rem', position: 'relative', zIndex: 1, ...slotProps?.container?.sx }}
             >
                 {children}

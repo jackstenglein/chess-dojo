@@ -1,7 +1,7 @@
 import { renderWithIntl } from '@/i18n/intl.test';
 import { LocalizationProvider } from '@mui/x-date-pickers-pro';
 import { AdapterLuxon } from '@mui/x-date-pickers-pro/AdapterLuxon';
-import { cleanup, fireEvent, screen, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import SearchFilters from './SearchFilters';
 
@@ -93,8 +93,15 @@ beforeEach(() => {
     searchParamsState.value = '';
     authState.user = { dojoCohort: '1500-1600' };
     authState.isFreeTier = false;
+    localStorage.clear();
     vi.clearAllMocks();
 });
+
+/** Calls the position search passed to onSearch at the given call index. */
+function searchPositionPage(onSearch: ReturnType<typeof vi.fn>, call: number, startKey: string) {
+    const searchFunc = onSearch.mock.calls[call][0] as (startKey: string) => unknown;
+    searchFunc(startKey);
+}
 
 afterEach(cleanup);
 
@@ -223,15 +230,61 @@ describe('SearchFilters search on mount', () => {
         searchParamsState.value = 'type=position&fen=8/8/8/8/8/8/8/K6k w - - 0 1';
         const { onSearch } = renderFilters();
 
-        const searchFunc = onSearch.mock.calls[0][0] as (startKey: string) => unknown;
-        searchFunc('25');
+        searchPositionPage(onSearch, 0, '25');
 
         expect(searchGames).not.toHaveBeenCalled();
         expect(api.listGamesByPosition).toHaveBeenCalledWith(
             '8/8/8/8/8/8/8/K6k w - - 0 1',
             false,
             '25',
+            undefined,
         );
+    });
+
+    it('searches masters games newest first, and again oldest first when sorted by Played ascending', () => {
+        searchParamsState.value = 'type=position&fen=8/8/8/8/8/8/8/K6k w - - 0 1&masters=true';
+        const { onSearch } = renderFilters();
+        const searches = onSearch.mock.calls.length;
+
+        searchPositionPage(onSearch, 0, '25');
+        expect(api.listGamesByPosition).toHaveBeenLastCalledWith(
+            '8/8/8/8/8/8/8/K6k w - - 0 1',
+            true,
+            '25',
+            { sortDirection: 'desc' },
+        );
+
+        act(() => {
+            const key = '/GameTable/games-list-page/sortModel';
+            localStorage.setItem(key, JSON.stringify([{ field: 'date', sort: 'asc' }]));
+            window.dispatchEvent(new StorageEvent('storage', { key }));
+        });
+
+        expect(onSearch).toHaveBeenCalledTimes(searches + 1);
+        searchPositionPage(onSearch, searches, '');
+        expect(api.listGamesByPosition).toHaveBeenLastCalledWith(
+            '8/8/8/8/8/8/8/K6k w - - 0 1',
+            true,
+            '',
+            { sortDirection: 'asc' },
+        );
+    });
+
+    it.each([
+        ['player', 'white=carlsen'],
+        ['dojo position', 'type=position&fen=8/8/8/8/8/8/8/K6k w - - 0 1'],
+    ])('does not search %s games again when the table is sorted by Played', (_name, params) => {
+        searchParamsState.value = params;
+        const { onSearch } = renderFilters();
+        const searches = onSearch.mock.calls.length;
+
+        act(() => {
+            const key = '/GameTable/games-list-page/sortModel';
+            localStorage.setItem(key, JSON.stringify([{ field: 'date', sort: 'asc' }]));
+            window.dispatchEvent(new StorageEvent('storage', { key }));
+        });
+
+        expect(onSearch).toHaveBeenCalledTimes(searches);
     });
 });
 

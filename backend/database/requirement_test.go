@@ -134,7 +134,7 @@ func TestCalculateScore(t *testing.T) {
 					"1500-1600": 10,
 				},
 			},
-			want: 5,
+			want: 3.5,
 		},
 	}
 

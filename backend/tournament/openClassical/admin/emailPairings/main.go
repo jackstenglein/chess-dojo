@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api"
@@ -111,10 +110,10 @@ func sendPairingEmail(section *database.OpenClassicalSection, pairing *database.
 
 	var emails []*string
 	if e := strings.TrimSpace(white.Email); e != "" {
-		emails = append(emails, aws.String(e))
+		emails = append(emails, new(e))
 	}
 	if e := strings.TrimSpace(black.Email); e != "" {
-		emails = append(emails, aws.String(e))
+		emails = append(emails, new(e))
 	}
 
 	timeControl := "60+30"
@@ -168,9 +167,9 @@ func sendPairingEmail(section *database.OpenClassicalSection, pairing *database.
 		Destination: &ses.Destination{
 			BccAddresses: emails,
 		},
-		Source:       aws.String("ChessDojo Open Classical <openclassical@mail.chessdojo.club>"),
-		Template:     aws.String("openClassicalPairing"),
-		TemplateData: aws.String(string(templateDataStr)),
+		Source:       new("ChessDojo Open Classical <openclassical@mail.chessdojo.club>"),
+		Template:     new("openClassicalPairing"),
+		TemplateData: new(string(templateDataStr)),
 	}
 	if _, err := Ses.SendTemplatedEmail(input); err != nil {
 		log.Errorf("Failed to send templated email: %v", err)

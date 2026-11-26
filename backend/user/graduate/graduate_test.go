@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	stderrors "errors"
 	"fmt"
+	"maps"
 	"testing"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -217,15 +218,11 @@ func cloneUser(user *database.User) *database.User {
 			progressCopy := *progress
 			if progress.Counts != nil {
 				progressCopy.Counts = make(map[database.DojoCohort]int, len(progress.Counts))
-				for cohort, count := range progress.Counts {
-					progressCopy.Counts[cohort] = count
-				}
+				maps.Copy(progressCopy.Counts, progress.Counts)
 			}
 			if progress.MinutesSpent != nil {
 				progressCopy.MinutesSpent = make(map[database.DojoCohort]int, len(progress.MinutesSpent))
-				for cohort, minutes := range progress.MinutesSpent {
-					progressCopy.MinutesSpent[cohort] = minutes
-				}
+				maps.Copy(progressCopy.MinutesSpent, progress.MinutesSpent)
 			}
 			result.Progress[id] = &progressCopy
 		}

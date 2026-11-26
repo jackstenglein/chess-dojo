@@ -49,7 +49,7 @@ import {
 } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { useNavigationGuard } from 'next-navigation-guard';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 export const MAX_PROFILE_PICTURE_SIZE_MB = 9;
 
@@ -159,6 +159,8 @@ export function ProfileEditorPage({ user }: { user: User }) {
     const t = useTranslations('profile.editor');
     const tRating = useTranslations('enums.ratingSystem');
 
+    const [savedUser, setSavedUser] = useState(user);
+
     const [displayName, setDisplayName] = useState(user.displayName || '');
     const [dojoCohort, setDojoCohort] = useState(
         user.dojoCohort !== 'NO_COHORT' ? user.dojoCohort : '',
@@ -180,20 +182,21 @@ export function ProfileEditorPage({ user }: { user: User }) {
     const [profilePictureData, setProfilePictureData] = useState<string>();
 
     const [errors, setErrors] = useState<Record<string, string>>({});
-    const [bypassGuard, setBypassGuard] = useState(false);
+    const postSaveNavigationRef = useRef<{ language?: string } | undefined>(undefined);
     const request = useRequest<string>();
 
     const personalUpdate = getUpdate(
-        user,
+        savedUser,
         {
             displayName: displayName.trim(),
-            bio: bio === '' && user.bio === undefined ? undefined : bio,
-            coachBio: coachBio === '' && user.coachBio === undefined ? undefined : coachBio,
+            bio: bio === '' && savedUser.bio === undefined ? undefined : bio,
+            coachBio: coachBio === '' && savedUser.coachBio === undefined ? undefined : coachBio,
             timezoneOverride:
-                timezone === DefaultTimezone && !user.timezoneOverride
-                    ? user.timezoneOverride
+                timezone === DefaultTimezone && !savedUser.timezoneOverride
+                    ? savedUser.timezoneOverride
                     : timezone,
-            language: language === DEFAULT_LOCALE && !user.language ? user.language : language,
+            language:
+                language === DEFAULT_LOCALE && !savedUser.language ? savedUser.language : language,
         },
         profilePictureData,
     );
@@ -201,16 +204,17 @@ export function ProfileEditorPage({ user }: { user: User }) {
     const personalChangesMade = Boolean(personalUpdate);
 
     const ratingsUpdate = getUpdate(
-        user,
+        savedUser,
         {
             dojoCohort: dojoCohort === '' ? 'NO_COHORT' : dojoCohort,
             ratingSystem,
             ratings:
-                JSON.stringify(ratingEditors) === JSON.stringify(getRatingEditors(user.ratings))
-                    ? user.ratings
+                JSON.stringify(ratingEditors) ===
+                JSON.stringify(getRatingEditors(savedUser.ratings))
+                    ? savedUser.ratings
                     : getRatingsFromEditors(ratingEditors),
             enableZenMode:
-                !enableZenMode && user.enableZenMode === undefined ? undefined : enableZenMode,
+                !enableZenMode && savedUser.enableZenMode === undefined ? undefined : enableZenMode,
         },
         undefined,
     );
@@ -218,12 +222,12 @@ export function ProfileEditorPage({ user }: { user: User }) {
     const ratingsChangesMade = Boolean(ratingsUpdate);
 
     const notificationsUpdate = getUpdate(
-        user,
+        savedUser,
         {
             notificationSettings:
                 JSON.stringify(notificationSettings) ===
-                JSON.stringify(user.notificationSettings || {})
-                    ? user.notificationSettings
+                JSON.stringify(savedUser.notificationSettings || {})
+                    ? savedUser.notificationSettings
                     : notificationSettings,
         },
         undefined,
@@ -231,8 +235,7 @@ export function ProfileEditorPage({ user }: { user: User }) {
 
     const notificationsChangesMade = Boolean(notificationsUpdate);
 
-    const hasUnsavedChanges =
-        !bypassGuard && (personalChangesMade || ratingsChangesMade || notificationsChangesMade);
+    const hasUnsavedChanges = personalChangesMade || ratingsChangesMade || notificationsChangesMade;
 
     const navGuard = useNavigationGuard({
         enabled: hasUnsavedChanges,
@@ -250,6 +253,36 @@ export function ProfileEditorPage({ user }: { user: User }) {
         return () => window.removeEventListener('beforeunload', handleBeforeUnload);
     }, [hasUnsavedChanges]);
 
+    useEffect(() => {
+        const postSaveNavigation = postSaveNavigationRef.current;
+        if (!postSaveNavigation) {
+            return;
+        }
+
+        if (hasUnsavedChanges) {
+            if (!postSaveNavigation.language) {
+                postSaveNavigationRef.current = undefined;
+            }
+            return;
+        }
+
+        postSaveNavigationRef.current = undefined;
+        if (postSaveNavigation.language) {
+            setLocaleCookie(postSaveNavigation.language);
+            // Hard reload on language change so the server re-renders
+            // the tree with the new locale's messages bundle. Soft
+            // navigation leaves some client components holding on to
+            // the previous locale's messages (the language changes
+            // only after a second switch), so force a full fetch.
+            window.location.href =
+                postSaveNavigation.language === DEFAULT_LOCALE
+                    ? '/profile'
+                    : `/${postSaveNavigation.language}/profile`;
+        } else {
+            router.push('/profile');
+        }
+    }, [hasUnsavedChanges, router, savedUser]);
+
     const saveSection = (updatePayload: Partial<UserUpdate>) => {
         request.onStart();
         api.updateUser(updatePayload)
@@ -258,28 +291,18 @@ export function ProfileEditorPage({ user }: { user: User }) {
                 trackEvent(EventType.EditProfile, {
                     fields: Object.keys(updatePayload),
                 });
-                setUserProperties({ ...user, ...updatePayload });
+                const updatedUser = { ...savedUser, ...updatePayload };
+                setSavedUser(updatedUser);
+                setUserProperties(updatedUser);
 
                 if (updatePayload.profilePictureData !== undefined) {
                     setImageBypass(Date.now());
-                }
-                if (updatePayload.language) {
-                    setLocaleCookie(updatePayload.language);
-                    // Hard reload on language change so the server re-renders
-                    // the tree with the new locale's messages bundle. Soft
-                    // navigation leaves some client components holding on to
-                    // the previous locale's messages (the language changes
-                    // only after a second switch), so force a full fetch.
-                    window.location.href =
-                        updatePayload.language === DEFAULT_LOCALE
-                            ? '/profile'
-                            : `/${updatePayload.language}/profile`;
-                } else {
-                    router.push('/profile');
+                    setProfilePictureData(undefined);
                 }
 
-                setBypassGuard(true);
-                router.push('/profile');
+                postSaveNavigationRef.current = {
+                    language: updatePayload.language ?? postSaveNavigationRef.current?.language,
+                };
             })
             .catch((err) => {
                 request.onFailure(err);
@@ -300,10 +323,11 @@ export function ProfileEditorPage({ user }: { user: User }) {
     };
 
     const onCancelPersonal = () => {
-        setDisplayName(user.displayName || '');
-        setBio(user.bio || '');
-        setCoachBio(user.coachBio || '');
-        setTimezone(user.timezoneOverride || DefaultTimezone);
+        setDisplayName(savedUser.displayName || '');
+        setBio(savedUser.bio || '');
+        setCoachBio(savedUser.coachBio || '');
+        setTimezone(savedUser.timezoneOverride || DefaultTimezone);
+        setLanguage(savedUser.language || DEFAULT_LOCALE);
         setProfilePictureUrl(undefined);
         setProfilePictureData(undefined);
         setErrors({});
@@ -356,10 +380,10 @@ export function ProfileEditorPage({ user }: { user: User }) {
     };
 
     const onCancelRatings = () => {
-        setDojoCohort(user.dojoCohort !== 'NO_COHORT' ? user.dojoCohort : '');
-        setRatingSystem(user.ratingSystem);
-        setRatingEditors(getRatingEditors(user.ratings));
-        setEnableZenMode(user.enableZenMode || false);
+        setDojoCohort(savedUser.dojoCohort !== 'NO_COHORT' ? savedUser.dojoCohort : '');
+        setRatingSystem(savedUser.ratingSystem);
+        setRatingEditors(getRatingEditors(savedUser.ratings));
+        setEnableZenMode(savedUser.enableZenMode || false);
         setErrors({});
     };
 
@@ -372,7 +396,7 @@ export function ProfileEditorPage({ user }: { user: User }) {
     };
 
     const onCancelNotifications = () => {
-        setNotificationSettings(user.notificationSettings || {});
+        setNotificationSettings(savedUser.notificationSettings || {});
         setErrors({});
     };
 
@@ -514,6 +538,7 @@ export function ProfileEditorPage({ user }: { user: User }) {
                                 }}
                             >
                                 <Button
+                                    data-testid='save-personal-button'
                                     variant='contained'
                                     onClick={onSavePersonal}
                                     disabled={!personalChangesMade}
@@ -556,6 +581,7 @@ export function ProfileEditorPage({ user }: { user: User }) {
                                 }}
                             >
                                 <Button
+                                    data-testid='save-ratings-button'
                                     variant='contained'
                                     onClick={onSaveRatings}
                                     disabled={!ratingsChangesMade}
@@ -601,6 +627,7 @@ export function ProfileEditorPage({ user }: { user: User }) {
                                 </Button>
 
                                 <Button
+                                    data-testid='cancel-notifications-button'
                                     variant='contained'
                                     color='error'
                                     disableElevation

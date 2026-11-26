@@ -7,6 +7,7 @@ import (
 	"io"
 	"math/rand"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
@@ -73,7 +74,9 @@ type LichessResponse struct {
 }
 
 type EcfResponse struct {
-	Rating int `json:"revised_rating"`
+	Data struct {
+		Rating int `json:"revised_rating"`
+	} `json:"data"`
 }
 
 type CfcResponse struct {
@@ -285,6 +288,35 @@ func FetchBulkLichessRatings(lichessUsernames []string) (map[string]LichessRespo
 	return result, nil
 }
 
+type lichessFideResponse struct {
+	Standard int `json:"standard"`
+}
+
+// FetchFideRating returns the current standard rating of the player with the given ID.
+// It uses the Lichess API to fetch the rating.
+// See https://lichess.org/api#tag/fide/GET/api/fide/player/{playerId}
+func FetchFideRating(id string) (*database.Rating, error) {
+	resp, err := client.Get(fmt.Sprintf("%s/api/fide/player/%s", lichessHost, id))
+	if err != nil {
+		err = errors.Wrap(500, "Internal server error", "Failed to get FIDE rating", err)
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		err = errors.New(400, fmt.Sprintf("Invalid request: lichess API returned status `%d` for FIDE ID `%s`", resp.StatusCode, id), "")
+		return nil, err
+	}
+
+	var rating lichessFideResponse
+	if err := json.NewDecoder(resp.Body).Decode(&rating); err != nil {
+		err = errors.Wrap(500, "Internal server error", "Failed to read lichess FIDE API response", err)
+		return nil, err
+	}
+
+	return &database.Rating{CurrentRating: rating.Standard}, nil
+}
+
 func findRating(body []byte, regex *regexp.Regexp) (int, error) {
 	groups := regex.FindSubmatch(body)
 	if len(groups) < 2 {
@@ -338,12 +370,25 @@ func FetchUscfRating(uscfId string) (*database.Rating, error) {
 	}, nil
 }
 
+// Matches ECF codes written with a check letter (e.g. 388159D), which the API rejects.
+var ecfCodeRegexp = regexp.MustCompile(`^(\d{6})[A-Za-z]$`)
+
 func FetchEcfRating(ecfId string) (*database.Rating, error) {
-	resp, err := client.Get(fmt.Sprintf("https://rating.englishchess.org.uk/v2/new/api.php?v2/ratings/S/%s/%s", ecfId, time.Now().Format(time.DateOnly)))
+	if m := ecfCodeRegexp.FindStringSubmatch(ecfId); m != nil {
+		ecfId = m[1]
+	}
+
+	query := url.Values{
+		"player_no": {ecfId},
+		"domain":    {"S"},
+		"date":      {time.Now().Format(time.DateOnly)},
+	}
+	resp, err := client.Get("https://rating.englishchess.org.uk/api/ratings?" + query.Encode())
 	if err != nil {
 		err = errors.Wrap(500, "Temporary server error", "Failed call to ECF API", err)
 		return nil, err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
 		err = errors.New(ratingResponseErrorCode(resp.StatusCode), fmt.Sprintf("Invalid request: ECF API returned status `%d`", resp.StatusCode), "")
@@ -355,8 +400,11 @@ func FetchEcfRating(ecfId string) (*database.Rating, error) {
 		err = errors.Wrap(500, "Temporary server error", "Failed to parse ECF API response", err)
 		return nil, err
 	}
+	if rating.Data.Rating == 0 {
+		return nil, errors.New(500, "Temporary server error", "ECF API response did not include a rating")
+	}
 
-	return &database.Rating{CurrentRating: rating.Rating}, nil
+	return &database.Rating{CurrentRating: rating.Data.Rating}, nil
 }
 
 func FetchCfcRating(cfcId string) (*database.Rating, error) {

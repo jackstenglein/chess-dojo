@@ -10,6 +10,7 @@ import { DirectoryCacheProvider } from '@/components/profile/directories/Directo
 import { getConfig } from '@/config';
 import useGame from '@/context/useGame';
 import { pgnExportOptions, usePgnExportOptions } from '@/hooks/usePgnExportOptions';
+import { stripLocalePrefixFromUrl } from '@/i18n/locales';
 import { Chess } from '@jackstenglein/chess';
 import { GameImportTypes } from '@jackstenglein/chess-dojo-common/src/database/game';
 import { PdfExportRequest } from '@jackstenglein/chess-dojo-common/src/pgn/export';
@@ -139,7 +140,7 @@ export function ShareTab() {
     };
 
     const onCopyUrl = () => {
-        void onCopy('url', window.location.href);
+        void onCopy('url', stripLocalePrefixFromUrl(window.location.href));
     };
 
     const onCopyFen = () => {
@@ -159,7 +160,7 @@ export function ShareTab() {
             black: getPlayer(chess, 'Black', 'BlackElo'),
             date: chess.header().getRawValue('Date'),
             lastMove: board?.state.lastMove?.join('') || '',
-            comment: window.location.href,
+            comment: stripLocalePrefixFromUrl(window.location.href),
             theme: boardStyle.toLowerCase(),
             piece:
                 pieceStyle === PieceStyle.ThreeD || pieceStyle === PieceStyle.ThreeDRedBlue
@@ -187,7 +188,7 @@ export function ShareTab() {
             black,
             date: chess.header().getRawValue('Date'),
             orientation: board?.state.orientation || 'white',
-            comment: window.location.href,
+            comment: stripLocalePrefixFromUrl(window.location.href),
             theme: boardStyle.toLowerCase(),
             piece:
                 pieceStyle === PieceStyle.ThreeD || pieceStyle === PieceStyle.ThreeDRedBlue
@@ -313,7 +314,7 @@ export function ShareTab() {
         }
 
         cloneRequest.onStart();
-        chess.setHeader('ClonedFrom', window.location.href);
+        chess.setHeader('ClonedFrom', stripLocalePrefixFromUrl(window.location.href));
         const pgn = renderPgn();
         chess.setHeader('ClonedFrom');
 

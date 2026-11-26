@@ -27,6 +27,8 @@ function AuthModelGamesPage({ user }: { user: User }) {
     const getRequest = useRequest<Game>();
     const [selectedIndex, setSelectedIndex] = useState(0);
     const [cohort, setCohort] = useState(user.dojoCohort);
+    // Stays on screen while the next game loads; getRequest drops its data.
+    const [game, setGame] = useState<Game>();
 
     useEffect(() => {
         if (!listRequest.isSent()) {
@@ -56,6 +58,7 @@ function AuthModelGamesPage({ user }: { user: User }) {
             api.getGame(gameInfo.cohort, gameInfo.id)
                 .then((res) => {
                     getRequest.onSuccess(res.data);
+                    setGame(res.data);
                 })
                 .catch((err) => {
                     getRequest.onFailure(err);
@@ -82,18 +85,18 @@ function AuthModelGamesPage({ user }: { user: User }) {
 
     return (
         <Box sx={{ py: 4, px: 0 }}>
-            {getRequest.isLoading() && (
+            {getRequest.isLoading() && !game && (
                 <Box sx={{ gridArea: 'pgn' }}>
                     <LoadingPage />
                 </Box>
             )}
 
-            {getRequest.data && (
-                <PgnErrorBoundary pgn={getRequest.data.pgn}>
+            {game && (
+                <PgnErrorBoundary pgn={game.pgn}>
                     <PgnBoard
-                        key={getRequest.data.pgn}
-                        pgn={getRequest.data.pgn}
-                        startOrientation={getRequest.data.orientation}
+                        key={game.pgn}
+                        pgn={game.pgn}
+                        startOrientation={game.orientation}
                         disableNullMoves={false}
                         underboardTabs={[
                             {

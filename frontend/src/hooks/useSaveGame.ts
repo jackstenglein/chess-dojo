@@ -17,7 +17,7 @@ import { useSessionStorage } from 'usehooks-ts';
 const STAGED_CREATE_GAME_KEY = 'useSaveGame:stageCreateGame';
 
 export interface UseSaveGameFields {
-    createGame: (req: CreateGameRequest, onNavigate?: () => void) => Promise<void>;
+    createGame: (req: CreateGameRequest, onNavigate?: () => void) => Promise<boolean>;
     updateGame: (req: UpdateGameRequest) => Promise<Game | undefined>;
     setStagedGame: (req: CreateGameRequest) => void;
     stagedGame: CreateGameRequest | null;
@@ -46,8 +46,10 @@ export default function useSaveGame(): UseSaveGameFields {
                 request.onSuccess(`Created ${response.data.count} games`);
             }
             setStagedGame(null);
+            return true;
         } catch (err) {
             request.onFailure(err);
+            return false;
         }
     };
 

@@ -13,10 +13,12 @@ interface CommentEditorProps<T, CreateFunctionProps> {
     onSuccess: (item: T) => void;
     label?: string;
     tooltip?: string;
+    /** A single small field with no avatar, to sit inline in a row of actions. */
+    compact?: boolean;
 }
 
 function CommentEditor<T, CreateFunctionProps>(props: CommentEditorProps<T, CreateFunctionProps>) {
-    const { createFunctionProps, createFunction, onSuccess, label, tooltip } = props;
+    const { createFunctionProps, createFunction, onSuccess, label, tooltip, compact } = props;
 
     const t = useTranslations('comments');
     const { user } = useAuth();
@@ -46,15 +48,17 @@ function CommentEditor<T, CreateFunctionProps>(props: CommentEditorProps<T, Crea
             direction='row'
             spacing={1}
             sx={{
-                alignItems: 'start',
+                alignItems: compact ? 'center' : 'start',
                 width: 1,
             }}
         >
             <RequestSnackbar request={request} />
 
-            <Avatar user={user} size={40} />
+            {!compact && <Avatar user={user} size={40} />}
             <TextField
-                label={label || t('addComment')}
+                label={compact ? undefined : label || t('addComment')}
+                placeholder={compact ? label || t('addComment') : undefined}
+                size={compact ? 'small' : undefined}
                 fullWidth
                 multiline
                 value={comment}
@@ -63,13 +67,14 @@ function CommentEditor<T, CreateFunctionProps>(props: CommentEditorProps<T, Crea
             />
 
             {request.isLoading() ? (
-                <div style={{ alignSelf: 'end' }}>
-                    <CircularProgress size={40} />
+                <div style={{ alignSelf: compact ? 'center' : 'end' }}>
+                    <CircularProgress size={compact ? 24 : 40} />
                 </div>
             ) : (
                 <Tooltip title={tooltip || t('postComment')}>
-                    <div style={{ alignSelf: 'end' }}>
+                    <div style={{ alignSelf: compact ? 'center' : 'end' }}>
                         <IconButton
+                            size={compact ? 'small' : undefined}
                             onClick={onSubmit}
                             disabled={comment.trim() === ''}
                             color='primary'

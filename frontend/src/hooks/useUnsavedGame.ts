@@ -45,9 +45,10 @@ export function useUnsavedGame(chessProp?: Chess) {
             req.directory = undefined;
         }
 
-        await createGame(req, onNavigate).then(() => {
+        const success = await createGame(req, onNavigate);
+        if (success) {
             setShowDialog(false);
-        });
+        }
     };
 
     return {

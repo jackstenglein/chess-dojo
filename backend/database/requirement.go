@@ -2,9 +2,9 @@ package database
 
 import (
 	"math"
+	"slices"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 )
 
@@ -440,19 +440,19 @@ type RequirementScanner interface {
 func (repo *dynamoRepository) fetchScoreboardRequirements(cohort DojoCohort, startKey string) ([]*Requirement, string, error) {
 	// We use a query here since only the ACTIVE requirements should be displayed on the scoreboard.
 	input := &dynamodb.QueryInput{
-		KeyConditionExpression: aws.String("#status = :active"),
+		KeyConditionExpression: new("#status = :active"),
 		ExpressionAttributeNames: map[string]*string{
-			"#status":  aws.String("status"),
-			"#display": aws.String("scoreboardDisplay"),
-			"#counts":  aws.String("counts"),
-			"#cohort":  aws.String(string(cohort)),
+			"#status":  new("status"),
+			"#display": new("scoreboardDisplay"),
+			"#counts":  new("counts"),
+			"#cohort":  new(string(cohort)),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":active": {S: aws.String(string(Active))},
-			":hidden": {S: aws.String(string(Hidden))},
+			":active": {S: new(string(Active))},
+			":hidden": {S: new(string(Hidden))},
 		},
-		FilterExpression: aws.String("#display <> :hidden AND attribute_exists(#counts.#cohort)"),
-		TableName:        aws.String(requirementTable),
+		FilterExpression: new("#display <> :hidden AND attribute_exists(#counts.#cohort)"),
+		TableName:        new(requirementTable),
 	}
 
 	var requirements []*Requirement
@@ -467,13 +467,13 @@ func (repo *dynamoRepository) fetchScoreboardRequirements(cohort DojoCohort, sta
 // hidden from the scoreboard are returned.
 func (repo *dynamoRepository) ScanRequirements(cohort DojoCohort, startKey string) ([]*Requirement, string, error) {
 	input := &dynamodb.ScanInput{
-		TableName: aws.String(requirementTable),
+		TableName: new(requirementTable),
 	}
 
 	if cohort != "" {
 		input.SetExpressionAttributeNames(map[string]*string{
-			"#counts": aws.String("counts"),
-			"#cohort": aws.String(string(cohort)),
+			"#counts": new("counts"),
+			"#cohort": new(string(cohort)),
 		})
 		input.SetFilterExpression("attribute_exists(#counts.#cohort)")
 	}
@@ -501,13 +501,13 @@ func (repo *dynamoRepository) GetRequirement(id string) (*Requirement, error) {
 	input := &dynamodb.GetItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
 			"status": {
-				S: aws.String(string(Active)),
+				S: new(string(Active)),
 			},
 			"id": {
-				S: aws.String(id),
+				S: new(id),
 			},
 		},
-		TableName: aws.String(requirementTable),
+		TableName: new(requirementTable),
 	}
 
 	requirement := Requirement{}
@@ -519,12 +519,7 @@ func (repo *dynamoRepository) GetRequirement(id string) (*Requirement, error) {
 
 // IsDeletedRequirement returns true if the given id is the id of a deleted requirement.
 func IsDeletedRequirement(id string) bool {
-	for _, req := range deletedRequirements {
-		if id == req {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(deletedRequirements, id)
 }
 
 var deletedRequirements = []string{

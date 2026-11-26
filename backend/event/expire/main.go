@@ -36,7 +36,7 @@ func handler(ctx context.Context, event events.DynamoDBEvent) error {
 }
 
 // unmarshalStreamImage converts events.DynamoDBAttributeValue to struct
-func unmarshalStreamImage(attribute map[string]events.DynamoDBAttributeValue, out interface{}) error {
+func unmarshalStreamImage(attribute map[string]events.DynamoDBAttributeValue, out any) error {
 	dbAttrMap := make(map[string]*dynamodb.AttributeValue)
 
 	for k, v := range attribute {

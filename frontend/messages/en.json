@@ -130,6 +130,8 @@
         },
         "trainingPlan": {
             "common": {
+                "pinned": "Pinned",
+                "close": "Close",
                 "cancel": "Cancel",
                 "save": "Save",
                 "update": "Update",
@@ -137,11 +139,12 @@
                 "show": "Show",
                 "taskDetails": "Task Details",
                 "showHistory": "Show History",
-                "updateProgress": "Update Progress",
+                "logTraining": "Log Training",
                 "viewTaskDetails": "View task details",
                 "skipForWeek": "Skip for the rest of the week",
                 "pinToDaily": "Pin to Daily Tasks",
                 "unpinFromDaily": "Unpin from Daily Tasks",
+                "editPin": "Edit pin",
                 "hours": "Hours",
                 "minutes": "Minutes",
                 "date": "Date",
@@ -149,17 +152,55 @@
                 "commentsPlaceholder": "Optional comments about your progress or the task itself. Visible to others on the newsfeed.",
                 "mustBeNumeric": "Only numeric characters are accepted",
                 "mustBeInteger": "This field must be an integer",
-                "fieldRequired": "This field is required"
+                "fieldRequired": "This field is required",
+                "moreActions": "More actions"
+            },
+            "pin": {
+                "description": "Choose the days you'll work on this task and for how long. Suggested tasks only fill the time left in your day.",
+                "days": "Days",
+                "timePerDay": "Time each day",
+                "perDay": "Set per day",
+                "overbooked": "Your pinned tasks go over your planned time on {days}.",
+                "unpin": "Unpin",
+                "pin": "Pin",
+                "overbookedDay": "{day} is overbooked: pinned tasks take {allocated}, but you planned {goal}.",
+                "raiseGoal": "Plan {time} for {day}",
+                "trimTasks": "Trim tasks to {time}"
             },
             "inputSlider": {
                 "decrement": "Decrement",
                 "increment": "Increment",
-                "progressCount": "Progress count",
+                "progressCount": "Progress",
                 "count": "Count"
+            },
+            "verbs": {
+                "read": "Read",
+                "watch": "Watch",
+                "solve": "Solve",
+                "study": "Study",
+                "play": "Play",
+                "spar": "Spar",
+                "annotate": "Annotate",
+                "review": "Review",
+                "guide": "Read guide"
+            },
+            "quickLog": {
+                "logTraining": "Log training",
+                "logTooltip": "Log progress and time for this task",
+                "undo": "Undo"
             },
             "daily": {
                 "today": "Today",
-                "progressCompleted": "{current} / {total} {suffix} completed"
+                "summary": "{done} of {total} tasks done · {worked} of {goal}",
+                "allDone": "Done for today · {worked} logged",
+                "goalMet": "Time goal met",
+                "skippedHeading": "Skipped this week ({count})",
+                "restore": "Restore {name}",
+                "skippedToast": "Skipped {name} for the rest of the week",
+                "swapTooltip": "Swap for another {category} task",
+                "swapNone": "No other {category} tasks to swap in",
+                "swapHeading": "Swap for another {category} task",
+                "swapped": "Swapped {from} for {to}"
             },
             "weekly": {
                 "thisWeek": "This Week",
@@ -171,7 +212,15 @@
                 "Fri": "Fri",
                 "Sat": "Sat",
                 "activeOnlyTooltip": "Only show tasks you have updated this week",
-                "activeOnlyLabel": "Active Only"
+                "activeOnlyLabel": "Active Only",
+                "empty": "Nothing planned this week.",
+                "cellPlanned": "Planned: {goal}",
+                "cellPartial": "{worked} of {goal} so far",
+                "cellDone": "Done: {worked} of {goal}",
+                "cellMissed": "Missed: {worked} of {goal}",
+                "cellExtra": "Extra: {worked} logged, not planned",
+                "restDay": "Rest day",
+                "partialTime": "{worked} / {goal}"
             },
             "full": {
                 "heading": "Full Training Plan",
@@ -186,16 +235,12 @@
                 "addCustomTask": "Add Custom Task",
                 "unlockTasks": "{count, plural, =1 {Unlock # more task by upgrading to a full account} other {Unlock # more tasks by upgrading to a full account}}",
                 "viewPrices": "View Prices",
-                "nextGraduation": "Next graduation: from {cohort} to {nextCohort}",
-                "reachRatingToUnlock": "Reach the required rating for your cohort to unlock graduation",
                 "renewTooltip": "It's time for you to renew this task!",
                 "renewLabel": "Renew",
                 "minimumReachedTooltip": "You've reached the minimum, keep going!",
                 "minimumReachedLabel": "Minimum Reached",
                 "checkboxAriaLabel": "Checkbox {name}",
-                "updateAriaLabel": "Update {name}",
-                "graduateName": "Graduate from {cohort}",
-                "graduateDescription": "Move to the next cohort and get featured in the graduation show."
+                "updateAriaLabel": "Update {name}"
             },
             "graduation": {
                 "title": "Graduate from {cohort}?",
@@ -203,6 +248,117 @@
                 "commentsLabel": "Optionally add comments on what was most helpful about the program, what could be improved, etc. This will be visible to all other members of the Dojo.",
                 "graduate": "Graduate",
                 "success": "Congratulations! You have successfully graduated!"
+            },
+            "starter": {
+                "title": "Tutorial",
+                "planName": "Dojo Training Plan",
+                "subtitle": "Three short stages to learn how training works here. Everything you complete carries over to your full training plan, which unlocks when you finish.",
+                "progress": "{done} of {total} tasks done",
+                "stepNumber": "Step {number}",
+                "stepProgress": "{done} of {total} done",
+                "steps": {
+                    "welcome": {
+                        "title": "Complete the Welcome to the Dojo tasks",
+                        "description": "Short intro tasks that show you around the Dojo."
+                    },
+                    "classicalGame": {
+                        "title": "Play 1 classical game",
+                        "description": "Play a slow game, online or over the board. Classical games are the heart of the Dojo training program.",
+                        "timeControl": "Suggested time control: {timeControl} or longer"
+                    },
+                    "annotateGame": {
+                        "title": "Annotate 1 game",
+                        "description": "Import one of your games and go through it before using an engine. Note what you were thinking, your key decisions and your mistakes."
+                    },
+                    "dojoRush": {
+                        "title": "Try the Dojo Rush trainer",
+                        "description": "Solve as many puzzles as you can against the clock. This step ticks off by itself after your first run."
+                    },
+                    "masterGame": {
+                        "title": "Study 1 master game",
+                        "description": "Go through one classical game from your cohort's master games study. Look for the plans and ideas behind the moves."
+                    },
+                    "endgameAlgorithm": {
+                        "title": "Play 1 endgame algorithm position",
+                        "description": "Play the first position of your cohort's first endgame algorithm until you can win it. The time you spend carries over to the full algorithm."
+                    }
+                },
+                "actions": {
+                    "details": "Details",
+                    "markDone": "Mark completed",
+                    "undo": "Undo",
+                    "minutesSpent": "{minutes} min",
+                    "importGame": "Import a game",
+                    "viewTournaments": "View tournaments",
+                    "startRush": "Start Dojo Rush",
+                    "firstPosition": "{name}, position 1",
+                    "completed": "Completed",
+                    "playBot": "Play bot"
+                },
+                "markDone": {
+                    "title": "Mark task completed",
+                    "minutesLabel": "Minutes spent",
+                    "minutesHelper": "Roughly how long it took. It's added to your training time when you finish the starter plan.",
+                    "minutesInvalid": "Enter a whole number of minutes.",
+                    "save": "Mark completed",
+                    "cancel": "Cancel"
+                },
+                "complete": {
+                    "title": "Starter plan complete!",
+                    "description": "Nice work. When you continue, everything you did here is checked off in your full training plan."
+                },
+                "continue": "Continue to the full training plan",
+                "locked": {
+                    "title": "Full training plan locked",
+                    "description": "Finish the starter plan to unlock your full training plan. Everything you mark done here will be checked off for you."
+                },
+                "skip": "Already know the Dojo? Skip to the full training plan",
+                "welcomeKinds": {
+                    "guide": {
+                        "label": "Guide",
+                        "action": "Read the guide"
+                    },
+                    "video": {
+                        "label": "Video",
+                        "action": "Watch"
+                    },
+                    "community": {
+                        "label": "Community",
+                        "action": "Join"
+                    },
+                    "task": {
+                        "label": "Task",
+                        "action": "Open"
+                    }
+                },
+                "botGame": {
+                    "completed": "Starter plan step completed!",
+                    "backToPlan": "Back to plan"
+                },
+                "sensei": {
+                    "name": "Sensei Jesse",
+                    "greeting": "Welcome to the Dojo! I'm Sensei Jesse. Before you start your full training plan, let's make sure you know your way around. Finish these three stages and I'll see you on the other side."
+                },
+                "stages": {
+                    "welcome": {
+                        "title": "Welcome",
+                        "description": "Get to know the Dojo and the community."
+                    },
+                    "training": {
+                        "title": "Train",
+                        "description": "Try the kinds of training you will do every week."
+                    },
+                    "games": {
+                        "title": "Games & Analysis",
+                        "description": "Play a slow game, then learn from it."
+                    }
+                },
+                "stageNumber": "Stage {number}",
+                "suggestion": {
+                    "title": "New to Dojo? Start here",
+                    "description": "A short tutorial that shows you how training works here. Anything you have already done stays completed.",
+                    "start": "Start here"
+                }
             },
             "graduationTask": {
                 "title": "Graduate from {cohort}",
@@ -289,8 +445,14 @@
                 "deleteAriaLabel": "delete"
             },
             "progressUpdater": {
+                "totalTimeChange": "Total {before} → {after}",
+                "timeSpent": "Time spent",
+                "removeTime": "Remove 5 minutes",
+                "minutesShort": "min",
+                "lastCompleted": "Last {unit} completed",
+                "doneOf": "{done} of {total} done",
+                "addTime": "Add 5 minutes",
                 "markComplete": "Mark as Completed?",
-                "totalTime": "Total Time: {hours}h {minutes}m",
                 "largeTimeWarning": "You're adding a lot of time! Please double-check your input before saving."
             },
             "scheduleGame": {
@@ -312,12 +474,11 @@
                 "countRequired": "This field is required",
                 "countNumeric": "Only numeric characters are accepted",
                 "countMinOne": "At least one game is required",
-                "deleteEntry": "Delete"
+                "deleteEntry": "Delete",
+                "scheduleAction": "Schedule"
             },
             "taskDialog": {
-                "historyTitle": "{name} History",
-                "addTimeTitle": "Add time to {name}?",
-                "updateTitle": "Update {name}?",
+                "historyCaption": "History",
                 "locked": "Locked",
                 "completed": "Completed",
                 "editTask": "Edit Task",
@@ -348,7 +509,7 @@
                 "taskLockedUntil": "This task is locked until you complete {category} - {name}."
             },
             "miniScoreboard": {
-                "heading": "Mini Scoreboard",
+                "heading": "Scoreboard",
                 "type": "Type",
                 "dojoScore": "Dojo Score",
                 "trainingTime": "Training Time",
@@ -407,15 +568,16 @@
             "goal": "Goal",
             "goalPoints": "{value} {value, plural, =1 {point} other {points}}",
             "goalHours": "{value} {value, plural, =1 {hour} other {hours}}",
-            "popOutView": "Pop out view",
             "classicalGames": "Classical Games (Past Year)",
             "nextGraduation": "Next graduation: from {cohort} to {nextCohort}",
             "allTasks": "All Tasks",
+            "progressTitle": "Progress",
             "metrics": "Metrics",
             "tacticsRating": "Tactics Rating",
             "tacticsRatingTooltip": "For U1700, this is a combination of progress in Polgar Mates, Puzzle Rush 5 min and Puzzle Rush Survival. For 1700-2100, this is a combination of Polgar Mates, Puzzle Rush Survival and the Dojo Tactics Test. For 2100+, this is based solely on the Dojo Tactics Test.",
             "close": "close",
             "pastYear": "in the past year",
+            "timeManagement": "Time Management",
             "chip": {
                 "coach": "Coach",
                 "coachTooltip": "This member is a Dojo coach",
@@ -462,6 +624,19 @@
                 "noActivity": "No recent activity from your follows or cohort."
             },
             "heatmap": {
+                "yearlyTotals": "Yearly totals",
+                "year": "Year",
+                "total": "Total",
+                "loadingHistory": "Loading your training history…",
+                "historyError": "Couldn't load your training history.",
+                "noTimeLogged": "No time logged yet.",
+                "lastTwelveMonths": "Last 12 Months: {total}",
+                "legend": "What the colors mean",
+                "settings": "Heatmap settings",
+                "title": "Heatmap",
+                "dailyGoal": "Daily goal {time}",
+                "nothingLogged": "Nothing logged this day",
+                "dayTotal": "Total {time}",
                 "weekdaySun": "Sun",
                 "weekdayMon": "Mon",
                 "weekdayTue": "Tue",
@@ -567,6 +742,9 @@
             "freeTierPrivate": "Free-tier users cannot create private folders",
             "share": "Share",
             "shareTitle": "Share {name}?",
+            "subscriptionTiers": "Also share with subscription tiers (optional)",
+            "subscriptionTiersDescription": "Give Viewer access to everyone on a selected tier. Leave all unchecked to share only with specific people.",
+            "subscriptionTiersPrivateWarning": "Saving will make this public folder private. Its owner, people with access, and members of the selected tiers will be able to view it.",
             "copyLink": "Copy Link",
             "addPeople": "Add people",
             "searchUsers": "Search for users...",
@@ -597,6 +775,7 @@
             "whenPlayWhite": "When You Play White",
             "whenPlayBlack": "When You Play Black",
             "normalizedRatingTooltip": "The rating normalized to the Dojo system",
+            "timeManagementTooltip": "Calculated from games in this folder that include clock times.",
             "performanceByCohort": "Performance by Opponent Cohort",
             "colOpponentCohort": "Opponent Cohort",
             "colPerformance": "Performance",
@@ -952,21 +1131,66 @@
         "signUp": "Sign Up",
         "joinTheDojo": "Join the Dojo",
         "hero": {
-            "title": "Got Mated?\nTime to join ChessDojo!",
-            "subtitle": "A chess training plan for every level and a community to do it with.",
+            "eyebrow": "Got Mated? Time to join ChessDojo.",
+            "title": "Your personal training program",
+            "subtitle": "ChessDojo provides a training plan tailored to your skill level and a community to train with.",
             "exploreProgram": "Explore the Program",
-            "ratingPoints": "Since its launch in 2022, ChessDojo members have gained more than <strong>186,000</strong> rating points."
+            "imageAlt": "Image of ChessDojo senseis",
+            "stats": {
+                "ratingPoints": {
+                    "value": "200,000+",
+                    "label": "Rating points gained"
+                },
+                "graduations": {
+                    "value": "4,700+",
+                    "label": "Graduations"
+                },
+                "hours": {
+                    "value": "99,800+",
+                    "label": "Training hours logged"
+                }
+            }
         },
         "features": {
-            "heading": "ChessDojo can take you from 0-2400+ with our innovative training plan and features"
+            "heading": "A plan from 0 to 2400+",
+            "subheading": "Daily tasks, hand-picked material, and progress that isn't just rating.",
+            "imageAlt": "The ChessDojo training plan showing daily tasks and progress tracking",
+            "tiles": {
+                "dailyTasks": {
+                    "title": "Daily and weekly tasks",
+                    "description": "The Dojo algorithm tells you what to work on today and this week."
+                },
+                "progressTracking": {
+                    "title": "Progress, not just rating",
+                    "description": "Track training hours, games, and milestones—not only your rating."
+                },
+                "openingSpy": {
+                    "title": "Opening Repertoire Spy",
+                    "description": "Prep your openings against the players you actually face."
+                },
+                "annotatedGames": {
+                    "title": "Annotated games",
+                    "description": "An extensive database of games with notes from Dojo members."
+                }
+            }
         },
         "testimonialSection": {
             "heading": "Our program has a proven\ntrack record of success",
-            "subheading": "Hear from our members"
+            "subheading": "Hear from our members",
+            "previous": "Previous testimonial",
+            "next": "Next testimonial",
+            "goTo": "Show testimonial {index}"
         },
         "communitySection": {
             "heading": "You don't have to improve alone",
-            "description": "When you join ChessDojo, you become part of a thriving community of chess improvers from beginner to Grandmaster"
+            "description": "When you join ChessDojo, you become part of a thriving community of chess improvers from beginner to Grandmaster",
+            "imageAlt": "ChessDojo training community"
+        },
+        "liveClasses": {
+            "eyebrow": "Live classes",
+            "heading": "Learn live with the senseis",
+            "subheading": "Weekly workshops on calculation, endgames, and openings, plus smaller Game & Profile Review seminars.",
+            "viewAll": "View all classes"
         },
         "pricing": {
             "cta": "Start Getting Better at Chess Today",
@@ -988,24 +1212,55 @@
             "jesse": {
                 "title": "Grandmaster",
                 "name": "Jesse Kraai",
-                "bio": "GM Kraai has been playing and teaching chess since deep in the last millennium. He became a GM in 2007 by consistently examining his games, a pillar of the ChessDojo Training Program. He's played in seven US Championships and scored clear second in the 2024 US Senior Closed. When not chessing he herds two smallish children and finds time to lift heavy things."
+                "quote": "He became a GM in 2007 by consistently examining his games.",
+                "bio": "GM Kraai has been playing and teaching chess since deep in the last millennium. He's played in seven US Championships and scored clear second in the 2024 US Senior Closed."
             },
             "kostya": {
                 "title": "International Master",
                 "name": "Kostya Kavutskiy",
-                "bio": "Kostya earned the IM title at the age of 24 and has been teaching chess to all levels and ages for over 15 years. He previously served as a coach for the United States at several World Youth & Pan-American Championships, with multiple students earning gold medals. Kostya is also a published author and has produced several popular courses for Chess.com, Chessable, and other sites."
+                "quote": "A coach for the United States at World Youth and Pan-American Championships.",
+                "bio": "Kostya earned the IM title at 24 and has taught chess to all levels for over 15 years. He is a published author and has produced popular courses for Chess.com and Chessable."
             },
             "david": {
                 "title": "International Master",
                 "name": "David Pruess",
-                "bio": "David is a chess maximalist, never shying away from what he believes is the most principled path forward. With this madman approach, he attained the rank of International Master in 2003 and then in 2006 he won the prestigious Samford Chess Fellowship. He has all three Grandmaster norms and just needs to cross 2500 to reach the title. David helped design the ChessDojo Training Program with the dream that he could cross that difficult 2500 barrier using its guidance and structure."
+                "quote": "He helped design the Training Program to cross the 2500 barrier.",
+                "bio": "David became an IM in 2003 and won the Samford Chess Fellowship in 2006. He has all three Grandmaster norms and helped design the ChessDojo Training Program."
+            }
+        },
+        "faq": {
+            "title": "Frequently asked questions",
+            "longGames": {
+                "title": "Do I need to play long games?",
+                "content": "Yes. You need the competitive pressure of long thinking in a classical game to hone your skills, and you need that game to review afterward. Blitz and rapid don't give you a game you can analyze deeply."
+            },
+            "startFree": {
+                "title": "Can I start for free?",
+                "content": "Yes. Free membership includes basic training plans and a limited game database. Upgrade anytime to unlock the full program, community, and courses."
+            },
+            "cohorts": {
+                "title": "How do cohorts work?",
+                "content": "You're grouped with players at your rating. Your cohort is who you spar with, study with, and stay accountable to — mainly on Discord. The training plan is self-paced; graduate when your rating crosses the next threshold."
+            },
+            "cancel": {
+                "title": "How do I cancel?",
+                "content": "You can cancel anytime from the profile editor after you sign in. Access continues until the end of the billing period."
             }
         },
         "footer": {
             "chessDojo": "ChessDojo",
+            "product": "Product",
+            "company": "Company",
+            "features": "Features",
+            "liveClasses": "Live Classes",
+            "pricing": "Pricing",
+            "senseis": "Senseis",
             "blog": "Blog",
+            "help": "Help",
             "contactUs": "Contact Us",
-            "donate": "Donate to the Dojo"
+            "donate": "Donate to the Dojo",
+            "privacy": "Privacy",
+            "signIn": "Sign In"
         },
         "trainingPlan": {
             "dailyTasks": "Get daily and weekly tasks with the Dojo smart algorithm",
@@ -1410,7 +1665,9 @@
         "myCohort": "My Cohort",
         "graduations": "Graduations",
         "viewAll": "View All",
+        "comment": "Comment",
         "showPostsFrom": "Show Posts From",
+        "showMyPosts": "Show my posts",
         "categories": "Categories",
         "allCategories": "All Categories",
         "annotations": "Annotations",
@@ -1419,6 +1676,8 @@
         "completedRequirement": "Completed <strong>{name}</strong>",
         "updated": "Updated",
         "updatedRequirement": "Updated <strong>{name}</strong>",
+        "dojoPointsGained": "+{count} Dojo Points",
+        "markedNotDone": "Marked not done",
         "dojoPoints": "Dojo Points:",
         "totalTime": "Total Time:",
         "customTask": "Custom Task",
@@ -1437,7 +1696,9 @@
             "players": "Players:",
             "date": "Date:",
             "result": "Result:",
-            "moves": "Moves:"
+            "moves": "Moves:",
+            "versus": "{white} vs {black}",
+            "newAnalysis": "New game analysis"
         },
         "graduation": {
             "graduated": "Graduated from <strong>{oldCohort}</strong> into <strong>{newCohort}</strong>",
@@ -2117,6 +2378,7 @@
         },
         "view": {
             "pgnErrorBoundary": {
+                "copyPgn": "Copy PGN",
                 "invalidPgn": "Invalid PGN",
                 "invalidPgnDescription": "Unfortunately, this game's PGN cannot be displayed by our PGN viewer (see the error message below). This most likely happened due to a malformed PGN. If you manually produced your PGN, it is likely incorrect. If you believe your PGN is correct or are otherwise unable to correct it, please send a Discord DM to @JackStenglein with the link to this page.",
                 "resubmitPgn": "Resubmit PGN",
@@ -3101,6 +3363,90 @@
             "shortcut": "Shortcut: {keys}",
             "nextPuzzle": "Next Puzzle"
         },
+        "rush": {
+            "title": "Dojo Rush",
+            "introTime": "{minutes} minutes",
+            "introStrikes": "{strikes} strikes",
+            "startButton": "Start",
+            "viewHistory": "View Past Runs",
+            "whiteToMove": "White to move",
+            "blackToMove": "Black to move",
+            "correctLabel": "correct",
+            "streakRow": "{streak} in a row!",
+            "endRunButton": "End Run",
+            "runComplete": "Run Complete!",
+            "playAgain": "Play Again",
+            "reviewPuzzles": "Review Puzzles",
+            "retrySave": "Retry Save",
+            "saving": "Saving...",
+            "attemptsHeading": "Puzzles",
+            "attemptsHintSaved": "Click a puzzle to retry it with no time pressure.",
+            "attemptsHintUnsaved": "Once the run is saved, you can click a puzzle to retry it with no time pressure.",
+            "statCorrect": "Correct",
+            "statPercentage": "Accuracy",
+            "statHighestSolved": "Highest Puzzle Solved",
+            "bestAllTime": "All-time best",
+            "bestThisWeek": "This week's best",
+            "bestToday": "Today's best",
+            "indexAllTime": "All time",
+            "indexThisWeek": "This week",
+            "indexToday": "Today",
+            "scoreIndex": "#{index}",
+            "newBestAllTime": "New all-time best",
+            "newBestThisWeek": "New best this week",
+            "newBestToday": "New best today",
+            "totalTime": "Time: {time}",
+            "endReason": {
+                "time": "Time ran out",
+                "strikes": "Out of strikes",
+                "aborted": "Ended early"
+            },
+            "columnPuzzle": "Puzzle",
+            "columnPuzzleRating": "Puzzle Rating",
+            "columnSearchRating": "Level",
+            "columnTime": "Time",
+            "columnResult": "Result",
+            "columnDate": "Date",
+            "columnEndReason": "Ended",
+            "resultCorrect": "Correct",
+            "resultWrong": "Wrong",
+            "reviewTitle": "Dojo Rush Review",
+            "newRun": "New Run",
+            "previous": "Previous",
+            "next": "Next",
+            "puzzleIndex": "Puzzle {index} of {total}",
+            "retryHint": "No timer, no strikes. Take your time and find the mate.",
+            "puzzleId": "Puzzle ID",
+            "originalTime": "Time in Run",
+            "originalResult": "Result in Run",
+            "retryResult": "Retry",
+            "retrySolvedClean": "Solved",
+            "retrySolvedWithMistakes": "Solved after {count, plural, =1 {# mistake} other {# mistakes}}",
+            "originalMoves": "Your moves during the run",
+            "backToRun": "Back to Run",
+            "solved": "Solved!",
+            "nextPuzzle": "Next Puzzle",
+            "historyTitle": "Dojo Rush History",
+            "historyEmpty": "You haven't completed any Dojo Rush runs yet.",
+            "loadMore": "Load More",
+            "incorrectMoveComment": "Incorrect guess",
+            "incorrectMoveCommentDuringRun": "Incorrect guess during the run",
+            "tooltipSettings": "Settings",
+            "prevWrong": "Previous Wrong Puzzle",
+            "nextWrong": "Next Wrong Puzzle",
+            "leaderboardTitle": "Leaderboard",
+            "leaderboardAllTime": "All-time",
+            "leaderboardMonth": "This month",
+            "leaderboardOverall": "Overall",
+            "leaderboardCohort": "Cohort",
+            "leaderboardMonthCaption": "{month} (UTC)",
+            "columnRank": "Rank",
+            "columnPlayer": "Player",
+            "columnScore": "Score",
+            "columnRuns": "Runs",
+            "leaderboardEmpty": "No completed runs yet.",
+            "leaderboardPartial": "Earlier runs are still being added."
+        },
         "squareColors": {
             "title": "Square Color Drill",
             "intro": "You'll see a square name (like \"g7\") and choose whether it's a white or black square.",
@@ -3183,9 +3529,13 @@
         "landing": {
             "tacticsTests": "Tactics Tests",
             "checkmatePuzzles": "Checkmate Puzzles",
+            "puzzleRush": "Dojo Rush",
             "endgameTests": "Endgame Tests",
             "squareColorDrill": "Square Color Drill",
-            "allRatings": "All Ratings"
+            "tacticsForger": "Dojo Tactics Forger",
+            "tacticsForgerDescription": "Tactics, openings and endgames, 400–2000",
+            "allRatings": "All Ratings",
+            "beta": "Beta"
         },
         "tactics": {
             "heading": "Tactics Tests"
@@ -3400,11 +3750,15 @@
             "showCloudDbLabel": "Show Chess Cloud Database evaluation",
             "doneButton": "Done",
             "depthDisplay": "Depth {depth}",
-            "engineDescription_stockfish_18": "Best for desktop",
-            "engineDescription_stockfish_18_lite": "Best for mobile and weaker desktops",
+            "engineDescription_stockfish_19": "Best for desktop",
+            "engineDescription_stockfish_19_lite": "Best for mobile and weaker desktops",
+            "engineDescription_stockfish_18": "Previous version",
+            "engineDescription_stockfish_18_lite": "Previous version for mobile and weaker desktops",
             "engineDescription_stockfish_17": "Previous version",
             "engineDescription_stockfish_16": "Previous version",
             "engineDescription_stockfish_11": "Faster than NNUE but less accurate",
+            "engineTechDescription_stockfish_19": "Evaluation is performed by Stockfish's neural network.",
+            "engineTechDescription_stockfish_19_lite": "Evaluation is performed by a smaller Stockfish neural network.",
             "engineTechDescription_stockfish_18": "Evaluation is performed by Stockfish's neural network.",
             "engineTechDescription_stockfish_18_lite": "Evaluation is performed by a smaller Stockfish neural network.",
             "engineTechDescription_stockfish_17": "Evaluation is performed by Stockfish's neural network.",
@@ -3418,6 +3772,14 @@
             "failedToFetchData": "Failed to fetch data"
         },
         "explorer": {
+            "gameActions": {
+                "insert": "Insert game with citation",
+                "cite": "Cite game",
+                "open": "Open game in new tab",
+                "inserted": "Game inserted.",
+                "cited": "Game cited.",
+                "invalidSource": "Cannot insert this game: its mainline is invalid, empty, or has a different starting position."
+            },
             "columnMove": "Move",
             "columnGames": "Games",
             "columnPerformance": "Performance",
@@ -3545,6 +3907,12 @@
             }
         },
         "boardButtons": {
+            "hideBoardBars": "Hide player bars and controls",
+            "showBoardBars": "Show player bars and controls",
+            "hideLeftPanel": "Hide left panel",
+            "showLeftPanel": "Show left panel",
+            "hideRightPanel": "Hide right panel",
+            "showRightPanel": "Show right panel",
             "firstMove": "First Move",
             "firstMoveAria": "first move",
             "previousMove": "Previous Move",
@@ -3603,6 +3971,8 @@
             "delete": "Delete",
             "deleteMovesTitle": "{count, plural, =1 {Delete # move} other {Delete # moves}}",
             "deleteCommentsAppend": "and {count, plural, =1 {# comment} other {# comments}}",
+            "deletedMoves": "{count, plural, =1 {Deleted # move} other {Deleted # moves}}",
+            "undo": "Undo",
             "settings": {
                 "editorSettingsTitle": "Editor Settings",
                 "clockFieldFormatLabel": "Clock Field Format",
@@ -3651,6 +4021,11 @@
                 "showGlyphsOnBoardLabel": "Show glyphs on board",
                 "scrollOnBoardLabel": "Scroll on board to go to next/previous move",
                 "pgnTextSectionHeader": "PGN Text",
+                "pgnTextFontSizeLabel": "PGN Text Font Size",
+                "pgnTextFontSizeSmall": "Small",
+                "pgnTextFontSizeStandard": "Standard",
+                "pgnTextFontSizeLarge": "Large",
+                "pgnTextFontSizeExtraLarge": "Extra Large",
                 "showElapsedTimeLabel": "Show elapsed time next to move",
                 "displayOtherUsersSuggestionsLabel": "Display other users' suggested variations in PGN text",
                 "engineSectionHeader": "Engine",
@@ -3774,7 +4149,18 @@
                 "keyEscape": "Escape",
                 "keyTab": "Tab",
                 "keyBackspace": "Backspace",
-                "fieldRequired": "This field is required"
+                "fieldRequired": "This field is required",
+                "solitaire": {
+                    "correctSoundLabel": "Play sound on correct move",
+                    "incorrectSoundLabel": "Play sound on incorrect move",
+                    "none": "None",
+                    "bell": "Bell",
+                    "rising5th": "Rising 5th",
+                    "rising6th": "Rising 6th",
+                    "warmChord": "Warm Chord",
+                    "boss": "Bauss",
+                    "buzz": "Buzz"
+                }
             },
             "comments": {
                 "showCommentsLabel": "Show Comments From",
@@ -3954,6 +4340,17 @@
                 "moveTooltip": "Move {value}"
             },
             "tools": {
+                "solitaire": {
+                    "correctSoundLabel": "Play sound on correct move",
+                    "incorrectSoundLabel": "Play sound on incorrect move",
+                    "none": "None",
+                    "bell": "Bell",
+                    "rising5th": "Rising 5th",
+                    "rising6th": "Rising 6th",
+                    "warmChord": "Warm Chord",
+                    "boss": "Bauss",
+                    "buzz": "Buzz"
+                },
                 "solitaireChessTitle": "Solitaire Chess (Guess the Move)",
                 "solitaireChessDescription": "Test your understanding (or memory) of this game by guessing the moves. Starting this mode will hide the PGN text until you correctly pick the next move.",
                 "playAsLabel": "Play As",

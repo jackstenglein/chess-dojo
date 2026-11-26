@@ -24,11 +24,13 @@ import React, {
 import { useLocalStorage } from 'usehooks-ts';
 import { BoardApi, onMoveFunc } from '../Board';
 import ResizableContainer from './ResizableContainer';
+import { UndoDeleteProvider } from './UndoDelete';
 import {
     getUnsavedSuggestedVariationRoots,
     saveSuggestedVariation,
 } from './boardTools/underboard/comments/suggestVariation';
 import { AutoSaveVariations } from './boardTools/underboard/settings/ViewerSettings';
+import { CoordinateSize } from './boardTools/underboard/settings/viewerSettingsConstants';
 import { DefaultUnderboardTab, UnderboardTab } from './boardTools/underboard/underboardTabs';
 import { ButtonProps as MoveButtonProps } from './pgnText/MoveButton';
 import { CONTAINER_ID } from './resize';
@@ -82,28 +84,44 @@ export interface PgnBoardApi {
 
 export interface PgnBoardSlots {
     moveButtonExtras?: React.JSXElementConstructor<MoveButtonProps>;
+    /** Extra items at the end of the menu that opens when a move is right-clicked. */
+    moveMenuItems?: React.JSXElementConstructor<{ move: Move; onClose: () => void }>;
+    /** Shown above the engine and the PGN text, at the top of the PGN panel. */
+    beforePgnText?: JSX.Element;
     afterPgnText?: JSX.Element;
+    /** Pinned under the PGN text, outside its scrolling, so it is always in view. */
+    pgnFooter?: JSX.Element;
+    /** Shown over the middle of the PGN panel, halfway down it. It does not catch clicks. */
+    overPgnText?: JSX.Element;
 }
 
 export interface PgnBoardSlotProps {
     pgnText?: {
         hideResult?: boolean;
+        /** Keep the result, but leave out the line above it. */
+        hideResultDivider?: boolean;
     };
     board?: {
         onMove?: onMoveFunc;
+        /** How big the coordinates are for someone who has not chosen. Standard if not given. */
+        defaultCoordinateSize?: CoordinateSize;
     };
 }
 
 interface PgnBoardProps extends ChessConfig {
+    allowPanelHiding?: boolean;
     underboardTabs: UnderboardTab[];
     initialUnderboardTab?: string;
     rightTabs?: UnderboardTab[];
     initialRightTab?: string;
     tabStorageKeyPrefix?: string;
     sidePanelTabs?: DefaultUnderboardTab[];
+    /** Start with the board as big as the window allows, with narrower side panels. */
+    largeBoard?: boolean;
     pgn?: string;
     fen?: string;
     showPlayerHeaders?: boolean;
+    hideBoardButtons?: boolean;
     startOrientation?: Color;
     onInitialize?: (board: BoardApi, chess: Chess) => void;
     slots?: PgnBoardSlots;
@@ -113,15 +131,18 @@ interface PgnBoardProps extends ChessConfig {
 const PgnBoard = forwardRef<PgnBoardApi, PgnBoardProps>(
     (
         {
+            allowPanelHiding = false,
             underboardTabs,
             initialUnderboardTab,
             rightTabs,
             initialRightTab,
             tabStorageKeyPrefix,
             sidePanelTabs,
+            largeBoard,
             pgn,
             fen,
             showPlayerHeaders = true,
+            hideBoardButtons,
             startOrientation = 'white',
             onInitialize: parentOnInitialize,
             initKey,
@@ -206,6 +227,12 @@ const PgnBoard = forwardRef<PgnBoardApi, PgnBoardProps>(
             navGuard.accept();
         }, [gameContext, navGuard, pendingGameNavigation]);
 
+        useEffect(() => {
+            if ((navGuard.active || pendingGameNavigation) && !hasUnsavedBoardChanges()) {
+                acceptNavigation();
+            }
+        }, [acceptNavigation, hasUnsavedBoardChanges, navGuard.active, pendingGameNavigation]);
+
         const guardedGameContext = useMemo(
             () => ({
                 ...gameContext,
@@ -250,6 +277,7 @@ const PgnBoard = forwardRef<PgnBoardApi, PgnBoardProps>(
                 slotProps: {
                     ...slotProps,
                     board: {
+                        ...slotProps?.board,
                         onMove: slotProps?.board?.onMove
                             ? slotProps.board.onMove
                             : solitaire.enabled
@@ -290,13 +318,15 @@ const PgnBoard = forwardRef<PgnBoardApi, PgnBoardProps>(
             [parentOnInitialize, setBoard],
         );
 
+        // Board applies gameOrientation when it (re)initializes. This syncs the
+        // context and handles an orientation change without a position change.
         const gameOrientation = game?.orientation || startOrientation || 'white';
         useEffect(() => {
-            if (gameOrientation !== board?.state.orientation) {
-                setOrientation(gameOrientation);
-                toggleOrientation();
+            setOrientation(gameOrientation);
+            if (board && gameOrientation !== board.state.orientation) {
+                board.toggleOrientation();
             }
-        }, [gameOrientation, board, toggleOrientation]);
+        }, [gameOrientation, board]);
 
         useEffect(() => {
             // eslint-disable-next-line react-hooks/immutability
@@ -365,21 +395,26 @@ const PgnBoard = forwardRef<PgnBoardApi, PgnBoardProps>(
                     <ChessContext.Provider value={chessContext}>
                         <RequestSnackbar request={autoSaveRequest} />
                         <GameContext.Provider value={guardedGameContext}>
-                            <ResizableContainer
-                                {...{
-                                    underboardTabs,
-                                    initialUnderboardTab,
-                                    rightTabs,
-                                    initialRightTab,
-                                    tabStorageKeyPrefix,
-                                    sidePanelTabs,
-                                    showPlayerHeaders,
-                                    pgn,
-                                    fen,
-                                    startOrientation,
-                                    onInitialize,
-                                }}
-                            />
+                            <UndoDeleteProvider>
+                                <ResizableContainer
+                                    {...{
+                                        allowPanelHiding,
+                                        underboardTabs,
+                                        initialUnderboardTab,
+                                        rightTabs,
+                                        initialRightTab,
+                                        tabStorageKeyPrefix,
+                                        sidePanelTabs,
+                                        largeBoard,
+                                        showPlayerHeaders,
+                                        pgn,
+                                        fen,
+                                        startOrientation: gameOrientation,
+                                        onInitialize,
+                                        hideBoardButtons,
+                                    }}
+                                />
+                            </UndoDeleteProvider>
                         </GameContext.Provider>
                     </ChessContext.Provider>
                 )}
@@ -391,7 +426,11 @@ const PgnBoard = forwardRef<PgnBoardApi, PgnBoardProps>(
                 >
                     <DialogTitle>{t('title')}</DialogTitle>
                     <DialogContent>
-                        {hasUnsavedGameChanges ? t('gameWarning') : t('suggestedVariationWarning')}
+                        {hasUnsavedGameChanges
+                            ? t('gameWarning')
+                            : hasUnsavedSuggestedVariations()
+                              ? t('suggestedVariationWarning')
+                              : null}
                     </DialogContent>
                     <DialogActions>
                         <Button onClick={rejectNavigation}>{t('cancel')}</Button>

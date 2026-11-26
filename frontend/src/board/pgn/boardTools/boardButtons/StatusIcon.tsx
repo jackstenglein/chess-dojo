@@ -4,6 +4,8 @@ import { useApi } from '@/api/Api';
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { useAuth } from '@/auth/Auth';
 import { useReconcile } from '@/board/Board';
+import { restorePgn } from '@/board/pgn/restorePgn';
+import { useUndoDelete } from '@/board/pgn/UndoDelete';
 import { toDojoDateString, toDojoTimeString } from '@/components/calendar/displayDate';
 import useGame from '@/context/useGame';
 import { Game } from '@/database/game';
@@ -40,6 +42,13 @@ interface UndoLog {
     pgn: string;
 }
 
+interface PendingSave {
+    cohort: string;
+    id: string;
+    pgnText: string;
+    isUndo?: boolean;
+}
+
 interface StatusIconProps {
     game: Game;
 }
@@ -49,34 +58,54 @@ const StatusIcon: React.FC<StatusIconProps> = ({ game }) => {
     const { chess } = useChess();
     const api = useApi();
     const request = useRequest<Date>();
-    const [initialPgn, setInitialPgn] = useState(chess?.renderPgn() || '');
+    const initialPgnRef = useRef(chess?.renderPgn() || '');
+    const saveInFlightRef = useRef(false);
+    const pendingSaveRef = useRef<PendingSave>(undefined);
+    const restoringRef = useRef(false);
     const [hasChanges, setHasChanges] = useState(false);
     const [undoLog, setUndoLog] = useState<UndoLog[]>([]);
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
     const { user } = useAuth();
     const { updatedAtRef, setHasUnsavedGameChanges } = useGame();
     const reconcile = useReconcile();
+    const { savePgnRef } = useUndoDelete();
 
-    const onSave = (cohort: string, id: string, pgnText: string, isUndo?: boolean) => {
-        if (pgnText !== initialPgn) {
-            request.onStart();
-            api.updateGame(cohort, id, {
-                type: GameImportTypes.editor,
-                pgnText,
-                updatedAt: updatedAtRef?.current,
-            })
-                .then((resp) => {
-                    trackEvent(EventType.UpdateGame, {
-                        method: 'autosave',
-                        dojo_cohort: cohort,
+    const processSaveQueue = async () => {
+        if (saveInFlightRef.current) {
+            return;
+        }
+
+        saveInFlightRef.current = true;
+        try {
+            while (pendingSaveRef.current) {
+                const pendingSave = pendingSaveRef.current;
+                pendingSaveRef.current = undefined;
+                const previousPgn = initialPgnRef.current;
+
+                if (pendingSave.pgnText === previousPgn) {
+                    setHasChanges(chess?.renderPgn() !== previousPgn);
+                    continue;
+                }
+
+                request.onStart();
+                try {
+                    const resp = await api.updateGame(pendingSave.cohort, pendingSave.id, {
+                        type: GameImportTypes.editor,
+                        pgnText: pendingSave.pgnText,
+                        updatedAt: updatedAtRef?.current,
                     });
 
-                    if (!isUndo) {
+                    trackEvent(EventType.UpdateGame, {
+                        method: 'autosave',
+                        dojo_cohort: pendingSave.cohort,
+                    });
+
+                    if (!pendingSave.isUndo) {
                         setUndoLog((log) => [
                             ...log,
                             {
                                 date: request.data || new Date(game.updatedAt || ''),
-                                pgn: initialPgn,
+                                pgn: previousPgn,
                             },
                         ]);
                     }
@@ -86,18 +115,31 @@ const StatusIcon: React.FC<StatusIconProps> = ({ game }) => {
                     }
                     const date = new Date();
                     request.onSuccess(date);
-                    setInitialPgn(pgnText);
-                    setHasChanges(false);
-                })
-                .catch((err) => {
+                    initialPgnRef.current = pendingSave.pgnText;
+                    setHasChanges(chess?.renderPgn() !== pendingSave.pgnText);
+                } catch (err) {
                     request.onFailure(err);
-                });
-        } else {
-            setHasChanges(false);
+                    return;
+                }
+            }
+        } finally {
+            saveInFlightRef.current = false;
         }
     };
 
+    const onSave = (cohort: string, id: string, pgnText: string, isUndo?: boolean) => {
+        pendingSaveRef.current = { cohort, id, pgnText, isUndo };
+        void processSaveQueue();
+    };
+
     const debouncedOnSave = useDebounce(onSave);
+
+    const onSaveUndo = (pgnText: string) => {
+        // Drop the pending autosave of the state we are undoing.
+        debouncedOnSave.cancel();
+        restoringRef.current = true;
+        onSave(game.cohort, game.id, pgnText, true);
+    };
 
     useEffect(() => {
         if (chess) {
@@ -117,10 +159,16 @@ const StatusIcon: React.FC<StatusIconProps> = ({ game }) => {
                 handler: (event: Event) => {
                     if (event.type === ChessEventType.Initialized) {
                         const pgn = chess.renderPgn();
-                        setInitialPgn(pgn);
+                        if (restoringRef.current) {
+                            // A restored PGN only counts as saved once its pending save succeeds.
+                            restoringRef.current = false;
+                            setHasChanges(pgn !== initialPgnRef.current);
+                        } else {
+                            initialPgnRef.current = pgn;
+                        }
                     } else {
                         const pgn = chess.renderPgn();
-                        setHasChanges(pgn !== initialPgn);
+                        setHasChanges(pgn !== initialPgnRef.current);
                         debouncedOnSave(game.cohort, game.id, pgn);
                     }
                 },
@@ -129,38 +177,30 @@ const StatusIcon: React.FC<StatusIconProps> = ({ game }) => {
             chess.addObserver(observer);
             return () => chess.removeObserver(observer);
         }
-    }, [chess, game, initialPgn, setInitialPgn, debouncedOnSave, setHasChanges]);
+    }, [chess, game, debouncedOnSave, setHasChanges]);
 
     useEffect(() => {
         setHasUnsavedGameChanges?.(hasChanges);
         return () => setHasUnsavedGameChanges?.(false);
     }, [hasChanges, setHasUnsavedGameChanges]);
 
+    useEffect(() => {
+        savePgnRef.current = onSaveUndo;
+        return () => {
+            savePgnRef.current = null;
+        };
+    });
+
     const onRestore = () => {
         setAnchorEl(null);
         const undo = undoLog[undoLog.length - 1];
-        if (!undo?.pgn) {
+        if (!undo?.pgn || !chess) {
             return;
         }
 
-        onSave(game.cohort, game.id, undo.pgn, true);
+        onSaveUndo(undo.pgn);
         setUndoLog(undoLog.slice(0, -1));
-
-        let currentMove = chess?.currentMove();
-        chess?.loadPgn(undo.pgn);
-        chess?.seek(null, true);
-
-        const moves = [];
-        while (currentMove) {
-            moves.push(currentMove);
-            currentMove = currentMove.previous;
-        }
-
-        for (let i = moves.length - 1; i >= 0; i--) {
-            if (!chess?.move(moves[i].san, { existingOnly: true })) {
-                break;
-            }
-        }
+        restorePgn(chess, undo.pgn);
         reconcile();
     };
 

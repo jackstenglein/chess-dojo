@@ -56,4 +56,46 @@ describe('resolveBotMove', () => {
             winProbability: 0.54,
         });
     });
+
+    it('falls back to Maia and reports when the opening book request fails', async () => {
+        const getDefaultOpeningBookMove = vi.fn().mockRejectedValue(new Error('timeout'));
+        const callMaia = vi.fn().mockResolvedValue({
+            bestMove: 'g1f3',
+            value: 0.54,
+            policy: {},
+        });
+        const onOpeningBookFailure = vi.fn();
+
+        await expect(
+            resolveBotMove(context, {
+                getDefaultOpeningBookMove,
+                callMaia,
+                onOpeningBookFailure,
+            }),
+        ).resolves.toMatchObject({
+            uci: 'g1f3',
+            source: 'maia',
+        });
+
+        expect(onOpeningBookFailure).toHaveBeenCalledOnce();
+        expect(callMaia).toHaveBeenCalledWith(context.fen, context.maiaRating);
+    });
+
+    it('skips the opening book after it has failed', async () => {
+        const getDefaultOpeningBookMove = vi.fn();
+        const callMaia = vi.fn().mockResolvedValue({
+            bestMove: 'g1f3',
+            value: 0.54,
+            policy: {},
+        });
+
+        await resolveBotMove(context, {
+            getDefaultOpeningBookMove,
+            callMaia,
+            skipOpeningBook: true,
+        });
+
+        expect(getDefaultOpeningBookMove).not.toHaveBeenCalled();
+        expect(callMaia).toHaveBeenCalledWith(context.fen, context.maiaRating);
+    });
 });

@@ -83,6 +83,8 @@ export default function AnalysisBoard() {
         [maiaGame],
     );
 
+    const getCurrentPgn = useCallback(() => latestChessRef.current?.renderPgn(), []);
+
     const startRepertoireSpyGame = useCallback(
         (opts: RepertoireSpyStartOpts) => {
             setPlayFen(opts.startFen || FEN.start);
@@ -152,7 +154,7 @@ export default function AnalysisBoard() {
     }
 
     return (
-        <PgnErrorBoundary pgn={pgn}>
+        <PgnErrorBoundary pgn={pgn} getCurrentPgn={getCurrentPgn}>
             <GameContext.Provider
                 value={{
                     isOwner: true,
@@ -161,6 +163,7 @@ export default function AnalysisBoard() {
             >
                 <RepertoireSpyPlayProvider value={repertoireSpyPlayContext}>
                     <PgnBoard
+                        allowPanelHiding
                         pgn={pgn}
                         fen={playFen || searchParams.get('fen') || fen}
                         startOrientation={

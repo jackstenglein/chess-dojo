@@ -15,6 +15,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { DrillRatingsCard } from './DrillRatingsCard';
 import RatingCard from './RatingCard';
 import TacticsScoreCard from './TacticsScoreCard';
+import { TimeManagementRatingCard } from './TimeManagementRatingCard';
 
 const REFRESH_COOLDOWN_SECONDS = 60;
 
@@ -145,6 +146,8 @@ const StatsTab: React.FC<StatsTabProps> = ({ user }) => {
                     />
                 );
             })}
+
+            <TimeManagementRatingCard user={user} />
 
             <DrillRatingsCard mateInOneRating={user.mateInOneRating} />
 

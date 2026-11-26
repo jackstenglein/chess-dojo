@@ -761,19 +761,6 @@ resources:
             'chess-dojo-simple-${aws:accountId}-secrets',
           ]
 
-    # Staged FIDE players_list.zip (uploaded by GitHub Actions; Lambda cannot
-    # reach ratings.fide.com from AWS egress IPs).
-    FideRatingsBucket:
-      Type: AWS::S3::Bucket
-      DeletionPolicy: !If [IsNotSimple, 'Retain', 'Delete']
-      Properties:
-        BucketName:
-          !If [
-            IsNotSimple,
-            'chess-dojo-${sls:stage}-fide-ratings',
-            'chess-dojo-simple-${aws:accountId}-fide-ratings',
-          ]
-
     ############# End S3 Resources ##############
 
     ############# Alert Resources ###############
@@ -842,7 +829,5 @@ resources:
       Value: !Ref GameDatabaseBucket
     SecretsBucket:
       Value: !Ref SecretsBucket
-    FideRatingsBucket:
-      Value: !Ref FideRatingsBucket
     AlertNotificationsTopic:
       Value: !Ref AlertNotificationsTopic

@@ -11,7 +11,6 @@ import (
 
 	goaway "github.com/TwiN/go-away"
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/errors"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/log"
@@ -22,7 +21,14 @@ import (
 	"google.golang.org/api/sheets/v4"
 )
 
-var repository = database.DynamoDB
+type userRepository interface {
+	GetUser(username string) (*database.User, error)
+	UpdateUser(username string, update *database.UserUpdate) (*database.User, error)
+	ListTimelineEntries(owner string, startKey string) ([]*database.TimelineEntry, string, error)
+	PutTimelineEntries(entries []*database.TimelineEntry) (int, error)
+}
+
+var repository userRepository = database.DynamoDB
 var mediaStore database.MediaStore = database.S3
 var stage = os.Getenv("stage")
 var profanityDetector = goaway.NewProfanityDetector().WithExactWord(true)
@@ -81,6 +87,9 @@ func Handler(ctx context.Context, event api.Request) (api.Response, error) {
 			return api.Failure(errors.New(400, "Invalid request: dojoCohort cannot be empty", "")), nil
 		}
 	}
+	if update.WcLiveLayout != nil && !validWcLiveLayouts[*update.WcLiveLayout] {
+		return api.Failure(errors.New(400, "Invalid request: wcLiveLayout must be stream, analysis or analysis2", "")), nil
+	}
 	// Validates that the bio does not contain profanity
 	if update.Bio != nil {
 		if profanityDetector.IsProfane(*update.Bio) {
@@ -108,10 +117,10 @@ func Handler(ctx context.Context, event api.Request) (api.Response, error) {
 		if err != nil {
 			return api.Failure(err), nil
 		}
-		update.ProfilePictureSet = aws.Bool(true)
+		update.ProfilePictureSet = new(true)
 	}
 
-	update.SearchKey = aws.String(database.GetSearchKey(user, update))
+	update.SearchKey = new(database.GetSearchKey(user, update))
 	newUser, err := repository.UpdateUser(info.Username, update)
 	if err != nil {
 		return api.Failure(err), nil
@@ -128,6 +137,9 @@ func Handler(ctx context.Context, event api.Request) (api.Response, error) {
 
 	return api.Success(newUser), nil
 }
+
+// validWcLiveLayouts are the layouts of the World Championship live page.
+var validWcLiveLayouts = map[string]bool{"stream": true, "analysis": true, "analysis2": true}
 
 // validateMainClubId returns an error if the update sets mainClubId to a club
 // the user is not a member of. An empty string is allowed and clears the designation.
@@ -229,7 +241,7 @@ func saveReferralSource(ctx context.Context, user *database.User, update *databa
 
 	valueRange := &sheets.ValueRange{
 		MajorDimension: "ROWS",
-		Values: [][]interface{}{
+		Values: [][]any{
 			{
 				time.Now().Format(time.RFC3339),
 				user.Username,

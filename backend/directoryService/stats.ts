@@ -1,5 +1,7 @@
 'use strict';
 
+import { BatchGetItemCommand } from '@aws-sdk/client-dynamodb';
+import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 import { ratingToCohort } from '@jackstenglein/chess-dojo-common/src/database/cohort';
 import {
     CohortPerformanceStats,
@@ -14,8 +16,12 @@ import {
 import { RatingSystem } from '@jackstenglein/chess-dojo-common/src/database/user';
 import { fideDpTable } from '@jackstenglein/chess-dojo-common/src/ratings/performanceRating';
 import { getNormalizedRating } from '@jackstenglein/chess-dojo-common/src/ratings/ratings';
+import {
+    newTimeManagementRating,
+    TimeManagementRating,
+} from '@jackstenglein/chess-dojo-common/src/ratings/timeManagement';
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
-import { getAccessRole } from './access';
+import { fetchSubscriptionTier, getAccessRole } from './access';
 import {
     ApiError,
     errToApiGatewayProxyResultV2,
@@ -23,14 +29,16 @@ import {
     requireUserInfo,
     success,
 } from './api';
+import { dynamo, gameTable } from './database';
 import { fetchDirectory } from './get';
 
 /**
  * Handles requests to the get directory API. Returns an error if the directory does
  * not exist or is private and the caller does not have viewer access. Calculates and
- * returns the performance rating for the given username and rating system.
+ * returns the performance rating and time management rating for the given username
+ * and rating system.
  * @param event The API gateway event that triggered the request.
- * @returns The performance rating object.
+ * @returns The performance stats and time management rating.
  */
 export const handlerV2: APIGatewayProxyHandlerV2 = async (event) => {
     try {
@@ -49,11 +57,16 @@ export const handlerV2: APIGatewayProxyHandlerV2 = async (event) => {
         }
 
         if (directory.visibility !== DirectoryVisibility.PUBLIC) {
+            const subscriptionTier =
+                userInfo.username === directory.owner
+                    ? undefined
+                    : await fetchSubscriptionTier(userInfo.username);
             const accessRole = await getAccessRole({
                 owner: directory.owner,
                 id: directory.id,
                 username: userInfo.username,
                 directory,
+                subscriptionTier,
             });
             const isViewer = compareRoles(DirectoryAccessRole.Viewer, accessRole);
             if (!isViewer) {
@@ -66,7 +79,11 @@ export const handlerV2: APIGatewayProxyHandlerV2 = async (event) => {
         }
 
         const stats = getPerformanceStats(request.username, directory, ratingSystem);
-        return success({ stats });
+        const timeManagementRating = await getDirectoryTimeManagementRating(
+            request.username,
+            directory,
+        );
+        return success({ stats, timeManagementRating });
     } catch (err) {
         return errToApiGatewayProxyResultV2(err);
     }
@@ -219,4 +236,186 @@ function calculatePerformanceRatings(
         stats.rating[color] = stats.avgOppRating[color] + fideDpTable[score];
         stats.normalizedRating[color] = getNormalizedRating(stats.rating[color], ratingSystem);
     }
+}
+
+/** A game's cached time management rating for one player. */
+export interface DirectoryTimeManagementGame {
+    /** The PGN date, in YYYY.MM.DD format. */
+    date?: string | null;
+    /** The datetime the game was uploaded, in ISO format. */
+    createdAt?: string;
+    /** The time management rating for the selected player. */
+    rating?: number;
+    /** The signed clock area for the selected player. */
+    area?: number;
+}
+
+const PGN_DATE = /^\d{4}\.\d{2}\.\d{2}$/;
+
+interface StoredTimeManagement {
+    cohort: string;
+    id: string;
+    timeManagementRatingWhite?: number;
+    timeManagementRatingBlack?: number;
+    timeManagementAreaWhite?: number;
+    timeManagementAreaBlack?: number;
+}
+
+/**
+ * Returns the date used to order time management games. Valid PGN dates are
+ * preferred. Other dates fall back to the upload date.
+ * @param date The PGN date.
+ * @param createdAt The upload datetime.
+ * @returns A YYYY-MM-DD string, or an empty string when neither date is usable.
+ */
+function timeManagementSortDate(date?: string | null, createdAt?: string): string {
+    if (date && PGN_DATE.test(date)) {
+        const parsed = Date.parse(date.replaceAll('.', '-'));
+        if (!Number.isNaN(parsed)) {
+            return date.replaceAll('.', '-');
+        }
+    }
+    return createdAt?.slice(0, 10) ?? '';
+}
+
+/**
+ * Replays the time management aggregate for games in one directory. Games are
+ * applied in chronological order, matching the profile aggregate. Games without
+ * a time management rating are skipped.
+ * @param games The selected player's per-game ratings.
+ * @returns The aggregate time management rating.
+ */
+export function aggregateDirectoryTimeManagement(
+    games: DirectoryTimeManagementGame[],
+): TimeManagementRating {
+    const ordered = games
+        .filter((game) => game.rating !== undefined && game.rating >= 0)
+        .map((game) => ({
+            game,
+            date: timeManagementSortDate(game.date, game.createdAt),
+        }))
+        .sort(
+            (lhs, rhs) =>
+                lhs.date.localeCompare(rhs.date) ||
+                (lhs.game.createdAt ?? '').localeCompare(rhs.game.createdAt ?? ''),
+        );
+
+    let rating: TimeManagementRating = { currentRating: 0, numGames: 0 };
+    for (const { game } of ordered) {
+        rating = newTimeManagementRating(rating, game.rating ?? 0, game.area ?? 0);
+    }
+    return rating;
+}
+
+/**
+ * Returns the owned games in the directory where the given player name appears,
+ * along with the color they played.
+ * @param username The player name as recorded in the PGN.
+ * @param directory The directory to search.
+ * @returns Matching games in directory order.
+ */
+function playerTimeManagementGames(username: string, directory: Directory) {
+    const playerName = username.toLowerCase();
+    const games: {
+        cohort: string;
+        id: string;
+        color: 'white' | 'black';
+        date?: string | null;
+        createdAt?: string;
+    }[] = [];
+
+    for (const itemId of directory.itemIds) {
+        const item = directory.items[itemId];
+        if (item?.type !== DirectoryItemTypes.OWNED_GAME) {
+            continue;
+        }
+
+        const { white, black, cohort, id, date, createdAt } = item.metadata;
+        let color: 'white' | 'black' | undefined;
+        if (white.toLowerCase().includes(playerName)) {
+            color = 'white';
+        } else if (black.toLowerCase().includes(playerName)) {
+            color = 'black';
+        }
+        if (!color) {
+            continue;
+        }
+
+        games.push({ cohort, id, color, date, createdAt });
+    }
+
+    return games;
+}
+
+/**
+ * Loads cached time management ratings for the given games.
+ * @param keys The cohort and id of each game.
+ * @returns The stored ratings, keyed by cohort/id.
+ */
+async function fetchStoredTimeManagement(keys: { cohort: string; id: string }[]) {
+    const byId = new Map<string, StoredTimeManagement>();
+
+    for (let i = 0; i < keys.length; i += 100) {
+        let pending = keys
+            .slice(i, i + 100)
+            .map((key) => marshall({ cohort: key.cohort, id: key.id }));
+        while (pending.length > 0) {
+            const result = await dynamo.send(
+                new BatchGetItemCommand({
+                    RequestItems: {
+                        [gameTable]: {
+                            Keys: pending,
+                            ProjectionExpression:
+                                'cohort, id, timeManagementRatingWhite, timeManagementRatingBlack, timeManagementAreaWhite, timeManagementAreaBlack',
+                        },
+                    },
+                }),
+            );
+            for (const item of result.Responses?.[gameTable] ?? []) {
+                const game = unmarshall(item) as StoredTimeManagement;
+                byId.set(`${game.cohort}/${game.id}`, game);
+            }
+            pending = result.UnprocessedKeys?.[gameTable]?.Keys ?? [];
+        }
+    }
+
+    return byId;
+}
+
+/**
+ * Calculates the time management rating for a player from the owned games in a
+ * directory. Ratings are read from the cached values on each game.
+ * @param username The player name as recorded in the PGN.
+ * @param directory The directory to calculate the rating for.
+ * @returns The aggregate time management rating. numGames is 0 when no game has a rating.
+ */
+export async function getDirectoryTimeManagementRating(
+    username: string,
+    directory: Directory,
+): Promise<TimeManagementRating> {
+    const games = playerTimeManagementGames(username, directory);
+    if (games.length === 0) {
+        return { currentRating: 0, numGames: 0 };
+    }
+
+    const stored = await fetchStoredTimeManagement(games);
+    return aggregateDirectoryTimeManagement(
+        games.map((game) => {
+            const record = stored.get(`${game.cohort}/${game.id}`);
+            const rating =
+                game.color === 'black'
+                    ? record?.timeManagementRatingBlack
+                    : record?.timeManagementRatingWhite;
+            const area =
+                game.color === 'black'
+                    ? record?.timeManagementAreaBlack
+                    : record?.timeManagementAreaWhite;
+            return {
+                date: game.date,
+                createdAt: game.createdAt,
+                rating,
+                area,
+            };
+        }),
+    );
 }

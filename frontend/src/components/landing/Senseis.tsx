@@ -3,7 +3,7 @@ import { Box, Container, Divider, Grid, Stack, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import davidImage from './david.webp';
-import { barlow, barlowCondensed } from './fonts';
+import { barlow, barlowCondensed, eyebrowSx, sectionTitleSx } from './fonts';
 import jesseImage from './jesse.webp';
 import kostyaImage from './kostya.webp';
 
@@ -17,11 +17,17 @@ const senseiImages: Record<SenseiKey, string> = {
 
 const senseiKeys: SenseiKey[] = ['jesse', 'kostya', 'david'];
 
+export const SENSEIS_ELEMENT_ID = 'senseis';
+
 export function Senseis() {
     const t = useTranslations('landing');
 
     return (
-        <Container maxWidth='lg' sx={{ py: '5.5rem' }}>
+        <Container
+            id={SENSEIS_ELEMENT_ID}
+            maxWidth='lg'
+            sx={{ py: '5.5rem', scrollMarginTop: { xs: 0, md: 'var(--navbar-height)' } }}
+        >
             <Grid container spacing='2rem'>
                 <Grid size={{ xs: 12, md: 4 }}>
                     <Stack
@@ -34,10 +40,8 @@ export function Senseis() {
                     >
                         <Typography
                             sx={{
-                                fontSize: '3rem',
-                                lineHeight: '3.375rem',
+                                ...sectionTitleSx,
                                 fontFamily: (theme) => fontFamily(theme, barlowCondensed),
-                                fontWeight: '500',
                             }}
                         >
                             {t('senseis.heading')}
@@ -76,6 +80,7 @@ export function Senseis() {
                                 image={senseiImages[key]}
                                 title={t(`senseis.${key}.title`)}
                                 name={t(`senseis.${key}.name`)}
+                                quote={t(`senseis.${key}.quote`)}
                                 bio={t(`senseis.${key}.bio`)}
                             />
                         ))}
@@ -90,11 +95,13 @@ function Sensei({
     image,
     title,
     name,
+    quote,
     bio,
 }: {
     image: string;
     title: string;
     name: string;
+    quote: string;
     bio: string;
 }) {
     return (
@@ -102,6 +109,7 @@ function Sensei({
             sx={{
                 display: 'grid',
                 columnGap: '1.5625rem',
+                rowGap: 1,
                 gridTemplateColumns: {
                     xs: 'auto 1fr',
                 },
@@ -113,17 +121,28 @@ function Sensei({
                 },
             }}
         >
-            <Image
-                src={image}
-                alt=''
-                style={{
+            <Box
+                sx={{
+                    gridArea: 'image',
                     width: '9.375rem',
                     height: '9.375rem',
                     borderRadius: '50%',
-                    objectFit: 'contain',
-                    gridArea: 'image',
+                    overflow: 'hidden',
+                    flexShrink: 0,
                 }}
-            />
+            >
+                <Image
+                    src={image}
+                    alt={name}
+                    width={150}
+                    height={150}
+                    style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain',
+                    }}
+                />
+            </Box>
 
             <Stack
                 sx={{
@@ -131,21 +150,12 @@ function Sensei({
                     justifyContent: { xs: 'center', md: 'unset' },
                 }}
             >
-                <Typography
-                    color='darkBlue'
-                    sx={{
-                        fontWeight: '700',
-                        fontSize: '0.9375rem',
-                        lineHeight: '1.375rem',
-                        letterSpacing: '10%',
-                        textTransform: 'uppercase',
-                    }}
-                >
+                <Typography color='darkBlue' sx={eyebrowSx}>
                     {title}
                 </Typography>
                 <Typography
                     sx={{
-                        fontFamily: barlowCondensed.style.fontFamily,
+                        fontFamily: (theme) => fontFamily(theme, barlowCondensed),
                         fontWeight: '500',
                         fontSize: '2.625rem',
                         lineHeight: '2.625rem',
@@ -157,19 +167,30 @@ function Sensei({
                 </Typography>
             </Stack>
 
-            <Typography
-                sx={{
-                    gridArea: 'bio',
-                    fontFmaily: barlow.style.fontFamily,
-                    fontWeight: '400',
-                    fontSize: '1.1875rem',
-                    lineHeight: '1.9375rem',
-                    letterSpacing: '0%',
-                    marginTop: '0.9375rem',
-                }}
-            >
-                {bio}
-            </Typography>
+            <Stack sx={{ gridArea: 'bio', gap: 1.5, mt: { xs: 1, md: 0.5 } }}>
+                <Typography
+                    sx={{
+                        fontFamily: (theme) => fontFamily(theme, barlow),
+                        fontWeight: 400,
+                        fontSize: '1.1875rem',
+                        lineHeight: '1.75rem',
+                        fontStyle: 'italic',
+                        color: 'dojoOrange.main',
+                    }}
+                >
+                    “{quote}”
+                </Typography>
+                <Typography
+                    sx={{
+                        fontFamily: (theme) => fontFamily(theme, barlow),
+                        fontWeight: '400',
+                        fontSize: '1.1875rem',
+                        lineHeight: '1.9375rem',
+                    }}
+                >
+                    {bio}
+                </Typography>
+            </Stack>
         </Box>
     );
 }

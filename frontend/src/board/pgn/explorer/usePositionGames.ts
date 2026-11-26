@@ -23,9 +23,18 @@ export function usePositionGames({
     const api = useApi();
     const request = useRequest();
     const reset = request.reset;
-    const cache = useRef(
-        new Map<string, Partial<Record<ExplorerDatabaseType, ListGamesResponse>>>(),
-    );
+    const cache = useRef(new Map<string, ListGamesResponse>());
+    // Cache keys with a request in flight. A key can still be pending after the filters change
+    // away and back, and sending it again would append the same page twice.
+    const pendingKeys = useRef(new Set<string>());
+    // The cache key being displayed. Only its response may settle `request`.
+    const displayedKey = useRef('');
+
+    const timeControlsKey = timeControls.join(',');
+    const cacheKey =
+        type === ExplorerDatabaseType.Masters
+            ? `${fen}|${type}|${timeControlsKey}`
+            : `${fen}|${type}`;
 
     const [page, setPage] = useState(0);
     const [pageSize, setPageSize] = useState(10);
@@ -40,9 +49,13 @@ export function usePositionGames({
         if (type === ExplorerDatabaseType.Dojo || type === ExplorerDatabaseType.Masters) {
             reset();
         }
-    }, [type, reset]);
+    }, [type, timeControlsKey, reset]);
 
-    const current = cache.current.get(fen)?.[type];
+    useEffect(() => {
+        displayedKey.current = cacheKey;
+    }, [cacheKey]);
+
+    const current = cache.current.get(cacheKey);
 
     const games = (current?.games ?? []).filter((g) => {
         if (type === ExplorerDatabaseType.Dojo) {
@@ -52,12 +65,6 @@ export function usePositionGames({
             if (maxCohort && dojoCohorts.indexOf(maxCohort) < dojoCohorts.indexOf(g.cohort)) {
                 return false;
             }
-        } else if (
-            type === ExplorerDatabaseType.Masters &&
-            timeControls.length > 0 &&
-            !timeControls.includes(g.timeClass?.toLowerCase() || '')
-        ) {
-            return false;
         }
         return true;
     });
@@ -82,8 +89,11 @@ export function usePositionGames({
         if (fen === FEN.start) {
             return;
         }
+        if (type === ExplorerDatabaseType.Masters && timeControls.length === 0) {
+            return;
+        }
 
-        const currentType = cache.current.get(fen)?.[type];
+        const currentType = cache.current.get(cacheKey);
         if (games.length > (page + 2) * pageSize) {
             return; // Already have enough data to support this page, plus one extra.
         }
@@ -95,26 +105,33 @@ export function usePositionGames({
         }
 
         request.onStart();
+        if (pendingKeys.current.has(cacheKey)) {
+            return; // Its response settles the request.
+        }
+        pendingKeys.current.add(cacheKey);
         api.listGamesByPosition(
             fen,
             type === ExplorerDatabaseType.Masters,
             currentType?.lastEvaluatedKey,
+            type === ExplorerDatabaseType.Masters ? { timeControls } : undefined,
         )
             .then((resp) => {
-                const current = cache.current.get(fen);
-                cache.current.set(fen, {
-                    ...current,
-                    [type]: {
-                        games: (current?.[type]?.games ?? []).concat(resp.data.games),
-                        lastEvaluatedKey: resp.data.lastEvaluatedKey,
-                    },
+                pendingKeys.current.delete(cacheKey);
+                cache.current.set(cacheKey, {
+                    games: (cache.current.get(cacheKey)?.games ?? []).concat(resp.data.games),
+                    lastEvaluatedKey: resp.data.lastEvaluatedKey,
                 });
-                request.onSuccess();
+                if (displayedKey.current === cacheKey) {
+                    request.onSuccess();
+                }
             })
-            .catch((err) => {
-                request.onFailure(err);
+            .catch((err: unknown) => {
+                pendingKeys.current.delete(cacheKey);
+                if (displayedKey.current === cacheKey) {
+                    request.onFailure(err);
+                }
             });
-    }, [page, pageSize, cache, request, api, fen, type, games]);
+    }, [page, pageSize, cache, request, api, fen, type, games, cacheKey, timeControls]);
 
     return {
         page,

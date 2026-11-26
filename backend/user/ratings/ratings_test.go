@@ -246,6 +246,86 @@ func TestFetchBulkLichessRatings_Success(t *testing.T) {
 	}
 }
 
+func TestFetchFideRating_Success(t *testing.T) {
+	var gotPath string
+	setupLichess(t, func(w http.ResponseWriter, r *http.Request) {
+		gotPath = r.URL.Path
+		_, _ = w.Write([]byte(`{"id":1503014,"name":"Carlsen, Magnus","federation":"NOR","standard":2831,"rapid":2812,"blitz":2886}`))
+	})
+
+	rating, err := FetchFideRating("1503014")
+	if err != nil {
+		t.Fatalf("expected success, got %v", err)
+	}
+	if rating.CurrentRating != 2831 {
+		t.Errorf("expected rating 2831, got %d", rating.CurrentRating)
+	}
+	if gotPath != "/api/fide/player/1503014" {
+		t.Errorf("expected path /api/fide/player/1503014, got %q", gotPath)
+	}
+}
+
+func TestFetchFideRating_Non200(t *testing.T) {
+	tests := []struct {
+		name   string
+		status int
+	}{
+		{"not found", http.StatusNotFound},
+		{"server error", http.StatusInternalServerError},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			setupLichess(t, func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(tc.status)
+			})
+
+			_, err := FetchFideRating("999999")
+			if err == nil {
+				t.Fatal("expected error for non-200 response")
+			}
+			var apiErr *errors.Error
+			if !errors.As(err, &apiErr) || apiErr.Code != 400 {
+				t.Fatalf("expected api error with code 400, got %v", err)
+			}
+			if !strings.Contains(apiErr.PublicMessage, "999999") {
+				t.Errorf("expected FIDE ID in message, got %q", apiErr.PublicMessage)
+			}
+		})
+	}
+}
+
+func TestFetchFideRating_InvalidJSON(t *testing.T) {
+	setupLichess(t, func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(`not json`))
+	})
+
+	_, err := FetchFideRating("1503014")
+	if err == nil {
+		t.Fatal("expected error for invalid JSON")
+	}
+	var apiErr *errors.Error
+	if !errors.As(err, &apiErr) || apiErr.Code != 500 {
+		t.Errorf("expected api error with code 500, got %v", err)
+	}
+}
+
+func TestFetchFideRating_RequestError(t *testing.T) {
+	originalClient := client
+	t.Cleanup(func() { client = originalClient })
+	client = http.Client{Transport: roundTripFunc(func(req *http.Request) (*http.Response, error) {
+		return nil, io.EOF
+	})}
+
+	_, err := FetchFideRating("1503014")
+	if err == nil {
+		t.Fatal("expected error when request fails")
+	}
+	var apiErr *errors.Error
+	if !errors.As(err, &apiErr) || apiErr.Code != 500 {
+		t.Errorf("expected api error with code 500, got %v", err)
+	}
+}
+
 func TestMonthlyFetchers_PreservePlayerNotFoundStatus(t *testing.T) {
 	originalClient := client
 	t.Cleanup(func() { client = originalClient })
@@ -275,5 +355,80 @@ func TestMonthlyFetchers_PreservePlayerNotFoundStatus(t *testing.T) {
 				t.Fatalf("expected API 404, got %v", err)
 			}
 		})
+	}
+}
+
+// ecfRatingBody is the ECF API's response for player 388159 on 2026-09-11.
+const ecfRatingBody = `{"success":true,"message":"Player rating found","data":{"effective_date":"2026-09-01","original_rating":1884,"revised_rating":1884,"original_category":"P","revised_category":"P","domain":"S"},"processing_time":"15.5ms","total_processing_time_today":"15.5ms","max_processing_time_daily":"600000ms"}`
+
+// stubClient answers every request with the given status and body.
+func stubClient(t *testing.T, status int, body string) *[]*http.Request {
+	t.Helper()
+	originalClient := client
+	t.Cleanup(func() { client = originalClient })
+
+	var requests []*http.Request
+	client = http.Client{Transport: roundTripFunc(func(req *http.Request) (*http.Response, error) {
+		requests = append(requests, req)
+		return &http.Response{
+			StatusCode: status,
+			Body:       io.NopCloser(strings.NewReader(body)),
+			Header:     make(http.Header),
+			Request:    req,
+		}, nil
+	})}
+	return &requests
+}
+
+func TestFetchEcfRating_Success(t *testing.T) {
+	tests := []struct {
+		name  string
+		ecfId string
+	}{
+		{"plain code", "388159"},
+		{"code with check letter", "388159D"},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			requests := stubClient(t, http.StatusOK, ecfRatingBody)
+
+			before := time.Now().Format(time.DateOnly)
+			rating, err := FetchEcfRating(tc.ecfId)
+			after := time.Now().Format(time.DateOnly)
+
+			if err != nil {
+				t.Fatalf("expected success, got %v", err)
+			}
+			if rating.CurrentRating != 1884 {
+				t.Errorf("expected rating 1884, got %d", rating.CurrentRating)
+			}
+
+			if len(*requests) != 1 {
+				t.Fatalf("expected 1 request, got %d", len(*requests))
+			}
+			u := (*requests)[0].URL
+			if got := u.Scheme + "://" + u.Host + u.Path; got != "https://rating.englishchess.org.uk/api/ratings" {
+				t.Errorf("unexpected endpoint %q", got)
+			}
+			q := u.Query()
+			if got := q.Get("player_no"); got != "388159" {
+				t.Errorf("expected player_no 388159, got %q", got)
+			}
+			if got := q.Get("domain"); got != "S" {
+				t.Errorf("expected domain S, got %q", got)
+			}
+			if got := q.Get("date"); got != before && got != after {
+				t.Errorf("expected today's date, got %q", got)
+			}
+		})
+	}
+}
+
+func TestFetchEcfRating_MissingRatingIsError(t *testing.T) {
+	stubClient(t, http.StatusOK, `{"success":true,"data":{}}`)
+
+	rating, err := FetchEcfRating("388159")
+	if err == nil {
+		t.Fatalf("expected an error instead of a zero rating, got %+v", rating)
 	}
 }

@@ -49,6 +49,11 @@ function isUserSuggestedVariation(
     return Boolean(username && move?.commentDiag?.dojoComment?.startsWith(`${username},`));
 }
 
+/**
+ * Returns the earliest ancestor of move that is a suggested variation from the given user.
+ * @param user The user to get the suggested variation root from.
+ * @param move The move to get the suggested variation root from.
+ */
 export function getSuggestedVariationRoot(user: User, move: Move): Move {
     let root = move;
     while (

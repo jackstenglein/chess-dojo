@@ -6,8 +6,10 @@ import {
     DirectoryItem,
     DirectoryItemTypes,
     DirectoryVisibility,
+    isDefaultDirectory,
     SHARED_DIRECTORY_ID,
     ShareDirectoryRequest,
+    ShareDirectoryResponse,
     ShareDirectorySchema,
 } from '@jackstenglein/chess-dojo-common/src/database/directory';
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
@@ -22,6 +24,8 @@ import {
 } from './api';
 import { createDirectory } from './create';
 import { attributeExists, directoryTable, dynamo, UpdateItemBuilder } from './database';
+import { fetchDirectory } from './get';
+import { updateDirectory } from './update';
 
 /**
  * Handles requests to the share directory API. Returns the updated directory.
@@ -35,12 +39,16 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         const userInfo = requireUserInfo(event);
         const request = parseEvent(event, ShareDirectorySchema);
 
-        const hasAccess = await checkAccess({
-            owner: request.owner,
-            id: request.id,
-            username: userInfo.username,
-            role: DirectoryAccessRole.Admin,
-        });
+        const existingDirectory = await fetchDirectory(request.owner, request.id);
+        const hasAccess =
+            existingDirectory !== undefined &&
+            (await checkAccess({
+                owner: request.owner,
+                id: request.id,
+                username: userInfo.username,
+                role: DirectoryAccessRole.Admin,
+                directory: existingDirectory,
+            }));
         if (!hasAccess) {
             throw new ApiError({
                 statusCode: 403,
@@ -48,8 +56,28 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
             });
         }
 
+        if (request.subscriptionTiers?.length && isDefaultDirectory(request.id)) {
+            throw new ApiError({
+                statusCode: 400,
+                publicMessage: 'Default directories cannot be shared with subscription tiers',
+            });
+        }
+
+        let parent: Directory | undefined;
+        if (
+            request.subscriptionTiers?.length &&
+            existingDirectory.visibility === DirectoryVisibility.PUBLIC
+        ) {
+            const updateResult = await updateDirectory({
+                owner: request.owner,
+                id: request.id,
+                visibility: DirectoryVisibility.PRIVATE,
+            });
+            parent = updateResult.parent;
+        }
+
         const directory = await shareDirectory(request);
-        return success(directory);
+        return success({ directory, parent } satisfies ShareDirectoryResponse);
     } catch (err) {
         return errToApiGatewayProxyResultV2(err);
     }
@@ -60,13 +88,14 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
  * @param request The owner, id and new access of the directory.
  * @returns The updated directory.
  */
-async function shareDirectory(request: ShareDirectoryRequest) {
+export async function shareDirectory(request: ShareDirectoryRequest) {
     const updatedAt = new Date().toISOString();
     const input = new UpdateItemBuilder()
         .key('owner', request.owner)
         .key('id', request.id)
         .set('updatedAt', updatedAt)
         .set('access', request.access)
+        .set('subscriptionTiers', request.subscriptionTiers)
         .condition(attributeExists('id'))
         .table(directoryTable)
         .return('ALL_OLD')
@@ -80,6 +109,9 @@ async function shareDirectory(request: ShareDirectoryRequest) {
 
     directory.updatedAt = updatedAt;
     directory.access = request.access;
+    if (request.subscriptionTiers !== undefined) {
+        directory.subscriptionTiers = request.subscriptionTiers;
+    }
     return directory;
 }
 

@@ -2,10 +2,11 @@ import { Event, EventType } from '@jackstenglein/chess';
 import { Divider, Stack, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
+import { scalePgnRem } from '../boardTools/underboard/settings/viewerSettingsConstants';
 import { useChess } from '../PgnBoard';
 
 const Result = () => {
-    const { chess } = useChess();
+    const { chess, slotProps } = useChess();
     const t = useTranslations('analysisBoard.pgnText');
     const [, setForceRender] = useState(0);
 
@@ -51,10 +52,11 @@ const Result = () => {
                 alignItems: 'center',
             }}
         >
-            <Divider sx={{ width: 1 }} />
+            {!slotProps?.pgnText?.hideResultDivider && <Divider sx={{ width: 1 }} />}
             <Typography
                 sx={{
                     fontWeight: 'bold',
+                    fontSize: scalePgnRem(1),
                     mt: 1,
                 }}
             >
@@ -64,6 +66,7 @@ const Result = () => {
                 sx={{
                     mb: 1,
                     fontStyle: 'italic',
+                    fontSize: scalePgnRem(1),
                 }}
             >
                 {description}

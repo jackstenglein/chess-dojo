@@ -8,9 +8,12 @@
  * Usage:
  *   stage=dev npx tsx pgnService/game/backfillTimeManagement.ts
  *   stage=prod npx tsx pgnService/game/backfillTimeManagement.ts
+ *   stage=prod npx tsx pgnService/game/backfillTimeManagement.ts --history-only
  *
  * Idempotent: skips games that already have time management rating and area fields.
  * User aggregates are rebuilt from scratch on every run.
+ * With --history-only, game records are not changed; existing cached ratings are used
+ * to rebuild each user's aggregate and history.
  */
 import { AttributeValue, DynamoDBClient, QueryCommand } from '@aws-sdk/client-dynamodb';
 import { unmarshall } from '@aws-sdk/util-dynamodb';
@@ -26,6 +29,7 @@ if (!stage) {
     process.exit(1);
 }
 const gamesTable = `${stage}-games`;
+const historyOnly = process.argv.includes('--history-only');
 
 interface GameRecord {
     cohort: string;
@@ -62,8 +66,9 @@ async function main() {
                 const output = await dynamo.send(
                     new QueryCommand({
                         KeyConditionExpression: '#cohort = :cohort',
-                        FilterExpression:
-                            '(attribute_exists(timeManagementRatingWhite) and attribute_not_exists(timeManagementAreaWhite)) or (attribute_exists(timeManagementRatingBlack) and attribute_not_exists(timeManagementAreaBlack)) or (attribute_not_exists(timeManagementRatingWhite) and attribute_not_exists(timeManagementRatingBlack))',
+                        FilterExpression: historyOnly
+                            ? 'attribute_exists(timeManagementRatingWhite) or attribute_exists(timeManagementRatingBlack)'
+                            : '(attribute_exists(timeManagementRatingWhite) and attribute_not_exists(timeManagementAreaWhite)) or (attribute_exists(timeManagementRatingBlack) and attribute_not_exists(timeManagementAreaBlack)) or (attribute_not_exists(timeManagementRatingWhite) and attribute_not_exists(timeManagementRatingBlack))',
                         ExpressionAttributeNames: {
                             '#cohort': 'cohort',
                             '#id': 'id',
@@ -86,6 +91,11 @@ async function main() {
 
                     if (game.owner) {
                         owners.add(game.owner);
+                    }
+
+                    if (historyOnly) {
+                        gamesSkipped++;
+                        continue;
                     }
 
                     // Skip games that already have TM ratings and areas (idempotent)

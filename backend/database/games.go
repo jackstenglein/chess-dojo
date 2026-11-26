@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/aws/aws-sdk-go/service/dynamodb/expression"
@@ -344,13 +343,13 @@ func (repo *dynamoRepository) GetGame(cohort, id string) (*Game, error) {
 	input := &dynamodb.GetItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
 			"cohort": {
-				S: aws.String(cohort),
+				S: new(cohort),
 			},
 			"id": {
-				S: aws.String(id),
+				S: new(id),
 			},
 		},
-		TableName: aws.String(gameTable),
+		TableName: new(gameTable),
 	}
 
 	game := Game{}
@@ -364,19 +363,19 @@ func (repo *dynamoRepository) GetGame(cohort, id string) (*Game, error) {
 // is owned by the calling user.
 func (repo *dynamoRepository) DeleteGame(username, cohort, id string) (*Game, error) {
 	input := &dynamodb.DeleteItemInput{
-		ConditionExpression: aws.String("#owner = :owner"),
+		ConditionExpression: new("#owner = :owner"),
 		ExpressionAttributeNames: map[string]*string{
-			"#owner": aws.String("owner"),
+			"#owner": new("owner"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":owner": {S: aws.String(username)},
+			":owner": {S: new(username)},
 		},
 		Key: map[string]*dynamodb.AttributeValue{
-			"cohort": {S: aws.String(cohort)},
-			"id":     {S: aws.String(id)},
+			"cohort": {S: new(cohort)},
+			"id":     {S: new(id)},
 		},
-		ReturnValues: aws.String("ALL_OLD"),
-		TableName:    aws.String(gameTable),
+		ReturnValues: new("ALL_OLD"),
+		TableName:    new(gameTable),
 	}
 
 	result, err := repo.svc.DeleteItem(input)
@@ -398,24 +397,24 @@ func (repo *dynamoRepository) DeleteGame(username, cohort, id string) (*Game, er
 func addDates(keyConditionExpression string, expressionAttributeNames map[string]*string, expressionAttributeValues map[string]*dynamodb.AttributeValue, startDate, endDate string) string {
 	if startDate != "" && endDate != "" {
 		keyConditionExpression += " AND #id BETWEEN :startId AND :endId"
-		expressionAttributeNames["#id"] = aws.String("id")
+		expressionAttributeNames["#id"] = new("id")
 		expressionAttributeValues[":startId"] = &dynamodb.AttributeValue{
-			S: aws.String(startDate + "_00000000-0000-0000-0000-000000000000"),
+			S: new(startDate + "_00000000-0000-0000-0000-000000000000"),
 		}
 		expressionAttributeValues[":endId"] = &dynamodb.AttributeValue{
-			S: aws.String(endDate + "_ffffffff-ffff-ffff-ffff-ffffffffffff"),
+			S: new(endDate + "_ffffffff-ffff-ffff-ffff-ffffffffffff"),
 		}
 	} else if startDate != "" {
 		keyConditionExpression += " AND #id >= :startId"
-		expressionAttributeNames["#id"] = aws.String("id")
+		expressionAttributeNames["#id"] = new("id")
 		expressionAttributeValues[":startId"] = &dynamodb.AttributeValue{
-			S: aws.String(startDate + "_00000000-0000-0000-0000-000000000000"),
+			S: new(startDate + "_00000000-0000-0000-0000-000000000000"),
 		}
 	} else if endDate != "" {
 		keyConditionExpression += " AND #id <= :endId"
-		expressionAttributeNames["#id"] = aws.String("id")
+		expressionAttributeNames["#id"] = new("id")
 		expressionAttributeValues[":endId"] = &dynamodb.AttributeValue{
-			S: aws.String(endDate + "_ffffffff-ffff-ffff-ffff-ffffffffffff"),
+			S: new(endDate + "_ffffffff-ffff-ffff-ffff-ffffffffffff"),
 		}
 	}
 	return keyConditionExpression
@@ -426,44 +425,44 @@ func addDates(keyConditionExpression string, expressionAttributeNames map[string
 func (repo *dynamoRepository) ListGamesByCohort(cohort, startDate, endDate, startKey string) ([]*Game, string, error) {
 	keyConditionExpression := "#cohort = :cohort"
 	expressionAttributeNames := map[string]*string{
-		"#cohort":           aws.String("cohort"),
-		"#id":               aws.String("id"),
-		"#white":            aws.String("white"),
-		"#black":            aws.String("black"),
-		"#date":             aws.String("date"),
-		"#createdAt":        aws.String("createdAt"),
-		"#updatedAt":        aws.String("updatedAt"),
-		"#publishedAt":      aws.String("publishedAt"),
-		"#owner":            aws.String("owner"),
-		"#ownerDisplayName": aws.String("ownerDisplayName"),
-		"#headers":          aws.String("headers"),
-		"#unlisted":         aws.String("unlisted"),
+		"#cohort":           new("cohort"),
+		"#id":               new("id"),
+		"#white":            new("white"),
+		"#black":            new("black"),
+		"#date":             new("date"),
+		"#createdAt":        new("createdAt"),
+		"#updatedAt":        new("updatedAt"),
+		"#publishedAt":      new("publishedAt"),
+		"#owner":            new("owner"),
+		"#ownerDisplayName": new("ownerDisplayName"),
+		"#headers":          new("headers"),
+		"#unlisted":         new("unlisted"),
 	}
 	expressionAttributeValues := map[string]*dynamodb.AttributeValue{
 		":cohort": {
-			S: aws.String(string(cohort)),
+			S: new(string(cohort)),
 		},
 		":modelGames": {
-			S: aws.String("model_games"),
+			S: new("model_games"),
 		},
 		":memorizeGames": {
-			S: aws.String("games_to_memorize"),
+			S: new("games_to_memorize"),
 		},
 		":unlisted": {
-			BOOL: aws.Bool(true),
+			BOOL: new(true),
 		},
 	}
 
 	keyConditionExpression = addDates(keyConditionExpression, expressionAttributeNames, expressionAttributeValues, startDate, endDate)
 
 	input := &dynamodb.QueryInput{
-		KeyConditionExpression:    aws.String(keyConditionExpression),
-		FilterExpression:          aws.String("#owner <> :modelGames AND #owner <> :memorizeGames AND (attribute_not_exists(unlisted) OR #unlisted <> :unlisted)"),
+		KeyConditionExpression:    new(keyConditionExpression),
+		FilterExpression:          new("#owner <> :modelGames AND #owner <> :memorizeGames AND (attribute_not_exists(unlisted) OR #unlisted <> :unlisted)"),
 		ExpressionAttributeNames:  expressionAttributeNames,
 		ExpressionAttributeValues: expressionAttributeValues,
-		ProjectionExpression:      aws.String("#cohort,#id,#white,#black,#date,#createdAt,#updatedAt,#publishedAt,#owner,#ownerDisplayName,#headers"),
-		ScanIndexForward:          aws.Bool(false),
-		TableName:                 aws.String(gameTable),
+		ProjectionExpression:      new("#cohort,#id,#white,#black,#date,#createdAt,#updatedAt,#publishedAt,#owner,#ownerDisplayName,#headers"),
+		ScanIndexForward:          new(false),
+		TableName:                 new(gameTable),
 	}
 
 	var games []*Game
@@ -479,31 +478,31 @@ func (repo *dynamoRepository) ListGamesByCohort(cohort, startDate, endDate, star
 func (repo *dynamoRepository) ListGamesByOwner(isOwner bool, owner, startDate, endDate, startKey string) ([]*Game, string, error) {
 	keyConditionExpression := "#owner = :owner"
 	expressionAttributeNames := map[string]*string{
-		"#owner": aws.String("owner"),
+		"#owner": new("owner"),
 	}
 	expressionAttributeValues := map[string]*dynamodb.AttributeValue{
 		":owner": {
-			S: aws.String(owner),
+			S: new(owner),
 		},
 	}
 
 	var filterExpression *string
 	if !isOwner {
-		filterExpression = aws.String("attribute_not_exists(unlisted) OR #unlisted <> :unlisted")
-		expressionAttributeNames["#unlisted"] = aws.String("unlisted")
-		expressionAttributeValues[":unlisted"] = &dynamodb.AttributeValue{BOOL: aws.Bool(true)}
+		filterExpression = new("attribute_not_exists(unlisted) OR #unlisted <> :unlisted")
+		expressionAttributeNames["#unlisted"] = new("unlisted")
+		expressionAttributeValues[":unlisted"] = &dynamodb.AttributeValue{BOOL: new(true)}
 	}
 
 	keyConditionExpression = addDates(keyConditionExpression, expressionAttributeNames, expressionAttributeValues, startDate, endDate)
 
 	input := &dynamodb.QueryInput{
-		KeyConditionExpression:    aws.String(keyConditionExpression),
+		KeyConditionExpression:    new(keyConditionExpression),
 		FilterExpression:          filterExpression,
 		ExpressionAttributeNames:  expressionAttributeNames,
 		ExpressionAttributeValues: expressionAttributeValues,
-		ScanIndexForward:          aws.Bool(false),
-		IndexName:                 aws.String(gameTableOwnerIndex),
-		TableName:                 aws.String(gameTable),
+		ScanIndexForward:          new(false),
+		IndexName:                 new(gameTableOwnerIndex),
+		TableName:                 new(gameTable),
 	}
 
 	var games []*Game
@@ -570,15 +569,15 @@ func (repo *dynamoRepository) listColorGames(player string, color PlayerColor, s
 	expressionAttrName := fmt.Sprintf("#%s", color)
 	keyConditionExpression := fmt.Sprintf("%s = :player", expressionAttrName)
 	expressionAttributeNames := map[string]*string{
-		expressionAttrName: aws.String(string(color)),
-		"#unlisted":        aws.String("unlisted"),
+		expressionAttrName: new(string(color)),
+		"#unlisted":        new("unlisted"),
 	}
 	expressionAttributeValues := map[string]*dynamodb.AttributeValue{
 		":player": {
-			S: aws.String(strings.ToLower(player)),
+			S: new(strings.ToLower(player)),
 		},
 		":unlisted": {
-			BOOL: aws.Bool(true),
+			BOOL: new(true),
 		},
 	}
 
@@ -590,13 +589,13 @@ func (repo *dynamoRepository) listColorGames(player string, color PlayerColor, s
 	}
 
 	input := &dynamodb.QueryInput{
-		KeyConditionExpression:    aws.String(keyConditionExpression),
-		FilterExpression:          aws.String("attribute_not_exists(unlisted) OR #unlisted <> :unlisted"),
+		KeyConditionExpression:    new(keyConditionExpression),
+		FilterExpression:          new("attribute_not_exists(unlisted) OR #unlisted <> :unlisted"),
 		ExpressionAttributeNames:  expressionAttributeNames,
 		ExpressionAttributeValues: expressionAttributeValues,
-		ScanIndexForward:          aws.Bool(false),
-		IndexName:                 aws.String(indexName),
-		TableName:                 aws.String(gameTable),
+		ScanIndexForward:          new(false),
+		IndexName:                 new(indexName),
+		TableName:                 new(gameTable),
 	}
 
 	var games []*Game
@@ -610,20 +609,20 @@ func (repo *dynamoRepository) listColorGames(player string, color PlayerColor, s
 // ListFeaturedGames returns a list of Games featured more recently than the provided date.
 func (repo *dynamoRepository) ListFeaturedGames(date, startKey string) ([]*Game, string, error) {
 	input := &dynamodb.QueryInput{
-		KeyConditionExpression: aws.String("#f = :true AND #d >= :d"),
-		FilterExpression:       aws.String("attribute_not_exists(unlisted) OR #unlisted <> :unlisted"),
+		KeyConditionExpression: new("#f = :true AND #d >= :d"),
+		FilterExpression:       new("attribute_not_exists(unlisted) OR #unlisted <> :unlisted"),
 		ExpressionAttributeNames: map[string]*string{
-			"#f":        aws.String("isFeatured"),
-			"#d":        aws.String("featuredAt"),
-			"#unlisted": aws.String("unlisted"),
+			"#f":        new("isFeatured"),
+			"#d":        new("featuredAt"),
+			"#unlisted": new("unlisted"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":true":     {S: aws.String("true")},
-			":d":        {S: aws.String(date)},
-			":unlisted": {BOOL: aws.Bool(true)},
+			":true":     {S: new("true")},
+			":d":        {S: new(date)},
+			":unlisted": {BOOL: new(true)},
 		},
-		IndexName: aws.String(gameTableFeaturedIndex),
-		TableName: aws.String(gameTable),
+		IndexName: new(gameTableFeaturedIndex),
+		TableName: new(gameTable),
 	}
 
 	var games []*Game
@@ -639,27 +638,27 @@ func (repo *dynamoRepository) ListFeaturedGames(date, startKey string) ([]*Game,
 func (repo *dynamoRepository) ListGamesByEco(eco, startDate, endDate, startKey string) ([]*Game, string, error) {
 	filterExpression := "#h.#eco = :eco AND (attribute_not_exists(unlisted) OR #unlisted <> :unlisted)"
 	expressionAttributeNames := map[string]*string{
-		"#h":        aws.String("headers"),
-		"#eco":      aws.String("ECO"),
-		"#unlisted": aws.String("unlisted"),
+		"#h":        new("headers"),
+		"#eco":      new("ECO"),
+		"#unlisted": new("unlisted"),
 	}
 	expressionAttributeValues := map[string]*dynamodb.AttributeValue{
 		":eco": {
-			S: aws.String(eco),
+			S: new(eco),
 		},
 		":unlisted": {
-			BOOL: aws.Bool(true),
+			BOOL: new(true),
 		},
 	}
 
 	filterExpression = addDates(filterExpression, expressionAttributeNames, expressionAttributeValues, startDate, endDate)
 
 	input := &dynamodb.ScanInput{
-		FilterExpression:          aws.String(filterExpression),
+		FilterExpression:          new(filterExpression),
 		ExpressionAttributeNames:  expressionAttributeNames,
 		ExpressionAttributeValues: expressionAttributeValues,
-		IndexName:                 aws.String(gameTableOwnerIndex),
-		TableName:                 aws.String(gameTable),
+		IndexName:                 new(gameTableOwnerIndex),
+		TableName:                 new(gameTable),
 	}
 
 	var games []*Game
@@ -674,15 +673,15 @@ func (repo *dynamoRepository) ListGamesByEco(eco, startDate, endDate, startKey s
 // the senseis.
 func (repo *dynamoRepository) ListGamesForReview(startKey string) ([]Game, string, error) {
 	input := &dynamodb.QueryInput{
-		KeyConditionExpression: aws.String("#rs = :rs"),
+		KeyConditionExpression: new("#rs = :rs"),
 		ExpressionAttributeNames: map[string]*string{
-			"#rs": aws.String("reviewStatus"),
+			"#rs": new("reviewStatus"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":rs": {S: aws.String(string(GameReviewStatus_Pending))},
+			":rs": {S: new(string(GameReviewStatus_Pending))},
 		},
-		IndexName: aws.String(gameTableReviewIndex),
-		TableName: aws.String(gameTable),
+		IndexName: new(gameTableReviewIndex),
+		TableName: new(gameTable),
 	}
 
 	var games []Game
@@ -696,16 +695,16 @@ func (repo *dynamoRepository) ListGamesForReview(startKey string) ([]Game, strin
 // ScanCohort returns a list of all Games in the provided cohort, including the PGN text.
 func (repo *dynamoRepository) ScanCohort(cohort DojoCohort, startKey string) ([]*Game, string, error) {
 	input := &dynamodb.QueryInput{
-		KeyConditionExpression: aws.String("#cohort = :cohort"),
+		KeyConditionExpression: new("#cohort = :cohort"),
 		ExpressionAttributeNames: map[string]*string{
-			"#cohort": aws.String("cohort"),
+			"#cohort": new("cohort"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":cohort": {
-				S: aws.String(string(cohort)),
+				S: new(string(cohort)),
 			},
 		},
-		TableName: aws.String(gameTable),
+		TableName: new(gameTable),
 	}
 
 	var games []*Game
@@ -734,11 +733,11 @@ func (repo *dynamoRepository) PutComment(cohort, id string, comment *PositionCom
 
 	if !skipMapCreation {
 		input = &dynamodb.UpdateItemInput{
-			ConditionExpression: aws.String("attribute_exists(cohort) AND attribute_not_exists(#p.#fen)"),
-			UpdateExpression:    aws.String("SET #p.#fen = :p"),
+			ConditionExpression: new("attribute_exists(cohort) AND attribute_not_exists(#p.#fen)"),
+			UpdateExpression:    new("SET #p.#fen = :p"),
 			ExpressionAttributeNames: map[string]*string{
-				"#p":   aws.String("positionComments"),
-				"#fen": aws.String(comment.Fen),
+				"#p":   new("positionComments"),
+				"#fen": new(comment.Fen),
 			},
 			ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 				":p": {
@@ -751,14 +750,14 @@ func (repo *dynamoRepository) PutComment(cohort, id string, comment *PositionCom
 			},
 			Key: map[string]*dynamodb.AttributeValue{
 				"cohort": {
-					S: aws.String(cohort),
+					S: new(cohort),
 				},
 				"id": {
-					S: aws.String(id),
+					S: new(id),
 				},
 			},
-			ReturnValues: aws.String("ALL_NEW"),
-			TableName:    aws.String(gameTable),
+			ReturnValues: new("ALL_NEW"),
+			TableName:    new(gameTable),
 		}
 
 		game := Game{}
@@ -776,29 +775,29 @@ func (repo *dynamoRepository) PutComment(cohort, id string, comment *PositionCom
 	// we need to add the new comment to the existing map
 
 	exprAttrNames := map[string]*string{
-		"#p":   aws.String("positionComments"),
-		"#fen": aws.String(comment.Fen),
-		"#id":  aws.String(comment.Id),
+		"#p":   new("positionComments"),
+		"#fen": new(comment.Fen),
+		"#id":  new(comment.Id),
 	}
 	parentPath := getCommentPath(comment.ParentIds, exprAttrNames)
 
 	input = &dynamodb.UpdateItemInput{
-		ConditionExpression:      aws.String("attribute_exists(cohort) AND attribute_exists(#p.#fen)"),
-		UpdateExpression:         aws.String(fmt.Sprintf("SET #p.#fen.%s#id = :c", parentPath)),
+		ConditionExpression:      new("attribute_exists(cohort) AND attribute_exists(#p.#fen)"),
+		UpdateExpression:         new(fmt.Sprintf("SET #p.#fen.%s#id = :c", parentPath)),
 		ExpressionAttributeNames: exprAttrNames,
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":c": {M: item},
 		},
 		Key: map[string]*dynamodb.AttributeValue{
 			"cohort": {
-				S: aws.String(cohort),
+				S: new(cohort),
 			},
 			"id": {
-				S: aws.String(id),
+				S: new(id),
 			},
 		},
-		ReturnValues: aws.String("ALL_NEW"),
-		TableName:    aws.String(gameTable),
+		ReturnValues: new("ALL_NEW"),
+		TableName:    new(gameTable),
 	}
 
 	game := Game{}
@@ -815,38 +814,38 @@ func (repo *dynamoRepository) PutComment(cohort, id string, comment *PositionCom
 // UpdateComment applies the given position comment update to the database. The game after update is returned.
 func (repo *dynamoRepository) UpdateComment(owner string, update *PositionCommentUpdate) (*Game, error) {
 	exprAttrNames := map[string]*string{
-		"#p":         aws.String("positionComments"),
-		"#fen":       aws.String(update.Fen),
-		"#id":        aws.String(update.Id),
-		"#owner":     aws.String("owner"),
-		"#username":  aws.String("username"),
-		"#content":   aws.String("content"),
-		"#updated":   aws.String("updatedAt"),
-		"#variation": aws.String("suggestedVariation"),
+		"#p":         new("positionComments"),
+		"#fen":       new(update.Fen),
+		"#id":        new(update.Id),
+		"#owner":     new("owner"),
+		"#username":  new("username"),
+		"#content":   new("content"),
+		"#updated":   new("updatedAt"),
+		"#variation": new("suggestedVariation"),
 	}
 	parentPath := getCommentPath(update.ParentIds, exprAttrNames)
 	updateExpr := fmt.Sprintf("SET #p.#fen.%s#id.#content = :c, #p.#fen.%s#id.#variation = :v, #p.#fen.%s#id.#updated = :u", parentPath, parentPath, parentPath)
 
 	input := &dynamodb.UpdateItemInput{
-		ConditionExpression:      aws.String(fmt.Sprintf("#p.#fen.%s#id.#owner.#username = :owner", parentPath)),
-		UpdateExpression:         aws.String(updateExpr),
+		ConditionExpression:      new(fmt.Sprintf("#p.#fen.%s#id.#owner.#username = :owner", parentPath)),
+		UpdateExpression:         new(updateExpr),
 		ExpressionAttributeNames: exprAttrNames,
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":owner": {S: aws.String(owner)},
-			":c":     {S: aws.String(update.Content)},
-			":v":     {S: aws.String(update.SuggestedVariation)},
-			":u":     {S: aws.String(time.Now().Format(time.RFC3339))},
+			":owner": {S: new(owner)},
+			":c":     {S: new(update.Content)},
+			":v":     {S: new(update.SuggestedVariation)},
+			":u":     {S: new(time.Now().Format(time.RFC3339))},
 		},
 		Key: map[string]*dynamodb.AttributeValue{
 			"cohort": {
-				S: aws.String(string(update.Cohort)),
+				S: new(string(update.Cohort)),
 			},
 			"id": {
-				S: aws.String(update.GameId),
+				S: new(update.GameId),
 			},
 		},
-		ReturnValues: aws.String("ALL_NEW"),
-		TableName:    aws.String(gameTable),
+		ReturnValues: new("ALL_NEW"),
+		TableName:    new(gameTable),
 	}
 
 	game := Game{}
@@ -864,31 +863,31 @@ func (repo *dynamoRepository) UpdateComment(owner string, update *PositionCommen
 // any replies to the comment. The updated game is returned.
 func (repo *dynamoRepository) DeleteComment(owner string, update *PositionCommentUpdate) (*Game, error) {
 	exprAttrNames := map[string]*string{
-		"#p":        aws.String("positionComments"),
-		"#fen":      aws.String(update.Fen),
-		"#id":       aws.String(update.Id),
-		"#owner":    aws.String("owner"),
-		"#username": aws.String("username"),
+		"#p":        new("positionComments"),
+		"#fen":      new(update.Fen),
+		"#id":       new(update.Id),
+		"#owner":    new("owner"),
+		"#username": new("username"),
 	}
 	parentPath := getCommentPath(update.ParentIds, exprAttrNames)
 
 	input := &dynamodb.UpdateItemInput{
-		ConditionExpression:      aws.String(fmt.Sprintf("#p.#fen.%s#id.#owner.#username = :owner", parentPath)),
-		UpdateExpression:         aws.String(fmt.Sprintf("REMOVE #p.#fen.%s#id", parentPath)),
+		ConditionExpression:      new(fmt.Sprintf("#p.#fen.%s#id.#owner.#username = :owner", parentPath)),
+		UpdateExpression:         new(fmt.Sprintf("REMOVE #p.#fen.%s#id", parentPath)),
 		ExpressionAttributeNames: exprAttrNames,
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":owner": {S: aws.String(owner)},
+			":owner": {S: new(owner)},
 		},
 		Key: map[string]*dynamodb.AttributeValue{
 			"cohort": {
-				S: aws.String(string(update.Cohort)),
+				S: new(string(update.Cohort)),
 			},
 			"id": {
-				S: aws.String(update.GameId),
+				S: new(update.GameId),
 			},
 		},
-		ReturnValues: aws.String("ALL_NEW"),
-		TableName:    aws.String(gameTable),
+		ReturnValues: new("ALL_NEW"),
+		TableName:    new(gameTable),
 	}
 
 	game := Game{}
@@ -922,18 +921,18 @@ func (repo *dynamoRepository) UpdateGame(cohort, id string, update *GameUpdate) 
 	input := &dynamodb.UpdateItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
 			"cohort": {
-				S: aws.String(cohort),
+				S: new(cohort),
 			},
 			"id": {
-				S: aws.String(id),
+				S: new(id),
 			},
 		},
 		ExpressionAttributeNames:  expr.Names(),
 		ExpressionAttributeValues: expr.Values(),
 		UpdateExpression:          expr.Update(),
-		ConditionExpression:       aws.String("attribute_exists(id)"),
-		TableName:                 aws.String(gameTable),
-		ReturnValues:              aws.String("ALL_NEW"),
+		ConditionExpression:       new("attribute_exists(id)"),
+		TableName:                 new(gameTable),
+		ReturnValues:              new("ALL_NEW"),
 	}
 
 	game := Game{}
@@ -957,23 +956,23 @@ func (repo *dynamoRepository) SetGameReview(cohort, id string, review *GameRevie
 	input := &dynamodb.UpdateItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
 			"cohort": {
-				S: aws.String(cohort),
+				S: new(cohort),
 			},
 			"id": {
-				S: aws.String(id),
+				S: new(id),
 			},
 		},
-		ConditionExpression: aws.String("attribute_exists(id)"),
-		UpdateExpression:    aws.String("REMOVE #reviewStatus SET #review = :r"),
+		ConditionExpression: new("attribute_exists(id)"),
+		UpdateExpression:    new("REMOVE #reviewStatus SET #review = :r"),
 		ExpressionAttributeNames: map[string]*string{
-			"#reviewStatus": aws.String("reviewStatus"),
-			"#review":       aws.String("review"),
+			"#reviewStatus": new("reviewStatus"),
+			"#review":       new("review"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":r": {M: item},
 		},
-		ReturnValues: aws.String("ALL_NEW"),
-		TableName:    aws.String(gameTable),
+		ReturnValues: new("ALL_NEW"),
+		TableName:    new(gameTable),
 	}
 
 	game := Game{}
@@ -996,10 +995,10 @@ func getCommentPath(parentIds string, exprAttrNames map[string]*string) string {
 	parentIdList := strings.Split(parentIds, ",")
 	for i, id := range parentIdList {
 		parentPath.WriteString(fmt.Sprintf("#parent%d.#replies.", i))
-		exprAttrNames[fmt.Sprintf("#parent%d", i)] = aws.String(id)
+		exprAttrNames[fmt.Sprintf("#parent%d", i)] = new(id)
 	}
 	if len(parentIdList) > 0 {
-		exprAttrNames["#replies"] = aws.String("replies")
+		exprAttrNames["#replies"] = new("replies")
 	}
 	return parentPath.String()
 }

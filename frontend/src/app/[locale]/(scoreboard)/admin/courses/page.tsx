@@ -1,5 +1,6 @@
 'use client';
 
+import { listAdminCourses } from '@/api/courseApi';
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { Link } from '@/components/navigation/Link';
 import { Course, CourseStatus, displayCourseType, isCoursePublished } from '@/database/course';
@@ -18,7 +19,6 @@ import {
     Typography,
 } from '@mui/material';
 import { useEffect } from 'react';
-import { listAdminCourses } from 'src/api/courseApi';
 
 export default function AdminCourseListPage() {
     const request = useRequest<Course[]>();

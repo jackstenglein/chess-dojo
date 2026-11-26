@@ -2,7 +2,7 @@ import { Request, RequestStatus, useRequest } from '@/api/Request';
 import { ListGamesResponse } from '@/api/gameApi';
 import { GameInfo, GameKey } from '@/database/game';
 import { AxiosResponse } from 'axios';
-import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react';
+import { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
 import { useNextSearchParams } from './useNextSearchParams';
 
 export type SearchFunc = (startKey: string) => Promise<AxiosResponse<ListGamesResponse>>;
@@ -40,6 +40,8 @@ export function usePagination(
     const [games, setGames] = useState<GameInfo[]>([]);
     const [startKey, setStartKey] = useState<string | undefined>('');
     const [searchFunc, setSearchFunc] = useState<SearchFunc | null>(() => initialSearchFunc);
+    // Incremented by onSearch so responses from earlier searches are ignored.
+    const searchId = useRef(0);
 
     const page = parseInt(searchParams.get('page') || `${initialPage}`);
     const pageSize = parseInt(searchParams.get('pageSize') || `${initialPageSize}`);
@@ -65,6 +67,7 @@ export function usePagination(
 
     const onSearch = useCallback(
         (searchFunc: SearchFunc) => {
+            searchId.current++;
             reset();
             setGames([]);
             setStartKey('');
@@ -108,9 +111,13 @@ export function usePagination(
 
         // We need to fetch the next page
         request.onStart();
+        const currentSearchId = searchId.current;
 
         searchFunc(startKey)
             .then((response) => {
+                if (currentSearchId !== searchId.current) {
+                    return;
+                }
                 request.onSuccess();
                 const newGames = filterFunc
                     ? response.data.games.filter(filterFunc)
@@ -119,6 +126,9 @@ export function usePagination(
                 setStartKey(response.data.lastEvaluatedKey);
             })
             .catch((err) => {
+                if (currentSearchId !== searchId.current) {
+                    return;
+                }
                 request.onFailure(err);
             });
     }, [page, pageSize, games, startKey, searchFunc, filterFunc, request]);

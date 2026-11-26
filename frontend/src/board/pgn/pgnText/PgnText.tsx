@@ -3,14 +3,19 @@ import { UnpublishedGameBanner } from '@/components/games/edit/UnpublishedGameBa
 import { UnsavedGameBanner } from '@/components/games/edit/UnsavedGameBanner';
 import useGame from '@/context/useGame';
 import { useLightMode } from '@/style/useLightMode';
-import { Card, Stack } from '@mui/material';
-import React, { useMemo, useRef } from 'react';
+import { Box, Card, Stack } from '@mui/material';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Resizable, ResizeCallbackData } from 'react-resizable';
 import { useLocalStorage } from 'usehooks-ts';
 import { useChess } from '../PgnBoard';
 import ResizeHandle from '../ResizeHandle';
 import { SaveAllVariationsButton } from '../boardTools/underboard/comments/SaveAllVariationsButton';
 import { HideEngine } from '../boardTools/underboard/settings/ViewerSettings';
+import {
+    getPgnTextFontSx,
+    PgnTextFontSize,
+    PgnTextFontSizeKey,
+} from '../boardTools/underboard/settings/viewerSettingsConstants';
 import { ResizableData } from '../resize';
 import GameComment from './GameComment';
 import Result from './Result';
@@ -22,6 +27,10 @@ const PgnTextBody = () => {
     const ref = useRef<HTMLDivElement>(null);
     const { config, slots, slotProps, solitaire } = useChess();
     const [hideEngine] = useLocalStorage(HideEngine.Key, HideEngine.Default);
+    const [fontSize] = useLocalStorage<PgnTextFontSize>(
+        PgnTextFontSizeKey,
+        PgnTextFontSize.Standard,
+    );
 
     const handleScroll = (child: HTMLElement | null) => {
         const scrollParent = ref.current;
@@ -39,7 +48,12 @@ const PgnTextBody = () => {
 
     return (
         <>
-            {!config?.disableEngine && !hideEngine && !solitaire?.enabled && <EngineSection />}
+            {slots?.beforePgnText}
+            {!config?.disableEngine &&
+                !hideEngine &&
+                (!solitaire?.enabled || solitaire?.complete || solitaire?.enableEngine) && (
+                    <EngineSection onToggle={solitaire?.stop} />
+                )}
             <Stack
                 ref={ref}
                 sx={{
@@ -48,6 +62,7 @@ const PgnTextBody = () => {
                     flexGrow: 1,
                     minHeight: 0,
                     width: 1,
+                    ...getPgnTextFontSx(fontSize),
                 }}
             >
                 <GameComment />
@@ -61,6 +76,7 @@ const PgnTextBody = () => {
                     <SolitaireAfterPgnText />
                 ) : undefined}
             </Stack>
+            {slots?.pgnFooter}
         </>
     );
 };
@@ -116,19 +132,39 @@ const PgnText = () => {
 };
 
 interface ResizablePgnTextProps {
+    hidden?: boolean;
     resizeData: ResizableData;
     onResize: (width: number, height: number) => void;
 }
 
 export const ResizablePgnText: React.FC<ResizablePgnTextProps> = (props) => {
-    const { resizeData, onResize } = props;
-    const { chess } = useChess();
+    const { resizeData, onResize, hidden } = props;
+    const { chess, slots } = useChess();
 
     const handleResize = (_: React.SyntheticEvent, data: ResizeCallbackData) => {
         onResize(data.size.width, data.size.height);
     };
 
     const Pgn = useMemo(() => <PgnText />, []);
+
+    // With a footer, the panel reaches down to the bottom of the window, so the footer sits at the
+    // bottom of the screen and the room left in the middle is there for the engine's lines.
+    const rootRef = useRef<HTMLDivElement>(null);
+    const [roomBelow, setRoomBelow] = useState(0);
+    const hasFooter = Boolean(slots?.pgnFooter);
+    useEffect(() => {
+        if (!hasFooter) return;
+        const measure = () => {
+            const top = rootRef.current?.getBoundingClientRect().top;
+            if (top !== undefined) {
+                setRoomBelow(Math.floor(window.innerHeight - (top + window.scrollY) - 16));
+            }
+        };
+        measure();
+        window.addEventListener('resize', measure);
+        return () => window.removeEventListener('resize', measure);
+    }, [hasFooter]);
+    const panelHeight = Math.max(resizeData.height, hasFooter ? roomBelow : 0);
 
     return (
         <Resizable
@@ -140,14 +176,36 @@ export const ResizablePgnText: React.FC<ResizablePgnTextProps> = (props) => {
             handle={<ResizeHandle />}
         >
             <Stack
+                ref={rootRef}
                 sx={{
                     mb: { xs: 1, md: 0 },
+                    display: hidden ? 'none' : undefined,
                     width: `${resizeData.width}px`,
-                    maxHeight: `${resizeData.height}px`,
+                    maxHeight: `${panelHeight}px`,
+                    ...(hasFooter ? { height: `${panelHeight}px` } : {}),
                     visibility: chess ? undefined : 'hidden',
+                    position: 'relative',
                 }}
             >
                 {Pgn}
+                {slots?.overPgnText && (
+                    <Box
+                        sx={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: 1,
+                            height: `${panelHeight}px`,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            pointerEvents: 'none',
+                            zIndex: 2,
+                        }}
+                    >
+                        {slots.overPgnText}
+                    </Box>
+                )}
             </Stack>
         </Resizable>
     );

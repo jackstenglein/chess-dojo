@@ -4,8 +4,8 @@ import { useAuth } from '@/auth/Auth';
 import { Link } from '@/components/navigation/Link';
 import { RequirementCategory } from '@/database/requirement';
 import { dojoCohorts, GameScheduleEntry } from '@/database/user';
-import { CategoryColors, themeRequirementCategory } from '@/style/ThemeProvider';
-import { AddCircle, Check, Delete, Help, NotInterested } from '@mui/icons-material';
+import { CategoryColors } from '@/style/ThemeProvider';
+import { AddCircle, CalendarMonth, Close, Delete, Help, NotInterested } from '@mui/icons-material';
 import {
     Box,
     Button,
@@ -31,59 +31,67 @@ import { DatePicker } from '@mui/x-date-pickers-pro';
 import { DateTime } from 'luxon';
 import { useTranslations } from 'next-intl';
 import { use, useState } from 'react';
+import { CategoryLabel } from './CategoryLabel';
+import {
+    dailyCardActionsSx,
+    dailyCardSx,
+    dailyPrimaryButtonSx,
+    DailyTimePill,
+} from './daily/DailyCard';
+import { DailyTaskMenu, DailyTaskMenuAction } from './daily/DailyTaskMenu';
 import {
     CLASSICAL_GAMES_TASK_ID,
     getUpcomingGameSchedule,
     SCHEDULE_CLASSICAL_GAME_TASK_ID,
 } from './suggestedTasks';
 import { TaskDialogView } from './TaskDialog';
-import { TimeProgressChip } from './TimeProgressChip';
 import { TrainingPlanContext } from './TrainingPlanTab';
 
 export function ScheduleClassicalGameDaily() {
     const t = useTranslations('profile.trainingPlan.scheduleGame');
     const tCommon = useTranslations('profile.trainingPlan.common');
-    const tCategory = useTranslations('enums.requirementCategory');
     const { user, isCurrentUser, toggleSkip } = use(TrainingPlanContext);
     const [taskDialogView, setTaskDialogView] = useState<
         TaskDialogView.Details | TaskDialogView.Progress
     >();
     const upcomingGames = getUpcomingGameSchedule(user.gameSchedule);
 
+    const menuActions: DailyTaskMenuAction[] = [
+        {
+            key: 'details',
+            label: tCommon('viewTaskDetails'),
+            icon: <Help fontSize='small' />,
+            onClick: () => setTaskDialogView(TaskDialogView.Details),
+        },
+    ];
+    if (isCurrentUser) {
+        menuActions.push({
+            key: 'skip',
+            label: tCommon('skipForWeek'),
+            icon: <NotInterested fontSize='small' />,
+            onClick: () => toggleSkip(CLASSICAL_GAMES_TASK_ID, SCHEDULE_CLASSICAL_GAME_TASK_ID),
+        });
+    }
+
     return (
         <Grid size={{ xs: 12, md: 4 }}>
-            <Card
-                variant='outlined'
-                sx={{
-                    height: 1,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    opacity: upcomingGames.length ? 0.6 : undefined,
-                }}
-            >
+            <Card variant='outlined' sx={dailyCardSx(upcomingGames.length > 0)}>
+                <DailyTaskMenu actions={menuActions} />
+
                 <CardActionArea
-                    sx={{ flexGrow: 1 }}
+                    sx={{
+                        flexGrow: 1,
+                        borderRadius: 'inherit',
+                        opacity: upcomingGames.length ? 0.75 : undefined,
+                    }}
                     onClick={() => setTaskDialogView(TaskDialogView.Details)}
                 >
-                    <CardContent sx={{ height: 1 }}>
-                        <Stack
-                            spacing={1}
-                            sx={{
-                                alignItems: 'start',
-                            }}
-                        >
-                            <Chip
-                                variant='outlined'
-                                label={tCategory(RequirementCategory.Games)}
-                                color={themeRequirementCategory(RequirementCategory.Games)}
-                                size='small'
-                            />
+                    <CardContent sx={{ height: 1, p: 2.5, pb: 1.5 }}>
+                        <Stack spacing={1} sx={{ alignItems: 'start', pr: 3 }}>
+                            <CategoryLabel category={RequirementCategory.Games} />
 
                             <Typography
-                                variant='h6'
-                                sx={{
-                                    fontWeight: 'bold',
-                                }}
+                                sx={{ fontWeight: 700, fontSize: '1.1rem', lineHeight: 1.3 }}
                             >
                                 {t('title')}
                             </Typography>
@@ -92,68 +100,51 @@ export function ScheduleClassicalGameDaily() {
                         <Box
                             sx={{
                                 color: 'text.secondary',
+                                fontSize: '0.875rem',
+                                lineHeight: 1.55,
                                 mt: 1,
-                                lineClamp: 4,
+                                lineClamp: 2,
                                 display: '-webkit-box',
-                                WebkitLineClamp: 4,
+                                WebkitLineClamp: 2,
                                 WebkitBoxOrient: 'vertical',
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
                             }}
                         >
-                            <Typography>{t('cardDescription')}</Typography>
+                            {t('cardDescription')}
                         </Box>
                     </CardContent>
                 </CardActionArea>
-                <CardActions disableSpacing>
-                    <Tooltip title={tCommon('viewTaskDetails')}>
-                        <IconButton
-                            sx={{ color: 'text.secondary' }}
-                            onClick={() => setTaskDialogView(TaskDialogView.Details)}
-                        >
-                            <Help />
-                        </IconButton>
-                    </Tooltip>
-
+                <CardActions disableSpacing sx={dailyCardActionsSx}>
                     {isCurrentUser && (
-                        <>
-                            <Tooltip title={tCommon('skipForWeek')}>
-                                <IconButton
-                                    onClick={() =>
-                                        toggleSkip(
-                                            CLASSICAL_GAMES_TASK_ID,
-                                            SCHEDULE_CLASSICAL_GAME_TASK_ID,
-                                        )
-                                    }
-                                    sx={{
-                                        color: 'text.secondary',
-                                        marginLeft: 'auto',
-                                    }}
-                                >
-                                    <NotInterested />
-                                </IconButton>
-                            </Tooltip>
-                        </>
+                        <Button
+                            size='small'
+                            variant='contained'
+                            disableElevation
+                            startIcon={<CalendarMonth />}
+                            onClick={() => setTaskDialogView(TaskDialogView.Progress)}
+                            sx={dailyPrimaryButtonSx}
+                            data-testid='schedule-game-button'
+                        >
+                            {t('scheduleAction')}
+                        </Button>
                     )}
 
+                    <Box sx={{ flexGrow: 1 }} />
+
                     <Tooltip title={isCurrentUser ? t('scheduleGameTooltip') : ''}>
-                        <TimeProgressChip
-                            value={upcomingGames.length}
-                            goal={1}
-                            slotProps={{
-                                chip: {
-                                    label: t('gamesLabel', { count: upcomingGames.length }),
-                                    icon:
-                                        upcomingGames.length > 0 ? (
-                                            <Check fontSize='inherit' color='success' />
-                                        ) : undefined,
-                                    onClick: isCurrentUser
+                        <span>
+                            <DailyTimePill
+                                worked={upcomingGames.length}
+                                goal={1}
+                                label={t('gamesLabel', { count: upcomingGames.length })}
+                                onClick={
+                                    isCurrentUser
                                         ? () => setTaskDialogView(TaskDialogView.Progress)
-                                        : undefined,
-                                },
-                                container: { sx: { mx: 0.5 } },
-                            }}
-                        />
+                                        : undefined
+                                }
+                            />
+                        </span>
                     </Tooltip>
                 </CardActions>
             </Card>
@@ -163,6 +154,7 @@ export function ScheduleClassicalGameDaily() {
                     open
                     onClose={() => setTaskDialogView(undefined)}
                     initialView={taskDialogView}
+                    isCurrentUser={isCurrentUser}
                 />
             )}
         </Grid>
@@ -171,12 +163,12 @@ export function ScheduleClassicalGameDaily() {
 
 export const ScheduleClassicalGame = ({ hideChip }: { hideChip?: boolean }) => {
     const t = useTranslations('profile.trainingPlan.scheduleGame');
-    const { user } = useAuth();
+    const { user, isCurrentUser } = use(TrainingPlanContext);
     const [taskDialogView, setTaskDialogView] = useState<
         TaskDialogView.Details | TaskDialogView.Progress
     >();
 
-    const upcomingGames = getUpcomingGameSchedule(user?.gameSchedule);
+    const upcomingGames = getUpcomingGameSchedule(user.gameSchedule);
     return (
         <Stack
             spacing={2}
@@ -233,10 +225,11 @@ export const ScheduleClassicalGame = ({ hideChip }: { hideChip?: boolean }) => {
                             justifyContent: 'end',
                         }}
                     >
-                        <Tooltip title={t('updateTooltip')}>
+                        <Tooltip title={isCurrentUser ? t('updateTooltip') : ''}>
                             <Checkbox
                                 checked={upcomingGames.length > 0}
                                 onClick={() => setTaskDialogView(TaskDialogView.Progress)}
+                                disabled={!isCurrentUser}
                             />
                         </Tooltip>
                     </Stack>
@@ -249,6 +242,7 @@ export const ScheduleClassicalGame = ({ hideChip }: { hideChip?: boolean }) => {
                     open
                     onClose={() => setTaskDialogView(undefined)}
                     initialView={taskDialogView}
+                    isCurrentUser={isCurrentUser}
                 />
             )}
         </Stack>
@@ -259,17 +253,20 @@ interface ScheduleClassicalGameDialogProps {
     open: boolean;
     onClose: () => void;
     initialView: TaskDialogView.Details | TaskDialogView.Progress;
+    isCurrentUser: boolean;
 }
 
 function ScheduleClassicalGameDialog({
     open,
     onClose,
     initialView,
+    isCurrentUser,
 }: ScheduleClassicalGameDialogProps) {
     const t = useTranslations('profile.trainingPlan.scheduleGame');
     const tCommon = useTranslations('profile.trainingPlan.common');
     const { user } = useAuth();
-    const [view, setView] = useState(initialView);
+    const [selectedView, setView] = useState(initialView);
+    const view = isCurrentUser ? selectedView : TaskDialogView.Details;
     const [entries, setEntries] = useState<ScheduleFormEntry[]>(
         getScheduleFormEntries(user?.gameSchedule),
     );
@@ -279,6 +276,10 @@ function ScheduleClassicalGameDialog({
     const request = useRequest();
 
     const onSave = () => {
+        if (!isCurrentUser) {
+            return;
+        }
+
         const errors: Record<number, { date?: string; count?: string }> = {};
         const parsed: { date: string; count: number }[] = [];
 
@@ -327,7 +328,17 @@ function ScheduleClassicalGameDialog({
             maxWidth='md'
             fullWidth
         >
-            <DialogTitle>{t('title')}</DialogTitle>
+            <DialogTitle sx={{ pr: 7 }}>
+                {t('title')}
+                <IconButton
+                    aria-label={tCommon('close')}
+                    disabled={request.isLoading()}
+                    onClick={onClose}
+                    sx={{ position: 'absolute', top: 12, right: 12, color: 'text.secondary' }}
+                >
+                    <Close fontSize='small' />
+                </IconButton>
+            </DialogTitle>
 
             <DialogContent>
                 {view === TaskDialogView.Details && <ScheduleClassicalGameDialogDetails />}
@@ -340,28 +351,30 @@ function ScheduleClassicalGameDialog({
                 )}
             </DialogContent>
 
-            <DialogActions>
-                <Button disabled={request.isLoading()} onClick={onClose}>
-                    {tCommon('cancel')}
-                </Button>
-                {view === TaskDialogView.Details ? (
-                    <Button onClick={() => setView(TaskDialogView.Progress)}>
-                        {t('updateSchedule')}
+            {isCurrentUser && (
+                <DialogActions>
+                    <Button disabled={request.isLoading()} onClick={onClose}>
+                        {tCommon('cancel')}
                     </Button>
-                ) : (
-                    <>
-                        <Button
-                            disabled={request.isLoading()}
-                            onClick={() => setView(TaskDialogView.Details)}
-                        >
-                            {tCommon('taskDetails')}
+                    {view === TaskDialogView.Details ? (
+                        <Button onClick={() => setView(TaskDialogView.Progress)}>
+                            {t('updateSchedule')}
                         </Button>
-                        <Button loading={request.isLoading()} onClick={onSave}>
-                            {tCommon('save')}
-                        </Button>
-                    </>
-                )}
-            </DialogActions>
+                    ) : (
+                        <>
+                            <Button
+                                disabled={request.isLoading()}
+                                onClick={() => setView(TaskDialogView.Details)}
+                            >
+                                {tCommon('taskDetails')}
+                            </Button>
+                            <Button loading={request.isLoading()} onClick={onSave}>
+                                {tCommon('save')}
+                            </Button>
+                        </>
+                    )}
+                </DialogActions>
+            )}
         </Dialog>
     );
 }

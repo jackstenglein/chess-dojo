@@ -31,6 +31,8 @@ export function MemorizeGamesPage({ user }: { user: User }) {
     const getRequest = useRequest<Game>();
     const [selectedIndex, setSelectedIndex] = useState(0);
     const [mode, setMode] = useState<'study' | 'test'>('study');
+    // Stays on screen while the next game loads; getRequest drops its data.
+    const [game, setGame] = useState<Game>();
     const isFreeTier = useFreeTier();
 
     useEffect(() => {
@@ -61,6 +63,7 @@ export function MemorizeGamesPage({ user }: { user: User }) {
             api.getGame(gameInfo.cohort, gameInfo.id)
                 .then((res) => {
                     getRequest.onSuccess(res.data);
+                    setGame(res.data);
                 })
                 .catch((err) => {
                     getRequest.onFailure(err);
@@ -102,7 +105,7 @@ export function MemorizeGamesPage({ user }: { user: User }) {
 
             <PgnBoard
                 ref={pgnRef}
-                pgn={getRequest.data?.pgn}
+                pgn={game?.pgn}
                 underboardTabs={[
                     {
                         name: 'gameList',

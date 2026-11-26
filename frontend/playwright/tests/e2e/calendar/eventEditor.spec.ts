@@ -1,5 +1,5 @@
 import { expect, Page, test } from '@playwright/test';
-import { interceptApi, useFreeTier } from '../../../lib/helpers';
+import { interceptApi, useFreeTier, useUserOverride } from '../../../lib/helpers';
 import { dateMapper, Event } from '../../../lib/utils';
 import { events as initialEvents } from './events';
 
@@ -41,6 +41,7 @@ test.describe('Event Editor', () => {
             statusCode: 200,
             body: { events },
         });
+        await useUserOverride(page, { dojoCohort: '1500-1600', timezoneOverride: 'Etc/GMT+0' });
         await page.goto('/calendar');
         await expect(page.locator('[data-testid=calendar-filters]:visible')).toBeVisible();
     });

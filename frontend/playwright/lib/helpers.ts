@@ -1,3 +1,10 @@
+import type {
+    RatingSystem,
+    SubscriptionStatus,
+    SubscriptionTier,
+    TimeFormat,
+    User,
+} from '@jackstenglein/chess-dojo-common/src/database/user';
 import { expect, Locator, Page } from '@playwright/test';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -71,28 +78,18 @@ export async function waitForNavigation(
  * Intercepts the /user API request to replace the subscription status field
  * in the response so that the current user is on the free tier.
  */
-export async function useFreeTier(page: Page) {
-    await page.route(`${getEnv('apiBaseUrl')}/user`, async (route) => {
-        const response = await route.fetch();
-        const body = (await response.json()) as object;
-        await route.fulfill({
-            response,
-            contentType: 'application/json',
-            body: JSON.stringify({
-                ...body,
-                subscriptionStatus: 'NOT_SUBSCRIBED',
-            }),
-        });
+export function useFreeTier(page: Page) {
+    return useUserOverride(page, {
+        subscriptionStatus: 'NOT_SUBSCRIBED' as SubscriptionStatus,
     });
-    await page.route(`${getEnv('apiBaseUrl')}/user/access/v2`, (route) => route.abort());
 }
 
 /** Minimal user returned when the live /user fetch fails in admin tests. */
-const fallbackAdminUser = {
+const fallbackAdminUser: Partial<User> = {
     username: 'test-admin',
     displayName: 'Test Admin',
-    subscriptionStatus: 'SUBSCRIBED',
-    subscriptionTier: 'BASIC',
+    subscriptionStatus: 'SUBSCRIBED' as SubscriptionStatus,
+    subscriptionTier: 'BASIC' as SubscriptionTier,
     dojoCohort: '1400-1500',
     isAdmin: true,
     isCalendarAdmin: false,
@@ -100,11 +97,11 @@ const fallbackAdminUser = {
     hasCreatedProfile: true,
     progress: {},
     ratings: {},
-    ratingSystem: 'CHESSCOM',
+    ratingSystem: 'CHESSCOM' as RatingSystem,
     createdAt: '2022-05-01T17:00:00Z',
     updatedAt: '2026-01-01T00:00:00Z',
     timezoneOverride: 'DEFAULT',
-    timeFormat: '24',
+    timeFormat: '24' as TimeFormat,
     weekStart: 0,
 };
 
@@ -115,7 +112,20 @@ const fallbackAdminUser = {
  * Falls back to a static admin user if the live API fetch fails, so tests do
  * not flake when Cognito tokens expire or the API is briefly unavailable.
  */
-export async function useAdminUser(page: Page) {
+export function useAdminUser(page: Page) {
+    return useUserOverride(page, { isAdmin: true }, fallbackAdminUser);
+}
+
+/**
+ * Intercepts the /user API request to add the given user fields as overrides for a test.
+ *
+ * Falls back to the given fallback user if the live API fetch fails, so tests do not
+ * flake when Cognito tokens expire or the API is briefly unavailable.
+ * @param page The playwright page object.
+ * @param user The user attributes to override in the test.
+ * @param fallback The fallback user to use if the fetch fails.
+ */
+export async function useUserOverride(page: Page, user: Partial<User>, fallback?: Partial<User>) {
     await page.route(`${getEnv('apiBaseUrl')}/user`, async (route) => {
         if (route.request().method() !== 'GET') {
             await route.continue();
@@ -127,20 +137,20 @@ export async function useAdminUser(page: Page) {
             if (!response.ok()) {
                 throw new Error(`GET /user returned ${response.status()}`);
             }
-            const body = (await response.json()) as object;
+            const body = (await response.json()) as User;
             await route.fulfill({
                 response,
                 contentType: 'application/json',
                 body: JSON.stringify({
                     ...body,
-                    isAdmin: true,
+                    ...user,
                 }),
             });
         } catch {
             await route.fulfill({
                 status: 200,
                 contentType: 'application/json',
-                body: JSON.stringify(fallbackAdminUser),
+                body: JSON.stringify(fallback ?? null),
             });
         }
     });

@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -64,24 +65,14 @@ func IsValidCohort(c DojoCohort) bool {
 	if c == AllCohorts {
 		return true
 	}
-	for _, c2 := range Cohorts {
-		if c == c2 {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(Cohorts, c)
 }
 
 func (c DojoCohort) IsValid() bool {
 	if c == AllCohorts {
 		return true
 	}
-	for _, c2 := range Cohorts {
-		if c == c2 {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(Cohorts, c)
 }
 
 // GetNextCohort returns the cohort after the provided one or
@@ -262,6 +253,10 @@ type User struct {
 	// Whether to enable zen mode on the site
 	EnableZenMode bool `dynamodbav:"enableZenMode,omitempty" json:"enableZenMode"`
 
+	// The layout the user last picked on the World Championship live page:
+	// stream, analysis or analysis2. Empty until they pick one.
+	WcLiveLayout string `dynamodbav:"wcLiveLayout,omitempty" json:"wcLiveLayout,omitempty"`
+
 	// The user's preferred timezone on the calendar
 	TimezoneOverride string `dynamodbav:"timezoneOverride" json:"timezoneOverride"`
 
@@ -338,6 +333,12 @@ type User struct {
 	// The IDs of the user's pinned tasks.
 	PinnedTasks []string `dynamodbav:"pinnedTasks,omitempty" json:"pinnedTasks"`
 
+	// The minutes the user has set aside for each pinned task, by day of the week.
+	// Maps a task id to 7 numbers (Sunday is index 0; Saturday is index 6), where 0
+	// means the task is not planned that day. A pinned task with no entry is planned
+	// every day and shares the day's time with the suggested tasks.
+	PinnedTaskMinutes map[string][]int `dynamodbav:"pinnedTaskMinutes,omitempty" json:"pinnedTaskMinutes,omitempty"`
+
 	// The day the user's week starts on. Sunday is 0; Saturday is 6.
 	WeekStart int `dynamodbav:"weekStart,omitempty" json:"weekStart"`
 
@@ -387,6 +388,9 @@ type User struct {
 
 	// The user's aggregate time management rating, computed from games in their mygames folder
 	TimeManagementRating *TimeManagementRating `dynamodbav:"timeManagementRating,omitempty" json:"timeManagementRating,omitempty"`
+
+	// Daily aggregate time management ratings, dated by the games played.
+	TimeManagementRatingHistory []RatingHistory `dynamodbav:"timeManagementRatingHistory,omitempty" json:"timeManagementRatingHistory,omitempty"`
 }
 
 // TimeManagementRating holds the user's aggregate time management rating.
@@ -496,6 +500,9 @@ type WeeklyPlan struct {
 
 	// The ids of the user's pinned tasks (in order) when the weekly plan was last generated.
 	PinnedTasks []string `dynamodbav:"pinnedTasks,omitempty" json:"pinnedTasks,omitempty"`
+
+	// The user's pinned task minutes when the weekly plan was last generated.
+	PinnedTaskMinutes map[string][]int `dynamodbav:"pinnedTaskMinutes,omitempty" json:"pinnedTaskMinutes,omitempty"`
 
 	// The date (in ISO 8601) of the user's next scheduled game when the weekly plan was last generated.
 	NextGame string `dynamodbav:"nextGame,omitempty" json:"nextGame"`
@@ -631,11 +638,14 @@ func (u *User) GetCohort() DojoCohort {
 
 // GetRatings returns the start and current ratings in the user's preferred rating system.
 func (u *User) GetRatings() (int, int) {
-	if u == nil {
+	if u == nil || u.Ratings == nil {
 		return 0, 0
 	}
 
 	r := u.Ratings[u.RatingSystem]
+	if r == nil {
+		return 0, 0
+	}
 	return r.StartRating, r.CurrentRating
 }
 
@@ -799,6 +809,9 @@ type UserUpdate struct {
 	// Whether to enable zen mode on the site
 	EnableZenMode *bool `dynamodbav:"enableZenMode,omitempty" json:"enableZenMode,omitempty"`
 
+	// The layout the user last picked on the World Championship live page.
+	WcLiveLayout *string `dynamodbav:"wcLiveLayout,omitempty" json:"wcLiveLayout,omitempty"`
+
 	// The user's preferred timezone on the calendar
 	TimezoneOverride *string `dynamodbav:"timezoneOverride,omitempty" json:"timezoneOverride,omitempty"`
 
@@ -863,6 +876,9 @@ type UserUpdate struct {
 
 	// The IDs of the user's pinned tasks.
 	PinnedTasks *[]string `dynamodbav:"pinnedTasks,omitempty" json:"pinnedTasks,omitempty"`
+
+	// The minutes the user has set aside for each pinned task, by day of the week.
+	PinnedTaskMinutes *map[string][]int `dynamodbav:"pinnedTaskMinutes,omitempty" json:"pinnedTaskMinutes,omitempty"`
 
 	// The day the user's week starts on. Sunday is 0; Saturday is 6.
 	WeekStart *int `dynamodbav:"weekStart,omitempty" json:"weekStart,omitempty"`
@@ -1044,7 +1060,7 @@ func (repo *dynamoRepository) CreateUser(username, email, name string, paymentIn
 		SubscriptionTier:   subscriptionTier,
 	}
 
-	err := repo.SetUserConditional(user, aws.String("attribute_not_exists(username)"))
+	err := repo.SetUserConditional(user, new("attribute_not_exists(username)"))
 	if err != nil {
 		return nil, err
 	}
@@ -1087,7 +1103,7 @@ func (repo *dynamoRepository) SetUserConditional(user *User, condition *string) 
 	input := &dynamodb.PutItemInput{
 		ConditionExpression: condition,
 		Item:                item,
-		TableName:           aws.String(userTable),
+		TableName:           new(userTable),
 	}
 
 	_, err = repo.svc.PutItem(input)
@@ -1154,7 +1170,7 @@ func (repo *dynamoRepository) createDefaultDirectories(user *User) error {
 
 	input := &dynamodb.PutItemInput{
 		Item:      item,
-		TableName: aws.String(directoryTable),
+		TableName: new(directoryTable),
 	}
 	_, err = repo.svc.PutItem(input)
 	if err != nil {
@@ -1179,7 +1195,7 @@ func (repo *dynamoRepository) createDefaultDirectories(user *User) error {
 	item["itemIds"] = &dynamodb.AttributeValue{L: make([]*dynamodb.AttributeValue, 0)}
 	input = &dynamodb.PutItemInput{
 		Item:      item,
-		TableName: aws.String(directoryTable),
+		TableName: new(directoryTable),
 	}
 	_, err = repo.svc.PutItem(input)
 	return err
@@ -1218,7 +1234,7 @@ func (repo *dynamoRepository) updateUser(
 		return nil, errors.New(403, "Invalid request: cannot update username `STATISTICS`", "")
 	}
 
-	update.UpdatedAt = aws.String(time.Now().Format(time.RFC3339))
+	update.UpdatedAt = new(time.Now().Format(time.RFC3339))
 
 	encoder := dynamodbattribute.NewEncoder()
 	encoder.NullEmptyString = false
@@ -1241,15 +1257,15 @@ func (repo *dynamoRepository) updateUser(
 	input := &dynamodb.UpdateItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
 			"username": {
-				S: aws.String(username),
+				S: new(username),
 			},
 		},
 		ExpressionAttributeNames:  expr.Names(),
 		ExpressionAttributeValues: expr.Values(),
 		UpdateExpression:          expr.Update(),
 		ConditionExpression:       expr.Condition(),
-		TableName:                 aws.String(userTable),
-		ReturnValues:              aws.String("ALL_NEW"),
+		TableName:                 new(userTable),
+		ReturnValues:              new("ALL_NEW"),
 	}
 	result, err := repo.svc.UpdateItem(input)
 	if err != nil {
@@ -1278,22 +1294,22 @@ func (repo *dynamoRepository) UpdateUserProgress(username string, progressEntry 
 	input := &dynamodb.UpdateItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
 			"username": {
-				S: aws.String(username),
+				S: new(username),
 			},
 		},
-		UpdateExpression: aws.String("SET #p.#id = :p, #u = :u"),
+		UpdateExpression: new("SET #p.#id = :p, #u = :u"),
 		ExpressionAttributeNames: map[string]*string{
-			"#p":  aws.String("progress"),
-			"#id": aws.String(progressEntry.RequirementId),
-			"#u":  aws.String("updatedAt"),
+			"#p":  new("progress"),
+			"#id": new(progressEntry.RequirementId),
+			"#u":  new("updatedAt"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":p": pav,
-			":u": {S: aws.String(updatedAt)},
+			":u": {S: new(updatedAt)},
 		},
-		ConditionExpression: aws.String("attribute_exists(username)"),
-		ReturnValues:        aws.String("ALL_NEW"),
-		TableName:           aws.String(userTable),
+		ConditionExpression: new("attribute_exists(username)"),
+		ReturnValues:        new("ALL_NEW"),
+		TableName:           new(userTable),
 	}
 	result, err := repo.svc.UpdateItem(input)
 	if err != nil {
@@ -1315,16 +1331,16 @@ func (repo *dynamoRepository) UpdateUserProgress(username string, progressEntry 
 func (repo *dynamoRepository) AddSentMilestoneNotification(username string, milestoneKey string) error {
 	input := &dynamodb.UpdateItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
-			"username": {S: aws.String(username)},
+			"username": {S: new(username)},
 		},
-		UpdateExpression: aws.String("ADD #smn :mk"),
+		UpdateExpression: new("ADD #smn :mk"),
 		ExpressionAttributeNames: map[string]*string{
-			"#smn": aws.String("sentMilestoneNotifications"),
+			"#smn": new("sentMilestoneNotifications"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":mk": {SS: []*string{aws.String(milestoneKey)}},
+			":mk": {SS: []*string{new(milestoneKey)}},
 		},
-		TableName: aws.String(userTable),
+		TableName: new(userTable),
 	}
 	_, err := repo.svc.UpdateItem(input)
 	return errors.Wrap(500, "Temporary server error", "Failed to add milestone notification", err)
@@ -1339,10 +1355,10 @@ func (repo *dynamoRepository) GetUser(username string) (*User, error) {
 	input := &dynamodb.GetItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
 			"username": {
-				S: aws.String(username),
+				S: new(username),
 			},
 		},
-		TableName: aws.String(userTable),
+		TableName: new(userTable),
 	}
 
 	user := User{}
@@ -1355,11 +1371,11 @@ func (repo *dynamoRepository) GetUser(username string) (*User, error) {
 // GetUserByDiscordId returns the User object with the provided Discord ID.
 func (repo *dynamoRepository) GetUserByDiscordId(discordId string) (*User, error) {
 	input := &dynamodb.QueryInput{
-		KeyConditionExpression:    aws.String("#discordId = :discordId"),
-		ExpressionAttributeNames:  map[string]*string{"#discordId": aws.String("discordId")},
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{":discordId": {S: aws.String(discordId)}},
-		TableName:                 aws.String(userTable),
-		IndexName:                 aws.String("DiscordIdIdx"),
+		KeyConditionExpression:    new("#discordId = :discordId"),
+		ExpressionAttributeNames:  map[string]*string{"#discordId": new("discordId")},
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{":discordId": {S: new(discordId)}},
+		TableName:                 new(userTable),
+		IndexName:                 new("DiscordIdIdx"),
 	}
 
 	var results []*User
@@ -1386,18 +1402,18 @@ func (repo *dynamoRepository) ListUsersByCohort(cohort DojoCohort, startKey stri
 
 	monthAgo := time.Now().Add(ONE_MONTH_AGO).Format(time.RFC3339)
 	input := &dynamodb.QueryInput{
-		KeyConditionExpression: aws.String("#cohort = :cohort"),
+		KeyConditionExpression: new("#cohort = :cohort"),
 		ExpressionAttributeNames: map[string]*string{
-			"#cohort": aws.String("dojoCohort"),
-			"#u":      aws.String("updatedAt"),
+			"#cohort": new("dojoCohort"),
+			"#u":      new("updatedAt"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":cohort": {S: aws.String(string(cohort))},
-			":u":      {S: aws.String(monthAgo)},
+			":cohort": {S: new(string(cohort))},
+			":u":      {S: new(monthAgo)},
 		},
-		FilterExpression: aws.String("#u >= :u"),
-		IndexName:        aws.String("CohortIdx"),
-		TableName:        aws.String(userTable),
+		FilterExpression: new("#u >= :u"),
+		IndexName:        new("CohortIdx"),
+		TableName:        new(userTable),
 	}
 
 	var users []*User
@@ -1415,11 +1431,11 @@ func (repo *dynamoRepository) ScanUsers(startKey string) ([]*User, string, error
 	input := &dynamodb.ScanInput{
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":statistics": {
-				S: aws.String("STATISTICS"),
+				S: new("STATISTICS"),
 			},
 		},
-		FilterExpression: aws.String("username <> :statistics"),
-		TableName:        aws.String(userTable),
+		FilterExpression: new("username <> :statistics"),
+		TableName:        new(userTable),
 	}
 
 	var users []*User
@@ -1455,16 +1471,16 @@ func (repo *dynamoRepository) ListUserRatingsPage(cohort DojoCohort, startKey st
 
 func listUserRatingsInput(cohort DojoCohort, limit int64) *dynamodb.QueryInput {
 	input := &dynamodb.QueryInput{
-		KeyConditionExpression: aws.String("#cohort = :cohort"),
+		KeyConditionExpression: new("#cohort = :cohort"),
 		ExpressionAttributeNames: map[string]*string{
-			"#cohort": aws.String("dojoCohort"),
+			"#cohort": new("dojoCohort"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":cohort": {S: aws.String(string(cohort))},
+			":cohort": {S: new(string(cohort))},
 		},
-		ProjectionExpression: aws.String(ratingsProjection),
-		IndexName:            aws.String("CohortIdx"),
-		TableName:            aws.String(userTable),
+		ProjectionExpression: new(ratingsProjection),
+		IndexName:            new("CohortIdx"),
+		TableName:            new(userTable),
 	}
 	if limit > 0 {
 		input.SetLimit(limit)
@@ -1485,7 +1501,7 @@ func (repo *dynamoRepository) UpdateUserRatings(users []*User) error {
 		}
 
 		statement := &dynamodb.BatchStatementRequest{
-			Statement: aws.String(fmt.Sprintf(
+			Statement: new(fmt.Sprintf(
 				"UPDATE \"%s\" SET ratings=? SET ratingHistories=? SET lichessBan=? WHERE username=?", userTable,
 			)),
 			Parameters: params,
@@ -1549,7 +1565,7 @@ func (repo *dynamoRepository) UpdateUserTimes(users []*User) error {
 	var sb strings.Builder
 	statements := make([]*dynamodb.BatchStatementRequest, 0, len(users))
 	for _, user := range users {
-		params, err := dynamodbattribute.MarshalList([]interface{}{user.TotalDojoScore, user.MinutesSpent})
+		params, err := dynamodbattribute.MarshalList([]any{user.TotalDojoScore, user.MinutesSpent})
 		if err != nil {
 			return errors.Wrap(500, "Temporary server error", "Failed to marshal user.MinutesSpent", err)
 		}
@@ -1559,7 +1575,7 @@ func (repo *dynamoRepository) UpdateUserTimes(users []*User) error {
 		sb.WriteString(fmt.Sprintf(" WHERE username='%s'", user.Username))
 
 		statement := &dynamodb.BatchStatementRequest{
-			Statement:  aws.String(sb.String()),
+			Statement:  new(sb.String()),
 			Parameters: params,
 		}
 		statements = append(statements, statement)
@@ -1595,7 +1611,7 @@ func (repo *dynamoRepository) UpdateUserSubscriptionStatuses(users []*User) erro
 		sb.WriteString(fmt.Sprintf(" WHERE username='%s'", user.Username))
 
 		statement := &dynamodb.BatchStatementRequest{
-			Statement:  aws.String(sb.String()),
+			Statement:  new(sb.String()),
 			Parameters: params,
 		}
 		statements = append(statements, statement)
@@ -1631,11 +1647,11 @@ func (repo *dynamoRepository) DeleteUser(username string) error {
 	}
 
 	input := &dynamodb.DeleteItemInput{
-		ConditionExpression: aws.String("attribute_exists(username)"),
+		ConditionExpression: new("attribute_exists(username)"),
 		Key: map[string]*dynamodb.AttributeValue{
-			"username": {S: aws.String(username)},
+			"username": {S: new(username)},
 		},
-		TableName: aws.String(userTable),
+		TableName: new(userTable),
 	}
 	_, err := repo.svc.DeleteItem(input)
 	return errors.Wrap(500, "Temporary server error", "Failed DynamoDB DeleteItem", err)
@@ -1649,7 +1665,7 @@ func (repo *dynamoRepository) SearchUsers(query string, fields []string, startKe
 
 	var filter strings.Builder
 	expressionAttrNames := map[string]*string{
-		"#search": aws.String("searchKey"),
+		"#search": new("searchKey"),
 	}
 	expressionAttrValues := make(map[string]*dynamodb.AttributeValue)
 
@@ -1658,9 +1674,9 @@ func (repo *dynamoRepository) SearchUsers(query string, fields []string, startKe
 
 		field = strings.ToLower(field)
 		if field == "all" {
-			attrValue = &dynamodb.AttributeValue{S: aws.String(query)}
+			attrValue = &dynamodb.AttributeValue{S: new(query)}
 		} else {
-			attrValue = &dynamodb.AttributeValue{S: aws.String(fmt.Sprintf("%s:%s", field, query))}
+			attrValue = &dynamodb.AttributeValue{S: new(fmt.Sprintf("%s:%s", field, query))}
 		}
 
 		if i > 0 {
@@ -1671,11 +1687,11 @@ func (repo *dynamoRepository) SearchUsers(query string, fields []string, startKe
 	}
 
 	input := &dynamodb.ScanInput{
-		FilterExpression:          aws.String(filter.String()),
+		FilterExpression:          new(filter.String()),
 		ExpressionAttributeNames:  expressionAttrNames,
 		ExpressionAttributeValues: expressionAttrValues,
-		IndexName:                 aws.String("SearchIdx"),
-		TableName:                 aws.String(userTable),
+		IndexName:                 new("SearchIdx"),
+		TableName:                 new(userTable),
 	}
 
 	var users []*User
@@ -1714,7 +1730,7 @@ func (repo *dynamoRepository) BatchGetUsersProjection(usernames []string, projec
 
 	for _, u := range usernames {
 		key := map[string]*dynamodb.AttributeValue{
-			"username": {S: aws.String(u)},
+			"username": {S: new(u)},
 		}
 		input.RequestItems[userTable].Keys = append(input.RequestItems[userTable].Keys, key)
 	}

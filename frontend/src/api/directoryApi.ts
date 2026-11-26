@@ -12,8 +12,10 @@ import {
     PerformanceStats,
     RemoveDirectoryItemsRequestV2,
     ShareDirectoryRequest,
+    ShareDirectoryResponse,
     UpdateDirectoryRequestV2,
 } from '@jackstenglein/chess-dojo-common/src/database/directory';
+import { TimeManagementRating } from '@jackstenglein/chess-dojo-common/src/ratings/timeManagement';
 import { AxiosResponse } from 'axios';
 import { axiosService } from './axiosService';
 
@@ -68,7 +70,9 @@ export interface DirectoryApiContextType {
      * @param request The request to share the directory.
      * @returns An AxiosResponse containing the updated directory.
      */
-    shareDirectory: (request: ShareDirectoryRequest) => Promise<AxiosResponse<Directory>>;
+    shareDirectory: (
+        request: ShareDirectoryRequest,
+    ) => Promise<AxiosResponse<ShareDirectoryResponse>>;
 
     /**
      * Sends an API request to delete the given directories, which must all have the same parent.
@@ -129,6 +133,9 @@ export interface GetDirectoryResponse {
 export interface GetDirectoryStatsResponse {
     /** The performance stats for the requested user. */
     stats: PerformanceStats;
+
+    /** The time management rating for the requested player in this directory. */
+    timeManagementRating: TimeManagementRating;
 }
 
 /**
@@ -237,14 +244,11 @@ export function updateDirectory(idToken: string, request: UpdateDirectoryRequest
  * @returns The updated directory.
  */
 export function shareDirectory(idToken: string, request: ShareDirectoryRequest) {
-    return axiosService.put<Directory>(
-        `/directory/${request.owner}/${request.id}/share`,
-        { access: request.access },
-        {
-            headers: { Authorization: `Bearer ${idToken}` },
-            functionName: 'shareDirectory',
-        },
-    );
+    const { owner, id, ...body } = request;
+    return axiosService.put<ShareDirectoryResponse>(`/directory/${owner}/${id}/share`, body, {
+        headers: { Authorization: `Bearer ${idToken}` },
+        functionName: 'shareDirectory',
+    });
 }
 
 /**

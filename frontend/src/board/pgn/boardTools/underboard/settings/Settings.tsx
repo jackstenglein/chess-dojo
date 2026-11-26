@@ -22,7 +22,7 @@ const Settings: React.FC<SettingsProps> = ({ showEditor, sidePanelTabs }) => {
             <Stack spacing={6}>
                 {showEditor && game && <GameSettings game={game} onSaveGame={onSaveGame} />}
                 {viewer?.isAdmin && game && <AdminSettings game={game} onSaveGame={onSaveGame} />}
-                <EditorSettings />
+                {showEditor && <EditorSettings />}
                 <ViewerSettings />
                 {sidePanelTabs && sidePanelTabs.length > 0 && (
                     <SidePanelSettings tabs={sidePanelTabs} />

@@ -173,12 +173,10 @@ func metaPurchaseEvent(checkoutSession *stripe.CheckoutSession) error {
 	request := metaRequest{
 		Data: []any{
 			metaPurchaseEventRequest{
-				metaBaseEvent: metaBaseEvent{
-					EventName:      "Purchase",
-					EventTime:      int(time.Now().Unix()),
-					ActionSource:   "website",
-					EventSourceUrl: frontendHost,
-				},
+				EventName:      "Purchase",
+				EventTime:      int(time.Now().Unix()),
+				ActionSource:   "website",
+				EventSourceUrl: frontendHost,
 				UserData: metaUserData{
 					UserAgent: checkoutSession.Metadata["userAgent"],
 					Email:     email,

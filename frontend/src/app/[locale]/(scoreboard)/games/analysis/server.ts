@@ -1,10 +1,17 @@
 'use server';
 
 import { CandidateMove, Chess } from '@jackstenglein/chess';
+import {
+    LichessFetcher,
+    PgnImportError,
+    PgnImportResult,
+} from '@jackstenglein/chess-dojo-common/src/lichess/lichess';
 import tcn from '@savi2w/chess-tcn';
 import axios from 'axios';
 import { Browser, BrowserErrorCaptureEnum } from 'happy-dom';
 import moment from 'moment';
+
+export type { PgnImportError, PgnImportResult };
 
 const chesscomGameRegexes = [
     new RegExp('/game/(live|daily)/(\\d+)'),
@@ -12,14 +19,7 @@ const chesscomGameRegexes = [
 ];
 const chesscomEventRegex = new RegExp('/events/(.*)');
 
-export interface PgnImportError {
-    statusCode: number;
-    publicMessage: string;
-    privateMessage?: string;
-}
-
-export type PgnImportResult<T> =
-    { data: T; error?: undefined } | { data?: undefined; error: PgnImportError };
+const lichessFetcher = new LichessFetcher(process.env.LICHESS_API_TOKEN);
 
 interface GetChesscomByIdResponse {
     game?: {
@@ -54,73 +54,12 @@ interface ChesscomEventResponse {
 }
 
 /**
- * Returns the specified pathname segment from the given URL.
- * @param url The URL to extract the pathname segment from.
- * @param idx The index of the pathname segment to extract.
- * @returns The specified pathname segment from the URL.
- */
-function getPathSegment(url: string | undefined, idx: number): PgnImportResult<string> {
-    if (!url) {
-        return {
-            error: {
-                statusCode: 400,
-                publicMessage: 'URL required',
-                privateMessage: 'Attempted to parse an undefined URL',
-            },
-        };
-    }
-
-    let urlObj: URL;
-    try {
-        urlObj = new URL(url.trim());
-    } catch (_error) {
-        return {
-            error: {
-                statusCode: 400,
-                publicMessage: 'Invalid url',
-                privateMessage: `Was unable to parse this URL: ${url}`,
-            },
-        };
-    }
-
-    const parts = urlObj.pathname.split('/').filter((part) => part);
-    if (idx >= parts.length) {
-        return {
-            error: {
-                statusCode: 400,
-                publicMessage: 'Invalid url',
-                privateMessage: `Attempted to extract path segment index ${idx}, but only ${parts.length} segments found in url: ${url}`,
-            },
-        };
-    }
-
-    return { data: parts[idx] };
-}
-
-/**
  * Fetches the PGN of the given Lichess game.
  * @param url The URL of the Lichess game.
  * @returns The PGN of the Lichess game.
  */
-export async function getLichessGame(url?: string): Promise<PgnImportResult<string>> {
-    const { data, error } = getPathSegment(url, 0);
-    if (error) {
-        return { error };
-    }
-
-    // Lichess has a weird URL format for games, where the players get a special game ID
-    // with extra characters at the end. Fetching this special game ID from the API results
-    // in a 404, whereas truncating to only the first 8 characters will return the game.
-    const gameId = data?.substring(0, 8);
-    try {
-        const exportUrl = `https://lichess.org/game/export/${gameId}?evals=0&clocks=1`;
-        const response = await axios.get<string>(exportUrl, {
-            headers: { Accept: 'application/x-chess-pgn' },
-        });
-        return { data: response.data };
-    } catch (err: unknown) {
-        return handleError('Lichess Game', err);
-    }
+export async function getLichessGame(url?: string) {
+    return lichessFetcher.getLichessGame(url);
 }
 
 /**
@@ -128,25 +67,8 @@ export async function getLichessGame(url?: string): Promise<PgnImportResult<stri
  * @param url The URL of the Lichess study chapter.
  * @returns The PGN of the chapter.
  */
-export async function getLichessChapter(url?: string): Promise<PgnImportResult<string>> {
-    const studyIdResp = getPathSegment(url, 1);
-    if (studyIdResp.error) {
-        return studyIdResp;
-    }
-
-    const chapterIdResp = getPathSegment(url, 2);
-    if (chapterIdResp.error) {
-        return chapterIdResp;
-    }
-
-    const exportUrl = `https://lichess.org/study/${studyIdResp.data}/${chapterIdResp.data}.pgn?source=true`;
-
-    try {
-        const response = await axios.get<string>(exportUrl);
-        return { data: response.data };
-    } catch (err) {
-        return handleError('Lichess Study Chapter', err);
-    }
+export async function getLichessChapter(url?: string) {
+    return lichessFetcher.getLichessChapter(url);
 }
 
 /**
@@ -155,87 +77,7 @@ export async function getLichessChapter(url?: string): Promise<PgnImportResult<s
  * @returns A list of the PGNs in the study.
  */
 export async function getLichessStudy(url?: string): Promise<PgnImportResult<string[]>> {
-    const studyIdResp = getPathSegment(url, 1);
-    if (studyIdResp.error) {
-        return studyIdResp;
-    }
-
-    const exportUrl = `https://lichess.org/study/${studyIdResp.data}.pgn?source=true`;
-    try {
-        const response = await axios.get<string>(exportUrl);
-        return { data: splitPgns(response.data) };
-    } catch (err) {
-        return handleError('Lichess Study', err);
-    }
-}
-
-/**
- * Splits a list of PGNs in the same string into a list of strings,
- * using the provided separator.
- * @param pgns The PGN string to split.
- * @param separator The separator to split around. Defaults to a game
- * termination symbol, followed by 1 or more newlines, followed by the [ character.
- * @returns The list of split PGNs.
- */
-function splitPgns(pgns: string, separator = /(1-0|0-1|1\/2-1\/2|\*)(\r?\n)+\[/): string[] {
-    const splits = pgns.split(separator);
-    const games: string[] = [];
-
-    for (const split of splits) {
-        if (isValidResult(split) && games.length > 0) {
-            games[games.length - 1] += split;
-        } else if (split.startsWith('[') || /^\d+/.exec(split.trim())) {
-            games.push(split);
-        } else if (split.trim().length > 0) {
-            games.push(`[${split}`);
-        }
-    }
-
-    return games.map((g) => g.trim()).filter((v) => v !== '');
-}
-
-/**
- * Throws a descriptive ApiError based on the error received when fetching
- * data from Lichess.
- * @param requested A description of the requested Lichess entity.
- * @param err The error thrown when fetching the Lichess entity.
- */
-function handleError<T>(requested: string, err: unknown): PgnImportResult<T> {
-    if (axios.isAxiosError(err) && err.response !== undefined) {
-        const status = err.response.status;
-        if (status === 403 || status === 401) {
-            return {
-                error: {
-                    statusCode: 400,
-                    publicMessage: `${requested} settings forbid exporting.`,
-                },
-            };
-        } else if (status === 404) {
-            return {
-                error: {
-                    statusCode: 400,
-                    publicMessage: `${requested} not found.`,
-                },
-            };
-        }
-    }
-
-    return {
-        error: {
-            statusCode: 500,
-            publicMessage: 'Uknown error',
-        },
-    };
-}
-
-/**
- * Returns true if the given result is a valid PGN result.
- *
- * @param result The result to check.
- * @returns True if the given result is valid.
- */
-function isValidResult(result?: string): boolean {
-    return !!result && ['1-0', '0-1', '1/2-1/2', '*'].includes(result);
+    return lichessFetcher.getLichessStudy(url);
 }
 
 /**

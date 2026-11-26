@@ -179,7 +179,7 @@ func TestIsStandard(t *testing.T) {
 	}
 
 	// Games 0-2 are standard, game 3 is chess960.
-	for i := 0; i < 3; i++ {
+	for i := range 3 {
 		if !result[i].IsStandard() {
 			t.Errorf("game %d: expected standard", i)
 		}
@@ -562,4 +562,3 @@ func mustReadFileB(b *testing.B, path string) []byte {
 func BenchmarkGames_12Archives(b *testing.B) {
 	benchGames(b, 12)
 }
-
