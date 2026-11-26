@@ -16,7 +16,12 @@ import { TrainingPlanContext } from '../TrainingPlanTab';
 import { getBucketCategory, getBucketColor } from './bucketColors';
 import { getPlanProgress } from './bucketProgress';
 import { ConfirmDialog } from './ConfirmDialog';
-import { FREE_PLAN_MAX_TASKS_PER_BUCKET, getProgressResets, sortFreePlanBuckets } from './freePlan';
+import {
+    FREE_BUCKET_NAME_KEYS,
+    FREE_PLAN_MAX_TASKS_PER_BUCKET,
+    getProgressResets,
+    sortFreePlanBuckets,
+} from './freePlan';
 import { FreeTaskEditor } from './FreeTaskEditor';
 import { PlanTypeIcon } from './PlanTypeIcon';
 import { useFreePlanEditor } from './useFreePlanEditor';
@@ -141,6 +146,11 @@ function BucketCard({
     const bucketTasks = bucket.taskIds.map((id) => tasks.get(id)).filter((task) => !!task);
     const { percent } = getPlanProgress(bucketTasks, user, user.dojoCohort, timeline);
     const isFull = bucket.taskIds.length >= FREE_PLAN_MAX_TASKS_PER_BUCKET;
+    // Shown in the current language, whatever name the plan was saved with.
+    const bucketName =
+        category && category in FREE_BUCKET_NAME_KEYS
+            ? t(FREE_BUCKET_NAME_KEYS[category as keyof typeof FREE_BUCKET_NAME_KEYS])
+            : bucket.name;
 
     return (
         <Card
@@ -149,7 +159,7 @@ function BucketCard({
             data-testid={`free-bucket-${bucket.id}`}
         >
             <Stack direction='row' sx={{ alignItems: 'center', gap: 2, px: 2, pt: 1.5, pb: 1 }}>
-                <Typography sx={{ fontWeight: 600, flexShrink: 0 }}>{bucket.name}</Typography>
+                <Typography sx={{ fontWeight: 600, flexShrink: 0 }}>{bucketName}</Typography>
                 <LinearProgress
                     variant='determinate'
                     value={percent}
@@ -230,7 +240,7 @@ function BucketCard({
 
             {adding && (
                 <FreeTaskEditor
-                    bucketName={bucket.name}
+                    bucketName={bucketName}
                     category={editorCategory}
                     onClose={() => setAdding(false)}
                     onSave={(fields) => addTask(plan, bucket.id, fields)}
@@ -239,7 +249,7 @@ function BucketCard({
 
             {editing && (
                 <FreeTaskEditor
-                    bucketName={bucket.name}
+                    bucketName={bucketName}
                     category={editing.category}
                     task={editing}
                     onClose={() => setEditing(undefined)}

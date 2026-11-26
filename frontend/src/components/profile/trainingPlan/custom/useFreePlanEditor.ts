@@ -1,7 +1,7 @@
 import { EventType, trackEvent } from '@/analytics/events';
 import { useApi } from '@/api/Api';
 import { useAuth } from '@/auth/Auth';
-import { CustomTaskCategory, RequirementCategory } from '@/database/requirement';
+import { CustomTaskCategory } from '@/database/requirement';
 import { CustomPlan, User } from '@/database/user';
 import { useTranslations } from 'next-intl';
 import { createContext, use } from 'react';
@@ -15,6 +15,8 @@ import {
 import {
     buildFreePlan,
     buildFreeTask,
+    FREE_BUCKET_NAME_KEYS,
+    FREE_PLAN_CATEGORIES,
     FREE_PLAN_MAX_TASKS_PER_BUCKET,
     FreeTaskFields,
     getProgressResets,
@@ -89,13 +91,9 @@ export function useFreePlanEditor() {
             return;
         }
 
-        const bucketNames: Record<CustomTaskCategory, string> = {
-            [RequirementCategory.Games]: t('bucketGames'),
-            [RequirementCategory.Tactics]: t('bucketTactics'),
-            [RequirementCategory.Middlegames]: t('bucketMiddlegames'),
-            [RequirementCategory.Endgame]: t('bucketEndgames'),
-            [RequirementCategory.Opening]: t('bucketOpenings'),
-        };
+        const bucketNames = Object.fromEntries(
+            FREE_PLAN_CATEGORIES.map((c) => [c, t(FREE_BUCKET_NAME_KEYS[c])]),
+        ) as Record<CustomTaskCategory, string>;
         const plan = buildFreePlan(user.username, t('planName'), bucketNames);
         save({ customPlans: [plan], ...switchPlanUpdate(user, plan.id) });
         trackEvent(EventType.CreateCustomPlan, { plan_id: plan.id, start_from_dojo: false });
