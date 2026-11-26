@@ -7,7 +7,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { Box, Button, Chip, Divider, IconButton, Menu, MenuItem, Stack } from '@mui/material';
 import { useState } from 'react';
 import { MatchRound } from './lichessFeed';
-import { GAME_PICKER_HEIGHT } from './liveLayout';
+import { GAME_PICKER_HEIGHT, TABLET_UPRIGHT } from './liveLayout';
 
 interface GamePickerProps {
     rounds: MatchRound[];
@@ -85,10 +85,10 @@ function RoundState({
 }
 
 /**
- * On a phone this stands in place of the tabs, which need three and a half
- * screens of swiping for 14 games. It shows the game on the page, with an arrow
- * to the game before it and one to the game after it. The name opens the list
- * of all games.
+ * On a phone and on a tablet held upright this stands in place of the tabs.
+ * The 14 games need three and a half screens of swiping there on a phone, and
+ * two on a tablet. It shows the game on the page, with an arrow to the game
+ * before it and one to the game after it. The name opens the list of all games.
  */
 export function GamePicker({
     rounds,
@@ -109,7 +109,15 @@ export function GamePicker({
         <Stack
             direction='row'
             data-testid='game-picker'
-            sx={{ alignItems: 'center', flexGrow: 1, minWidth: 0, height: GAME_PICKER_HEIGHT }}
+            sx={{
+                alignItems: 'center',
+                flexGrow: 1,
+                minWidth: 0,
+                height: GAME_PICKER_HEIGHT,
+                // Where the picker has more room than it needs, the arrows stay near the
+                // name and do not go to the edges of the screen.
+                [TABLET_UPRIGHT]: { maxWidth: 420, mx: 'auto' },
+            }}
         >
             <IconButton
                 aria-label='Previous game'
