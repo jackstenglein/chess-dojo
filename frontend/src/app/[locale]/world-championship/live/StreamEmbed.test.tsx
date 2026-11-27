@@ -1,12 +1,15 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { StreamEmbed, TWITCH_CHANNEL, YOUTUBE_CHANNEL_ID } from './StreamEmbed';
 
 const player = (name: string) => screen.getByTitle<HTMLIFrameElement>(`ChessDojo on ${name}`);
 
 describe('StreamEmbed', () => {
     beforeEach(() => localStorage.clear());
-    afterEach(cleanup);
+    afterEach(() => {
+        cleanup();
+        vi.unstubAllGlobals();
+    });
 
     it('plays the Twitch stream first, with this page as its parent', () => {
         render(<StreamEmbed />);
@@ -44,6 +47,21 @@ describe('StreamEmbed', () => {
         expect(screen.queryByTitle('ChessDojo on Twitch')).toBeNull();
 
         fireEvent.click(screen.getByRole('button', { name: 'Show the stream' }));
+        expect(player('Twitch')).toBeDefined();
+    });
+
+    it('shows a minimized stream on a phone on its side, which has no header to show it', () => {
+        localStorage.setItem('wcLive.streamMinimized', 'true');
+        vi.stubGlobal('matchMedia', (query: string) => ({
+            matches: query.includes('orientation: landscape'),
+            media: query,
+            addEventListener: vi.fn(),
+            removeEventListener: vi.fn(),
+            addListener: vi.fn(),
+            removeListener: vi.fn(),
+        }));
+
+        render(<StreamEmbed minimizable />);
         expect(player('Twitch')).toBeDefined();
     });
 
