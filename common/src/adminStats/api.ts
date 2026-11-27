@@ -58,6 +58,29 @@ export interface AdminStatsFreePlan {
     customPlan: number;
 }
 
+/** Activity and training plan use for one kind of member. */
+export interface AdminStatsMemberGroup {
+    accounts: number;
+    /** Accounts that picked a cohort. */
+    onboarded: number;
+    /** Accounts active in the last day, 7 days and 30 days. */
+    active1: number;
+    active7: number;
+    active30: number;
+    /** Accounts that began the Dojo Starter Plan: marked a starter task done, chose to start it, or finished it. */
+    starterStarted: number;
+    /** Accounts that finished the Dojo Starter Plan or skipped the rest of it. */
+    starterFinished: number;
+    /** Accounts with a custom plan. */
+    customPlan: number;
+}
+
+/** Free members next to paying members (subscribed now, not complimentary). */
+export interface AdminStatsMembers {
+    free: AdminStatsMemberGroup;
+    paying: AdminStatsMemberGroup;
+}
+
 /** The totals as they were on one day, saved nightly so trends build up over time. */
 export interface AdminStatsSnapshot {
     /** The day, as YYYY-MM-DD. */
@@ -81,6 +104,7 @@ export interface GetAdminStatsResponse {
     months: AdminStatsMonth[];
     cohorts: AdminStatsCohort[];
     freePlan: AdminStatsFreePlan;
+    members: AdminStatsMembers;
     /** Nightly snapshots, oldest first. */
     history: AdminStatsSnapshot[];
 }
