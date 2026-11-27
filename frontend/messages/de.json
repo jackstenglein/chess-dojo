@@ -181,6 +181,7 @@
                 "today": "Heute",
                 "emptyPlan": "Füge unten Aufgaben zu deinem Trainingsplan hinzu, um deinen täglichen und wöchentlichen Trainingsplan zu erstellen.",
                 "summary": "{done} von {total} Aufgaben erledigt · {worked} von {goal}",
+                "plannedOverGoal": "{planned} eingeplant",
                 "allDone": "Fertig für heute · {worked} eingetragen",
                 "goalMet": "Zeitziel erreicht",
                 "skippedHeading": "Diese Woche übersprungen ({count})",
@@ -591,12 +592,8 @@
                 "days": "Tage",
                 "timePerDay": "Zeit pro Tag",
                 "perDay": "Pro Tag festlegen",
-                "overbooked": "Deine angehefteten Aufgaben überschreiten deine geplante Zeit am {days}.",
                 "unpin": "Lösen",
-                "pin": "Anheften",
-                "overbookedDay": "{day} ist überbucht: Angeheftete Aufgaben brauchen {allocated}, geplant sind {goal}.",
-                "raiseGoal": "{time} für {day} planen",
-                "trimTasks": "Aufgaben auf {time} kürzen"
+                "pin": "Anheften"
             }
         },
         "activity": {

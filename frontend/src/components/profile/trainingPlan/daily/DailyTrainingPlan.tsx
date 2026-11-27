@@ -43,7 +43,7 @@ import { useLocalStorage } from 'usehooks-ts';
 import { CategoryLabel } from '../CategoryLabel';
 import { FreePlanSwitch } from '../custom/FreePlanSwitch';
 import { displayProgress } from '../full/FullTrainingPlanItem';
-import { OverbookedDayAlert } from '../OverbookedDayAlert';
+import { getDayGoal, getDefaultLogMinutes } from '../pinSchedule';
 import { ScheduleClassicalGameDaily } from '../ScheduleClassicalGame';
 import { GRADUATION_SKIP_ID } from '../skippedTasks';
 import { SCHEDULE_CLASSICAL_GAME_TASK_ID, SuggestedTask } from '../suggestedTasks';
@@ -92,6 +92,10 @@ export function DailyTrainingPlan() {
         tasks: suggestionsByDay[new Date().getDay()],
         timeline,
     });
+
+    // Progress is measured against the time the user set for the day, even when
+    // their pinned tasks plan more than that.
+    const dayGoal = getDayGoal(user, new Date().getDay());
 
     const { taskCount, doneCount } = useMemo(
         () =>
@@ -164,12 +168,11 @@ export function DailyTrainingPlan() {
                 <DailySummary
                     taskCount={taskCount}
                     doneCount={doneCount}
-                    goalMinutes={goalTime}
+                    goalMinutes={dayGoal > 0 ? dayGoal : goalTime}
+                    plannedMinutes={goalTime}
                     workedMinutes={workedTime}
                 />
             )}
-
-            {!isLoading && <OverbookedDayAlert dayIndex={new Date().getDay()} />}
 
             <Collapse in={expanded}>
                 {isLoading ? (
@@ -195,11 +198,15 @@ export function DailySummary({
     taskCount,
     doneCount,
     goalMinutes,
+    plannedMinutes = goalMinutes,
     workedMinutes,
 }: {
     taskCount: number;
     doneCount: number;
+    /** The time the user set for the day. */
     goalMinutes: number;
+    /** The time planned for the day's tasks, which pinned tasks can push over the goal. */
+    plannedMinutes?: number;
     workedMinutes: number;
 }) {
     const t = useTranslations('profile.trainingPlan.daily');
@@ -227,6 +234,15 @@ export function DailySummary({
                               goal: formatTime(goalMinutes, tTime),
                           })}
                 </Typography>
+                {!allDone && !goalMet && plannedMinutes > goalMinutes && (
+                    <Typography
+                        variant='body2'
+                        sx={{ color: 'text.secondary', ml: 'auto' }}
+                        data-testid='daily-planned-over-goal'
+                    >
+                        {t('plannedOverGoal', { planned: formatTime(plannedMinutes, tTime) })}
+                    </Typography>
+                )}
                 {!allDone && goalMet && (
                     <Typography
                         variant='body2'
@@ -311,6 +327,12 @@ function DailyTrainingPlanInternal({
                     initialView={taskDialogView}
                     progress={user.progress[selectedTask.id]}
                     cohort={user.dojoCohort}
+                    initialMinutes={getDefaultLogMinutes(
+                        selectedTask.id,
+                        suggestionsByDay[new Date().getDay()],
+                        user,
+                        new Date().getDay(),
+                    )}
                 />
             )}
 

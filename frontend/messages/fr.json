@@ -181,6 +181,7 @@
                 "today": "Aujourd'hui",
                 "emptyPlan": "Ajoute des tâches à ton plan d'entraînement ci-dessous pour créer ton programme d'entraînement quotidien et hebdomadaire.",
                 "summary": "{done} sur {total} tâches faites · {worked} sur {goal}",
+                "plannedOverGoal": "{planned} au programme",
                 "allDone": "Terminé pour aujourd'hui · {worked} enregistré",
                 "goalMet": "Objectif de temps atteint",
                 "skippedHeading": "Ignorées cette semaine ({count})",
@@ -591,12 +592,8 @@
                 "days": "Jours",
                 "timePerDay": "Temps par jour",
                 "perDay": "Régler par jour",
-                "overbooked": "Tes tâches épinglées dépassent ton temps prévu le {days}.",
                 "unpin": "Désépingler",
-                "pin": "Épingler",
-                "overbookedDay": "{day} est surchargé : les tâches épinglées prennent {allocated}, mais tu as prévu {goal}.",
-                "raiseGoal": "Prévoir {time} le {day}",
-                "trimTasks": "Réduire les tâches à {time}"
+                "pin": "Épingler"
             }
         },
         "activity": {

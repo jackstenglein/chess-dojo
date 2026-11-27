@@ -42,62 +42,6 @@ export function getDayGoal(user: Pick<User, 'workGoal'>, dayIndex: number): numb
     return (user.workGoal || DEFAULT_WORK_GOAL).minutesPerDay[dayIndex] ?? 0;
 }
 
-export interface Overallocation {
-    /** The day of the week. Sunday is 0; Saturday is 6. */
-    dayIndex: number;
-    /** The minutes set aside for pinned tasks that day. */
-    allocated: number;
-    /** The minutes the user planned to work that day. */
-    goal: number;
-}
-
-/**
- * Returns the day's overallocation, or undefined when the pinned tasks fit in the
- * time the user planned for the day.
- */
-export function getOverallocation(
-    user: Pick<User, 'workGoal' | 'pinnedTasks' | 'pinnedTaskMinutes'>,
-    dayIndex: number,
-): Overallocation | undefined {
-    const allocated = getAllocatedMinutes(user.pinnedTasks ?? [], user.pinnedTaskMinutes, dayIndex);
-    const goal = getDayGoal(user, dayIndex);
-    return allocated > goal ? { dayIndex, allocated, goal } : undefined;
-}
-
-/**
- * Scales the pinned tasks' minutes on the given day down so they fit in the goal.
- * Each task keeps its share of the day, rounded down to 5 minutes, and keeps at
- * least 5 minutes so it stays on the plan. If that is still over the goal (more
- * tasks than 5-minute slots), the later tasks are dropped from the day.
- * @returns A new pinned task minutes map; the input is not changed.
- */
-export function trimPinnedMinutes(
-    pinnedTaskIds: string[],
-    pinnedTaskMinutes: Record<string, number[]>,
-    dayIndex: number,
-    goal: number,
-): Record<string, number[]> {
-    const result: Record<string, number[]> = {};
-    for (const [id, minutes] of Object.entries(pinnedTaskMinutes)) {
-        result[id] = [...minutes];
-    }
-
-    const ids = pinnedTaskIds.filter((id) => (result[id]?.[dayIndex] ?? 0) > 0);
-    const allocated = ids.reduce((sum, id) => sum + result[id][dayIndex], 0);
-    if (allocated <= goal) {
-        return result;
-    }
-
-    let remaining = goal;
-    for (const id of ids) {
-        const share = Math.floor((result[id][dayIndex] * goal) / allocated / 5) * 5;
-        const minutes = Math.min(Math.max(5, share), remaining);
-        result[id][dayIndex] = minutes;
-        remaining -= minutes;
-    }
-    return result;
-}
-
 /** Returns true if the two pinned task minute maps hold the same minutes for the given ids. */
 export function pinnedMinutesMatch(
     pinnedTaskIds: string[],
@@ -115,4 +59,28 @@ export function pinnedMinutesMatch(
         }
     }
     return true;
+}
+
+/**
+ * Returns the time to prefill when logging training on a task: the time planned
+ * for it today, else the minutes its pin sets aside today, else the default 30.
+ * @param taskId The task being logged.
+ * @param todaySuggestions Today's planned tasks.
+ * @param user The user, for their pinned task minutes.
+ * @param dayIndex Today's day of the week. Sunday is 0; Saturday is 6.
+ */
+export function getDefaultLogMinutes(
+    taskId: string,
+    todaySuggestions: { task: { id: string }; goalMinutes: number }[] | undefined,
+    user: Pick<User, 'pinnedTasks' | 'pinnedTaskMinutes'>,
+    dayIndex: number,
+): number {
+    const planned = todaySuggestions?.find((s) => s.task.id === taskId)?.goalMinutes ?? 0;
+    if (planned > 0) {
+        return planned;
+    }
+    const pinned = user.pinnedTasks?.includes(taskId)
+        ? getPinnedMinutes(user.pinnedTaskMinutes, taskId, dayIndex)
+        : undefined;
+    return pinned && pinned > 0 ? pinned : DEFAULT_MINUTES_PER_TASK;
 }

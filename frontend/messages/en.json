@@ -160,12 +160,8 @@
                 "days": "Days",
                 "timePerDay": "Time each day",
                 "perDay": "Set per day",
-                "overbooked": "Your pinned tasks go over your planned time on {days}.",
                 "unpin": "Unpin",
-                "pin": "Pin",
-                "overbookedDay": "{day} is overbooked: pinned tasks take {allocated}, but you planned {goal}.",
-                "raiseGoal": "Plan {time} for {day}",
-                "trimTasks": "Trim tasks to {time}"
+                "pin": "Pin"
             },
             "inputSlider": {
                 "decrement": "Decrement",
@@ -193,6 +189,7 @@
                 "today": "Today",
                 "emptyPlan": "Add tasks to your training plan below to create your daily and weekly training schedule.",
                 "summary": "{done} of {total} tasks done · {worked} of {goal}",
+                "plannedOverGoal": "{planned} planned",
                 "allDone": "Done for today · {worked} logged",
                 "goalMet": "Time goal met",
                 "skippedHeading": "Skipped this week ({count})",

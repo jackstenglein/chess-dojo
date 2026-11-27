@@ -181,6 +181,7 @@
                 "today": "Hoy",
                 "emptyPlan": "Añade tareas a tu plan de entrenamiento abajo para crear tu horario de entrenamiento diario y semanal.",
                 "summary": "{done} de {total} tareas hechas · {worked} de {goal}",
+                "plannedOverGoal": "{planned} en el plan",
                 "allDone": "Terminado por hoy · {worked} registrados",
                 "goalMet": "Meta de tiempo cumplida",
                 "skippedHeading": "Omitidas esta semana ({count})",
@@ -591,12 +592,8 @@
                 "days": "Días",
                 "timePerDay": "Tiempo cada día",
                 "perDay": "Ajustar por día",
-                "overbooked": "Tus tareas fijadas superan tu tiempo planificado el {days}.",
                 "unpin": "Desfijar",
-                "pin": "Fijar",
-                "overbookedDay": "{day} tiene demasiado: las tareas fijadas ocupan {allocated}, pero planificaste {goal}.",
-                "raiseGoal": "Planificar {time} para el {day}",
-                "trimTasks": "Recortar tareas a {time}"
+                "pin": "Fijar"
             }
         },
         "activity": {

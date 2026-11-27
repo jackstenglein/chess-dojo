@@ -9,9 +9,11 @@ import {
     Box,
     ButtonBase,
     Collapse,
+    FormControlLabel,
     IconButton,
     LinearProgress,
     Stack,
+    Switch,
     Tooltip,
     Typography,
 } from '@mui/material';
@@ -19,7 +21,7 @@ import { useTranslations } from 'next-intl';
 import { use, useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { CategoryLabel } from '../CategoryLabel';
-import { OverbookedDayAlert } from '../OverbookedDayAlert';
+import { getDefaultLogMinutes } from '../pinSchedule';
 import { TaskDialog, TaskDialogView } from '../TaskDialog';
 import { taskDisplayName } from '../taskDisplayName';
 import { splitDisplayName } from '../taskVerb';
@@ -30,6 +32,7 @@ import { useTrainingPlanProgress } from '../useTrainingPlan';
 import { WorkGoalSettingsEditor } from '../WorkGoalSettingsEditor';
 import {
     CategoryTotal,
+    filterActiveRows,
     getCategoryTotals,
     getCellState,
     getChipDisplay,
@@ -71,6 +74,10 @@ export function WeeklyTrainingPlan() {
     });
 
     const [expanded, setExpanded] = useLocalStorage<boolean>('training-plan-weekly-expanded', true);
+    const [activeOnly, setActiveOnly] = useLocalStorage<boolean>(
+        'training-plan-weekly-active-only',
+        false,
+    );
 
     const [selectedTask, setSelectedTask] = useState<Requirement | CustomTask>();
     const [taskDialogView, setTaskDialogView] = useState<TaskDialogView>();
@@ -92,6 +99,10 @@ export function WeeklyTrainingPlan() {
                     allRequirements.find((r) => r.id === id),
             }),
         [weekDays, suggestionsByDay, timeline, pinnedTasks, user.customTasks, allRequirements],
+    );
+    const visibleRows = useMemo(
+        () => (activeOnly ? filterActiveRows(rows) : rows),
+        [activeOnly, rows],
     );
 
     const onOpenTask = (task: Requirement | CustomTask, view: TaskDialogView) => {
@@ -130,22 +141,33 @@ export function WeeklyTrainingPlan() {
 
             <Collapse in={expanded}>
                 <Stack spacing={1.5}>
-                    {!isLoading &&
-                        weekDays
-                            // Today's warning is shown in the Today section.
-                            .filter((day) => !day.isPast && !day.isToday)
-                            .map((day) => (
-                                <OverbookedDayAlert key={day.dayIndex} dayIndex={day.dayIndex} />
-                            ))}
-
                     {!isLoading && <CategoryTotals totals={getCategoryTotals(rows)} />}
+
+                    <Tooltip title={t('activeOnlyTooltip')} placement='right'>
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={activeOnly}
+                                    onChange={(e) => setActiveOnly(e.target.checked)}
+                                    size='small'
+                                />
+                            }
+                            label={
+                                <Typography variant='body2' sx={{ color: 'text.secondary' }}>
+                                    {t('activeOnlyLabel')}
+                                </Typography>
+                            }
+                            sx={{ ml: 1, width: 'fit-content' }}
+                            data-testid='weekly-active-only'
+                        />
+                    </Tooltip>
 
                     {isLoading ? (
                         <LoadingPage />
                     ) : (
                         <WeekCalendar
                             weekDays={weekDays}
-                            rows={rows}
+                            rows={visibleRows}
                             isCurrentUser={isCurrentUser}
                             cohort={user.dojoCohort}
                             onOpenTask={onOpenTask}
@@ -165,6 +187,12 @@ export function WeeklyTrainingPlan() {
                     initialView={taskDialogView}
                     progress={user.progress[selectedTask.id]}
                     cohort={user.dojoCohort}
+                    initialMinutes={getDefaultLogMinutes(
+                        selectedTask.id,
+                        suggestionsByDay[new Date().getDay()],
+                        user,
+                        new Date().getDay(),
+                    )}
                 />
             )}
         </Stack>
