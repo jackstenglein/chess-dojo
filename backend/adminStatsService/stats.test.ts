@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { computeAccountStats, getAccountKind, StatsUser, toSnapshot } from './stats';
+import {
+    computeAccountStats,
+    getAccountKind,
+    hasStartedStarterPlan,
+    StatsUser,
+    toSnapshot,
+} from './stats';
 
 const now = new Date('2026-11-26T12:00:00Z');
 const daysAgo = (days: number) => new Date(now.getTime() - days * 86_400_000).toISOString();
@@ -19,6 +25,18 @@ describe('getAccountKind', () => {
             }),
         ).toBe('complimentary');
         expect(getAccountKind({ username: 'a', subscriptionStatus: 'CANCELED' })).toBe('churned');
+    });
+});
+
+describe('hasStartedStarterPlan', () => {
+    it('detects a started starter plan', () => {
+        expect(hasStartedStarterPlan(undefined)).toBe(false);
+        expect(hasStartedStarterPlan({ SomeTutorial: true })).toBe(false);
+        expect(hasStartedStarterPlan({ 'starter:t:5:1': false })).toBe(false);
+        expect(hasStartedStarterPlan({ 'starter:t:5:1': true })).toBe(true);
+        expect(hasStartedStarterPlan({ StarterPlanStarted: true })).toBe(true);
+        expect(hasStartedStarterPlan({ StarterPlan: true })).toBe(true);
+        expect(hasStartedStarterPlan({ 'starterCredited:t': true })).toBe(false);
     });
 });
 
@@ -44,6 +62,7 @@ describe('computeAccountStats', () => {
             createdAt: '2026-10-05T00:00:00Z',
             updatedAt: daysAgo(20),
             subscriptionStatus: 'SUBSCRIBED',
+            tutorials: { 'starter:task-1:30:1764000000000': true },
         },
         {
             username: 'churned',
@@ -104,6 +123,31 @@ describe('computeAccountStats', () => {
             { cohort: '1500-1600', free: 0, paid: 1, active30: 0 },
         ]);
         expect(stats.freePlan).toEqual({ freeOnboarded: 1, starterFinished: 1, customPlan: 1 });
+    });
+
+    it('compares free and paying members', () => {
+        expect(stats.members).toEqual({
+            free: {
+                accounts: 3,
+                onboarded: 1,
+                active1: 1,
+                active7: 2,
+                active30: 2,
+                starterStarted: 1,
+                starterFinished: 1,
+                customPlan: 1,
+            },
+            paying: {
+                accounts: 1,
+                onboarded: 1,
+                active1: 0,
+                active7: 0,
+                active30: 1,
+                starterStarted: 1,
+                starterFinished: 0,
+                customPlan: 0,
+            },
+        });
     });
 
     it('makes a daily snapshot', () => {

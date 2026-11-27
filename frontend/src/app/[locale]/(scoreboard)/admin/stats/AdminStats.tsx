@@ -4,6 +4,8 @@ import { RequestSnackbar, useRequest } from '@/api/Request';
 import { getAdminStatistics } from '@/api/userApi';
 import LoadingPage from '@/loading/LoadingPage';
 import {
+    AdminStatsMemberGroup,
+    AdminStatsMembers,
     AdminStatsMonth,
     GetAdminStatsResponse,
 } from '@jackstenglein/chess-dojo-common/src/adminStats/api';
@@ -79,7 +81,7 @@ export function AdminStats() {
         );
     }
 
-    const { totals, freePlan } = stats;
+    const { totals } = stats;
     const totalPaid = totals.paying + totals.churned;
 
     return (
@@ -252,28 +254,14 @@ export function AdminStats() {
                     <MonthTable months={[...months].reverse()} />
                 </Section>
 
-                <Section
-                    title='Free members and the training plan'
-                    subtitle='Free accounts that picked a cohort.'
-                >
-                    <Grid container spacing={2}>
-                        <Tile label='Free, with a cohort' value={number(freePlan.freeOnboarded)} />
-                        <Tile
-                            label='Finished the Dojo Starter Plan'
-                            value={number(freePlan.starterFinished)}
-                            detail={formatPercent(
-                                percent(freePlan.starterFinished, freePlan.freeOnboarded),
-                            )}
-                        />
-                        <Tile
-                            label='Made a custom plan'
-                            value={number(freePlan.customPlan)}
-                            detail={formatPercent(
-                                percent(freePlan.customPlan, freePlan.freeOnboarded),
-                            )}
-                        />
-                    </Grid>
-                </Section>
+                {stats.members && (
+                    <Section
+                        title='Free and paying members'
+                        subtitle='Paying means subscribed now (not complimentary). The Dojo Starter Plan is shown to members who joined since it launched, and to existing members who chose to start it.'
+                    >
+                        <MemberTable members={stats.members} />
+                    </Section>
+                )}
 
                 <Section title='Cohorts' subtitle='Accounts in each cohort now.'>
                     <Card variant='outlined'>
@@ -442,6 +430,79 @@ function MonthTable({ months }: { months: AdminStatsMonth[] }) {
                             <TableCell align='right'>
                                 {number(m.active30)} (
                                 {formatPercent(percent(m.active30, m.signups))})
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </TableContainer>
+    );
+}
+
+/** The rows of the member table: a count and what its percentage is of. */
+const MEMBER_ROWS: {
+    label: string;
+    value: (g: AdminStatsMemberGroup) => number;
+    of?: (g: AdminStatsMemberGroup) => number;
+    ofLabel?: string;
+}[] = [
+    { label: 'Members', value: (g) => g.accounts },
+    { label: 'Picked a cohort', value: (g) => g.onboarded, of: (g) => g.accounts },
+    { label: 'Active today', value: (g) => g.active1, of: (g) => g.accounts },
+    { label: 'Active this week', value: (g) => g.active7, of: (g) => g.accounts },
+    { label: 'Active in 30 days', value: (g) => g.active30, of: (g) => g.accounts },
+    {
+        label: 'Started the Starter Plan',
+        value: (g) => g.starterStarted,
+        of: (g) => g.onboarded,
+        ofLabel: 'of those with a cohort',
+    },
+    {
+        label: 'Finished or skipped it',
+        value: (g) => g.starterFinished,
+        of: (g) => g.starterStarted,
+        ofLabel: 'of those who started',
+    },
+    {
+        label: 'Still on it',
+        value: (g) => g.starterStarted - g.starterFinished,
+        of: (g) => g.starterStarted,
+        ofLabel: 'of those who started',
+    },
+    {
+        label: 'Made a custom plan',
+        value: (g) => g.customPlan,
+        of: (g) => g.onboarded,
+        ofLabel: 'of those with a cohort',
+    },
+];
+
+function MemberTable({ members }: { members: AdminStatsMembers }) {
+    const groups = [members.free, members.paying];
+    return (
+        <TableContainer component={Card} variant='outlined'>
+            <Table size='small'>
+                <TableHead>
+                    <TableRow>
+                        <TableCell />
+                        <TableCell align='right'>Free</TableCell>
+                        <TableCell align='right'>Paying</TableCell>
+                        <TableCell />
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {MEMBER_ROWS.map((row) => (
+                        <TableRow key={row.label} hover>
+                            <TableCell>{row.label}</TableCell>
+                            {groups.map((g, i) => (
+                                <TableCell key={i} align='right'>
+                                    {number(row.value(g))}
+                                    {row.of &&
+                                        ` (${formatPercent(percent(row.value(g), row.of(g)))})`}
+                                </TableCell>
+                            ))}
+                            <TableCell sx={{ color: 'text.secondary' }}>
+                                {row.of && (row.ofLabel ?? 'of members')}
                             </TableCell>
                         </TableRow>
                     ))}

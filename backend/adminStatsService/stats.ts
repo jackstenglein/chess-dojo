@@ -1,6 +1,8 @@
 import {
     AdminStatsCohort,
     AdminStatsFreePlan,
+    AdminStatsMemberGroup,
+    AdminStatsMembers,
     AdminStatsMonth,
     AdminStatsSnapshot,
     AdminStatsTotals,
@@ -26,14 +28,38 @@ export const STATS_USER_ATTRIBUTES = [
     'updatedAt',
     'subscriptionStatus',
     'paymentInfo.customerId',
-    'tutorials.StarterPlan',
+    'tutorials',
     'customPlans[0].id',
 ] as const;
 
 export const NO_COHORT = 'NO_COHORT';
 
-/** The tutorials key set when a member finishes the Dojo Starter Plan. */
+/** The tutorials key set when a member finishes (or skips) the Dojo Starter Plan. */
 const STARTER_PLAN_FINISHED_KEY = 'StarterPlan';
+/** The tutorials key set when an existing member chooses to start the Dojo Starter Plan. */
+const STARTER_PLAN_STARTED_KEY = 'StarterPlanStarted';
+/** The prefix of the tutorials keys recording a starter task marked done. */
+const STARTER_TASK_PREFIX = 'starter:';
+
+/** Returns whether the member began the Dojo Starter Plan. */
+export function hasStartedStarterPlan(tutorials: Record<string, boolean> | undefined): boolean {
+    if (!tutorials) return false;
+    if (tutorials[STARTER_PLAN_FINISHED_KEY] || tutorials[STARTER_PLAN_STARTED_KEY]) return true;
+    return Object.entries(tutorials).some(
+        ([key, value]) => value && key.startsWith(STARTER_TASK_PREFIX),
+    );
+}
+
+const emptyGroup = (): AdminStatsMemberGroup => ({
+    accounts: 0,
+    onboarded: 0,
+    active1: 0,
+    active7: 0,
+    active30: 0,
+    starterStarted: 0,
+    starterFinished: 0,
+    customPlan: 0,
+});
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -59,6 +85,7 @@ export interface AccountStats {
     months: AdminStatsMonth[];
     cohorts: AdminStatsCohort[];
     freePlan: AdminStatsFreePlan;
+    members: AdminStatsMembers;
 }
 
 /**
@@ -92,6 +119,7 @@ export function computeAccountStats(
         cohorts.map((cohort) => [cohort, { cohort, free: 0, paid: 0, active30: 0 }]),
     );
     const freePlan: AdminStatsFreePlan = { freeOnboarded: 0, starterFinished: 0, customPlan: 0 };
+    const members: AdminStatsMembers = { free: emptyGroup(), paying: emptyGroup() };
 
     for (const user of users) {
         const kind = getAccountKind(user);
@@ -140,6 +168,18 @@ export function computeAccountStats(
             if (active30) cohortRow.active30++;
         }
 
+        const group = kind === 'free' || kind === 'paying' ? members[kind] : undefined;
+        if (group) {
+            group.accounts++;
+            if (onboarded) group.onboarded++;
+            if (daysSinceActive < 1) group.active1++;
+            if (daysSinceActive < 7) group.active7++;
+            if (active30) group.active30++;
+            if (hasStartedStarterPlan(user.tutorials)) group.starterStarted++;
+            if (user.tutorials?.[STARTER_PLAN_FINISHED_KEY]) group.starterFinished++;
+            if (user.customPlans?.length) group.customPlan++;
+        }
+
         if (kind === 'free' && onboarded) {
             freePlan.freeOnboarded++;
             if (user.tutorials?.[STARTER_PLAN_FINISHED_KEY]) freePlan.starterFinished++;
@@ -152,6 +192,7 @@ export function computeAccountStats(
         months: [...months.values()].sort((a, b) => a.month.localeCompare(b.month)),
         cohorts: [...cohortStats.values()],
         freePlan,
+        members,
     };
 }
 
