@@ -2,7 +2,6 @@ import { useApi } from '@/api/Api';
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { WeekDays } from '@/components/calendar/filters/CalendarFilters';
 import { WorkGoalHistory, WorkGoalSettings } from '@/database/user';
-import { Settings } from '@mui/icons-material';
 import {
     Button,
     Dialog,
@@ -10,52 +9,39 @@ import {
     DialogContent,
     FormLabel,
     Grid,
-    IconButton,
     MenuItem,
     Stack,
     TextField,
-    Tooltip,
     Typography,
 } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { Fragment, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
-import { TimeProgressChip } from './TimeProgressChip';
 import { DAY_NAMES, DEFAULT_WORK_GOAL } from './workGoal';
 
 const NUMBER_REGEX = /^[0-9]*$/;
 
-/** Renders an editor that allows the user to update their work goal settings. */
-export function WorkGoalSettingsEditor({
-    currentGoal,
-    currentValue,
+/** A dialog that lets the user update their work goal and the day their week starts on. */
+export function WorkGoalDialog({
+    open,
+    onClose,
     initialWeekStart = 0,
     workGoal = DEFAULT_WORK_GOAL,
     workGoalHistory = [],
-    disabled,
-    variant = 'chip',
 }: {
-    /** The current goal to display in the chip that opens the editor. */
-    currentGoal: number;
-    /** The current value to display in the chip that opens the editor. */
-    currentValue: number;
+    /** Whether the dialog is open. */
+    open: boolean;
+    /** Called to close the dialog. */
+    onClose: () => void;
     /** The initial day the week starts on. */
     initialWeekStart?: WeekDays;
     /** The initial work goal settings. If undefined, the default settings will be used. */
     workGoal?: WorkGoalSettings;
     /** The user's history of the work goal. */
     workGoalHistory?: WorkGoalHistory[];
-    /** Whether the editor is disabled. */
-    disabled: boolean;
-    /**
-     * How the editor's trigger is shown: a chip with the current progress, or just a
-     * settings icon for places that already show the progress elsewhere.
-     */
-    variant?: 'chip' | 'icon';
 }) {
     const t = useTranslations('profile.trainingPlan.workGoal');
     const tCommon = useTranslations('profile.trainingPlan.common');
-    const [open, setOpen] = useState(false);
     const api = useApi();
     const request = useRequest();
 
@@ -64,8 +50,6 @@ export function WorkGoalSettingsEditor({
     const [weekStart, setWeekStart] = useState(initialWeekStart ?? originalWeekStart);
     const timePerDay = useTimePerDay(workGoal);
     const minutesPerWeek = timePerDay.reduce((sum, t) => sum + t.total, 0);
-
-    const onClose = () => setOpen(false);
 
     const onSave = async () => {
         let error = false;
@@ -117,35 +101,6 @@ export function WorkGoalSettingsEditor({
 
     return (
         <>
-            {variant === 'icon' ? (
-                !disabled && (
-                    <Tooltip title={t('editGoalTooltip')}>
-                        <IconButton
-                            size='small'
-                            onClick={() => setOpen(true)}
-                            aria-label={t('editGoalTooltip')}
-                            sx={{ color: 'text.secondary' }}
-                            data-testid='work-goal-settings-button'
-                        >
-                            <Settings fontSize='small' />
-                        </IconButton>
-                    </Tooltip>
-                )
-            ) : (
-                <Tooltip title={disabled ? undefined : t('editGoalTooltip')}>
-                    <TimeProgressChip
-                        goal={currentGoal}
-                        value={currentValue}
-                        slotProps={{
-                            chip: {
-                                deleteIcon: <Settings />,
-                                onDelete: disabled ? undefined : () => setOpen(true),
-                                onClick: disabled ? undefined : () => setOpen(true),
-                            },
-                        }}
-                    />
-                </Tooltip>
-            )}
             <Dialog open={open} onClose={request.isLoading() ? undefined : onClose} fullWidth>
                 <RequestSnackbar request={request} />
 

@@ -59,13 +59,14 @@ describe('useTrainingPlan skipping', () => {
         expect(result.current.lastSkipped).toBeUndefined();
     });
 
-    it('restores a skipped task and clears the rest of the week so it is rebuilt', () => {
+    it('restores a skipped task, keeping today as planned and clearing the days after it', () => {
         const { result } = renderPlan({ ...plan, skippedTasks: ['task-5'] });
         act(() => result.current.toggleSkip('task-5'));
 
         expect(savedPlan().skippedTasks).toEqual([]);
-        // Thursday onward is cleared for the suggestion algorithm to refill.
-        expect(savedPlan().tasks.map((t) => t.length)).toEqual([1, 1, 1, 1, 0, 0, 0]);
+        // Today (Thursday) keeps its plan; Friday onward is cleared for the
+        // suggestion algorithm to refill.
+        expect(savedPlan().tasks.map((t) => t.length)).toEqual([1, 1, 1, 1, 1, 0, 0]);
         expect(result.current.lastSkipped).toBeUndefined();
     });
 

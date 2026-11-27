@@ -86,10 +86,6 @@ export const FullTrainingPlanItem = ({
     const totalCount = getTotalCount(cohort, requirement, true);
     const currentCount = getCurrentCount({ cohort, requirement, progress, timeline: entries });
     const time = formatTime(getTotalTime(cohort, progress), tTime);
-    // Counts start at the task's start (Polgar at #306), so progress means going past
-    // it, or having logged time on the task.
-    const hasProgress =
-        currentCount > (requirement.startCount || 0) || getTotalTime(cohort, progress) > 0;
     const expired = isExpired(requirement, progress);
     const isMinimumTask = MINIMUM_TASKS.has(requirement.id);
     const minimumReached = isMinimumTask && currentCount >= totalCount;
@@ -180,13 +176,8 @@ export const FullTrainingPlanItem = ({
                 >
                     <Grid
                         size={{ xs: 'grow', md: 9 }}
-                        onClick={() =>
-                            setTaskDialogView(
-                                isCurrentUser && hasProgress
-                                    ? TaskDialogView.Progress
-                                    : TaskDialogView.Details,
-                            )
-                        }
+                        // Clicking a task shows its details; only its log controls open logging.
+                        onClick={() => setTaskDialogView(TaskDialogView.Details)}
                         id='task-details'
                         sx={{
                             display: 'flex',

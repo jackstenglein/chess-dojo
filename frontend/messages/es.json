@@ -179,6 +179,14 @@
             },
             "daily": {
                 "today": "Hoy",
+                "loggedTime": "{time} registrados",
+                "notPlanned": "No planificada",
+                "doneLabel": "Hecha",
+                "toDo": "Pendiente",
+                "markComplete": "Marcar como hecha",
+                "completed": "Completada",
+                "verbRead": "Leer",
+                "verbWatch": "Ver",
                 "emptyPlan": "Añade tareas a tu plan de entrenamiento abajo para crear tu horario de entrenamiento diario y semanal.",
                 "summary": "{done} de {total} tareas hechas · {worked} de {goal}",
                 "allDone": "Terminado por hoy · {worked} registrados",
@@ -212,11 +220,8 @@
                 "partialTime": "{worked} / {goal}"
             },
             "full": {
-                "heading": "Plan de entrenamiento completo",
+                "heading": "Plan de entrenamiento",
                 "cohort": "Cohorte",
-                "showCompletedTasks": "Mostrar tareas completadas",
-                "hideCompletedTasksTooltip": "Ocultar tareas completadas",
-                "showCompletedTasksTooltip": "Mostrar tareas completadas",
                 "expandAll": "Expandir todo",
                 "collapseAll": "Contraer todo",
                 "completedTasks": "Tareas completadas",
@@ -470,8 +475,27 @@
                 "body": "Esta tarea personalizada se eliminará de tu perfil y se perderá todo el tiempo registrado. Esta acción es irreversible.",
                 "delete": "Eliminar tarea"
             },
+            "planMenu": {
+                "plan": "Plan",
+                "tooltip": "Opciones del plan de entrenamiento",
+                "show": "Mostrar",
+                "today": "Hoy",
+                "thisWeek": "Esta semana",
+                "suggestedTasks": "Tareas sugeridas",
+                "workGoal": "Establecer objetivo semanal",
+                "resetProgress": "Restablecer progreso",
+                "barColor": "Color de la barra",
+                "barColors": {
+                    "multicolor": "Multicolor",
+                    "teal": "Verde azulado",
+                    "blue": "Azul",
+                    "purple": "Morado",
+                    "pink": "Rosa",
+                    "orange": "Naranja",
+                    "green": "Verde"
+                }
+            },
             "workGoal": {
-                "editGoalTooltip": "Editar objetivo de trabajo",
                 "startWeekOn": "Empezar la semana el",
                 "Sunday": "Domingo",
                 "Monday": "Lunes",

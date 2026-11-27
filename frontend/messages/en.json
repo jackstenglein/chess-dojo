@@ -191,6 +191,14 @@
             },
             "daily": {
                 "today": "Today",
+                "loggedTime": "{time} logged",
+                "notPlanned": "Not planned",
+                "doneLabel": "Done",
+                "toDo": "To do",
+                "markComplete": "Mark complete",
+                "completed": "Completed",
+                "verbRead": "Read",
+                "verbWatch": "Watch",
                 "emptyPlan": "Add tasks to your training plan below to create your daily and weekly training schedule.",
                 "summary": "{done} of {total} tasks done · {worked} of {goal}",
                 "allDone": "Done for today · {worked} logged",
@@ -224,11 +232,8 @@
                 "partialTime": "{worked} / {goal}"
             },
             "full": {
-                "heading": "Full Training Plan",
+                "heading": "Training Plan",
                 "cohort": "Cohort",
-                "showCompletedTasks": "Show Completed Tasks",
-                "hideCompletedTasksTooltip": "Hide Completed Tasks",
-                "showCompletedTasksTooltip": "Show Completed Tasks",
                 "expandAll": "Expand All",
                 "collapseAll": "Collapse All",
                 "completedTasks": "Completed Tasks",
@@ -482,8 +487,27 @@
                 "body": "This custom task will be removed from your profile, and all time logged will be lost. This action is irreverisble.",
                 "delete": "Delete Task"
             },
+            "planMenu": {
+                "plan": "Plan",
+                "tooltip": "Training plan options",
+                "show": "Show",
+                "today": "Today",
+                "thisWeek": "This Week",
+                "suggestedTasks": "Suggested tasks",
+                "workGoal": "Set Weekly Goal",
+                "resetProgress": "Reset progress",
+                "barColor": "Bar color",
+                "barColors": {
+                    "multicolor": "Multicolor",
+                    "teal": "Teal",
+                    "blue": "Blue",
+                    "purple": "Purple",
+                    "pink": "Pink",
+                    "orange": "Orange",
+                    "green": "Green"
+                }
+            },
             "workGoal": {
-                "editGoalTooltip": "Edit work goal",
                 "startWeekOn": "Start Week On",
                 "Sunday": "Sunday",
                 "Monday": "Monday",

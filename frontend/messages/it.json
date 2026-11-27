@@ -179,6 +179,14 @@
             },
             "daily": {
                 "today": "Oggi",
+                "loggedTime": "{time} registrati",
+                "notPlanned": "Non pianificata",
+                "doneLabel": "Fatta",
+                "toDo": "Da fare",
+                "markComplete": "Segna come completata",
+                "completed": "Completata",
+                "verbRead": "Leggi",
+                "verbWatch": "Guarda",
                 "emptyPlan": "Aggiungi attività al tuo piano di allenamento qui sotto per creare il tuo programma di allenamento giornaliero e settimanale.",
                 "summary": "{done} di {total} attività fatte · {worked} di {goal}",
                 "allDone": "Finito per oggi · {worked} registrati",
@@ -212,11 +220,8 @@
                 "partialTime": "{worked} / {goal}"
             },
             "full": {
-                "heading": "Piano di allenamento completo",
+                "heading": "Piano di allenamento",
                 "cohort": "Coorte",
-                "showCompletedTasks": "Mostra compiti completati",
-                "hideCompletedTasksTooltip": "Nascondi compiti completati",
-                "showCompletedTasksTooltip": "Mostra compiti completati",
                 "expandAll": "Espandi tutto",
                 "collapseAll": "Comprimi tutto",
                 "completedTasks": "Compiti completati",
@@ -470,8 +475,27 @@
                 "body": "Questo compito personalizzato verrà rimosso dal tuo profilo e tutto il tempo registrato andrà perso. Questa azione è irreversibile.",
                 "delete": "Elimina compito"
             },
+            "planMenu": {
+                "plan": "Piano",
+                "tooltip": "Opzioni del piano di allenamento",
+                "show": "Mostra",
+                "today": "Oggi",
+                "thisWeek": "Questa settimana",
+                "suggestedTasks": "Attività suggerite",
+                "workGoal": "Imposta obiettivo settimanale",
+                "resetProgress": "Reimposta progressi",
+                "barColor": "Colore della barra",
+                "barColors": {
+                    "multicolor": "Multicolore",
+                    "teal": "Verde acqua",
+                    "blue": "Blu",
+                    "purple": "Viola",
+                    "pink": "Rosa",
+                    "orange": "Arancione",
+                    "green": "Verde"
+                }
+            },
             "workGoal": {
-                "editGoalTooltip": "Modifica obiettivo di lavoro",
                 "startWeekOn": "Inizia la settimana di",
                 "Sunday": "Domenica",
                 "Monday": "Lunedì",

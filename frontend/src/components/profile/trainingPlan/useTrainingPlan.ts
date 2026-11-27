@@ -9,7 +9,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTimelineContext } from '../activity/useTimeline';
 import { filterTimelineForPlan, getActivePlan, getPlanTaskIds } from './customPlan';
 import { pinnedMinutesMatch } from './pinSchedule';
-import { clearUpcomingDays, toggleSkippedIds } from './skippedTasks';
+import { planTasksToSave } from './planTasksToSave';
+import { restoreToToday, toggleSkippedIds } from './skippedTasks';
 import { SuggestedTask, TaskSuggestionAlgorithm } from './suggestedTasks';
 import { swapInPlan } from './swapTask';
 import { DEFAULT_WORK_GOAL } from './workGoal';
@@ -163,12 +164,12 @@ export function useTrainingPlan(user: User, cohort?: string): UseTrainingPlanRes
         const skippedTasks = toggleSkippedIds(current, ids);
         const isSkipping = skippedTasks.length > current.length;
 
-        // A restore also clears the rest of the week so it gets rebuilt; otherwise
-        // whatever replaced the task when it was skipped would stay in its place.
+        // A restore leaves today as planned (a task skipped from today shows again)
+        // and clears the days after today so they get rebuilt with the task.
         savePlan(
             isSkipping
                 ? { ...plan, skippedTasks }
-                : { ...plan, skippedTasks, tasks: clearUpcomingDays(plan) },
+                : { ...plan, skippedTasks, tasks: restoreToToday(plan) },
         );
         setLastSkip(isSkipping ? { ids, previousPlan: plan } : undefined);
     };
@@ -308,10 +309,11 @@ export function useWeeklyTrainingPlan(user: User): UseWeeklyTrainingPlanResponse
     const savedPlan = user.weeklyPlan;
     const isLoading = requirements.length === 0;
     useEffect(() => {
+        const tasks = planTasksToSave(savedPlan, suggestionsByDay, endDate);
         if (
             !isCurrentUser ||
             equalPlans(savedPlan, {
-                suggestionsByDay,
+                tasks,
                 endDate,
                 progressUpdatedAt,
                 pinnedTasks: pinnedTasks.map((t) => t.id),
@@ -326,12 +328,7 @@ export function useWeeklyTrainingPlan(user: User): UseWeeklyTrainingPlanResponse
 
         const newPlan = {
             endDate,
-            tasks: suggestionsByDay.map((day) =>
-                day.map((suggestion) => ({
-                    id: suggestion.task.id,
-                    minutes: suggestion.goalMinutes,
-                })),
-            ),
+            tasks,
             progressUpdatedAt,
             pinnedTasks: pinnedTasks.map((t) => t.id),
             pinnedTaskMinutes: pickPinnedMinutes(
@@ -391,7 +388,7 @@ export function getTodaysWorkGoal(workGoal: WorkGoalSettings): number {
 function equalPlans(
     savedPlan: WeeklyPlan | undefined,
     newPlan: {
-        suggestionsByDay: SuggestedTask[][];
+        tasks: WeeklyPlan['tasks'];
         endDate: string;
         progressUpdatedAt: string;
         pinnedTasks: string[];
@@ -427,14 +424,14 @@ function equalPlans(
     }
     for (let i = 0; i < savedPlan.tasks.length; i++) {
         const savedTasks = savedPlan.tasks[i];
-        const newTasks = newPlan.suggestionsByDay[i];
+        const newTasks = newPlan.tasks[i];
         if (savedTasks.length !== newTasks.length) {
             return false;
         }
         for (let j = 0; j < savedTasks.length; j++) {
             if (
-                savedTasks[j].id !== newTasks[j].task.id ||
-                savedTasks[j].minutes !== newTasks[j].goalMinutes
+                savedTasks[j].id !== newTasks[j].id ||
+                savedTasks[j].minutes !== newTasks[j].minutes
             ) {
                 return false;
             }

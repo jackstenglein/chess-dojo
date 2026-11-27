@@ -18,26 +18,53 @@ import { useState } from 'react';
 const REQUIRED_CONFIRM_TEXT = 'confirm';
 
 export function ResetProgressButton() {
+    const [open, setOpen] = useState(false);
+
+    return (
+        <>
+            <Alert
+                severity='warning'
+                variant='outlined'
+                icon={<WarningIcon />}
+                action={
+                    <Button
+                        color='error'
+                        data-testid='reset-progress-open-button'
+                        onClick={() => setOpen(true)}
+                        startIcon={<RestartAltIcon />}
+                    >
+                        Reset Progress
+                    </Button>
+                }
+            >
+                Clear your training plan progress for all cohorts. Use this if you are returning
+                after a long break and want task progress to start at zero.
+            </Alert>
+
+            <ResetProgressDialog open={open} onClose={() => setOpen(false)} />
+        </>
+    );
+}
+
+/**
+ * A dialog which asks the user to type "confirm" and then clears their training plan
+ * progress for all cohorts. Activity history is kept.
+ */
+export function ResetProgressDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
     const api = useApi();
     const request = useRequest<string>();
-    const [open, setOpen] = useState(false);
     const [confirmText, setConfirmText] = useState('');
 
     const normalizedConfirmText = confirmText.trim().toLowerCase();
     const canReset = normalizedConfirmText === REQUIRED_CONFIRM_TEXT;
-
-    const openDialog = () => {
-        request.reset();
-        setConfirmText('');
-        setOpen(true);
-    };
 
     const closeDialog = () => {
         if (request.isLoading()) {
             return;
         }
         setConfirmText('');
-        setOpen(false);
+        request.reset();
+        onClose();
     };
 
     const resetProgress = () => {
@@ -51,32 +78,13 @@ export function ResetProgressButton() {
                 trackEvent(EventType.ResetProgress);
                 request.onSuccess('Training plan progress reset');
                 setConfirmText('');
-                setOpen(false);
+                onClose();
             })
             .catch(request.onFailure);
     };
 
     return (
         <>
-            <Alert
-                severity='warning'
-                variant='outlined'
-                icon={<WarningIcon />}
-                action={
-                    <Button
-                        color='error'
-                        data-testid='reset-progress-open-button'
-                        onClick={openDialog}
-                        startIcon={<RestartAltIcon />}
-                    >
-                        Reset Progress
-                    </Button>
-                }
-            >
-                Clear your training plan progress for all cohorts. Use this if you are returning
-                after a long break and want task progress to start at zero.
-            </Alert>
-
             <Dialog open={open} onClose={closeDialog}>
                 <DialogTitle>Reset Training Plan Progress?</DialogTitle>
                 <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>

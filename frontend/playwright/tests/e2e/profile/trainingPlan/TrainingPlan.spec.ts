@@ -219,7 +219,7 @@ test.describe('Training Plan', () => {
         await mockEmptyTimeline(page);
         await gotoTrainingPlan(page);
 
-        await expect(page.getByText('Full Training Plan').first()).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Training Plan' })).toBeVisible();
         await page.getByTestId('Games-header').click();
 
         await expect(page.getByText('Minimum Reached').first()).toBeVisible();

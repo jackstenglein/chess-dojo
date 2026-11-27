@@ -179,6 +179,14 @@
             },
             "daily": {
                 "today": "[T] Today",
+                "loggedTime": "[T] {time} logged",
+                "notPlanned": "[T] Not planned",
+                "doneLabel": "[T] Done",
+                "toDo": "[T] To do",
+                "markComplete": "[T] Mark complete",
+                "completed": "[T] Completed",
+                "verbRead": "[T] Read",
+                "verbWatch": "[T] Watch",
                 "emptyPlan": "[T] Add tasks to your training plan below to create your daily and weekly training schedule.",
                 "summary": "[T] {done} of {total} tasks done · {worked} of {goal}",
                 "allDone": "[T] Done for today · {worked} logged",
@@ -212,11 +220,8 @@
                 "partialTime": "[T] {worked} / {goal}"
             },
             "full": {
-                "heading": "[T] Full Training Plan",
+                "heading": "[T] Training Plan",
                 "cohort": "[T] Cohort",
-                "showCompletedTasks": "[T] Show Completed Tasks",
-                "hideCompletedTasksTooltip": "[T] Hide Completed Tasks",
-                "showCompletedTasksTooltip": "[T] Show Completed Tasks",
                 "expandAll": "[T] Expand All",
                 "collapseAll": "[T] Collapse All",
                 "completedTasks": "[T] Completed Tasks",
@@ -470,8 +475,27 @@
                 "body": "[T] This custom task will be removed from your profile, and all time logged will be lost. This action is irreverisble.",
                 "delete": "[T] Delete Task"
             },
+            "planMenu": {
+                "plan": "[T] Plan",
+                "tooltip": "[T] Training plan options",
+                "show": "[T] Show",
+                "today": "[T] Today",
+                "thisWeek": "[T] This Week",
+                "suggestedTasks": "[T] Suggested tasks",
+                "workGoal": "[T] Set Weekly Goal",
+                "resetProgress": "[T] Reset progress",
+                "barColor": "[T] Bar color",
+                "barColors": {
+                    "multicolor": "[T] Multicolor",
+                    "teal": "[T] Teal",
+                    "blue": "[T] Blue",
+                    "purple": "[T] Purple",
+                    "pink": "[T] Pink",
+                    "orange": "[T] Orange",
+                    "green": "[T] Green"
+                }
+            },
             "workGoal": {
-                "editGoalTooltip": "[T] Edit work goal",
                 "startWeekOn": "[T] Start Week On",
                 "Sunday": "[T] Sunday",
                 "Monday": "[T] Monday",
