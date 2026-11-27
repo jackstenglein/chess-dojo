@@ -86,16 +86,32 @@ import {
 } from './lichessFeed';
 import { LiveBoard } from './LiveBoard';
 import {
-    FAN_LANDSCAPE_BOARD,
+    ANALYSIS_LANDSCAPE_BOARD,
+    ANALYSIS_PHONE_LANDSCAPE,
+    boardColumnWidth,
+    FAN_STREAM_MAX_HEIGHT,
+    FAN_TABLET_BOARD,
+    FAN_UPRIGHT_WIDE_BOARD,
+    fanBoardBlockSx,
+    fanLandscapeBoard,
     fanLandscapeGrid,
+    fanLandscapeStreamSx,
     FanPart,
     fanPartSx,
+    fanSmallLandscapeGrid,
+    fanTabletSidesSx,
+    fanTopBarSx,
+    fanTwoColumnGrid,
     fanUnwrapSx,
-    HANDSET,
+    fanUprightWideGrid,
     parseLayout,
     PHONE,
     PHONE_LANDSCAPE,
     resolveLayout,
+    SMALL_PHONE_LANDSCAPE,
+    TABLET_UPRIGHT,
+    TWO_COLUMNS,
+    UPRIGHT_WIDE,
     WcLayout,
 } from './liveLayout';
 import { useActAs } from './localTesting';
@@ -323,6 +339,8 @@ export function LiveMatchPage() {
         ply++;
     }
     const atLive = node.mainline && node.ply === moves.length;
+    // A finished game has no live move, so the button to its latest move says "Last move".
+    const latestMoveLabel = gameOver ? 'Last move' : 'Live';
     const fen = node.fen;
 
     /** Shows a position: shared with the other senseis, or just here for fans. Null is live. */
@@ -408,13 +426,26 @@ export function LiveMatchPage() {
     // The games show only once the browser has loaded them, so the server never
     // renders them. That makes it safe to ask for the screen's real size on the
     // first render.
-    const handset = useMediaQuery(HANDSET, { noSsr: true });
+    const phone = useMediaQuery(PHONE, { noSsr: true });
+    const twoColumns = useMediaQuery(TWO_COLUMNS, { noSsr: true });
+    const uprightWide = useMediaQuery(UPRIGHT_WIDE, { noSsr: true });
+    const phoneLandscape = useMediaQuery(PHONE_LANDSCAPE, { noSsr: true });
     /** Only the fan view rearranges its parts on a phone. */
     const fan = (part: FanPart) => (streamView ? fanPartSx(part) : {});
 
     // The Admin tab. The page always opens on a game, never here.
     const canAdmin = !!user?.isAdmin || (!!actAs && isSensei);
     const [adminOpen, setAdminOpen] = useState(false);
+    // In two columns, and on a phone on its side, a fan has no row above the
+    // board. The game picker is beside the board, which gets the height. A
+    // sensei keeps the row, which also holds the switch between the views. So
+    // does the Admin view, which hides everything under the row.
+    const fanWithoutTabs = streamView && !canAnalyze;
+    const pickerBeside =
+        fanWithoutTabs && (twoColumns || phoneLandscape) && !(adminOpen && canAdmin);
+    // One column has the game picker above the board. In the fan view so does a
+    // large tablet held upright.
+    const picker = phone || (streamView && uprightWide);
 
     const selectRound = (id: string) => {
         setAdminOpen(false);
@@ -742,7 +773,12 @@ export function LiveMatchPage() {
         );
 
     const guessPanel = (
-        <GuessPanel state={guessState} onGoLive={() => goTo(null)} score={myScore} />
+        <GuessPanel
+            state={guessState}
+            onGoLive={() => goTo(null)}
+            score={myScore}
+            shortInTwoColumns={streamView}
+        />
     );
     const crosstableView = (
         <CrosstableView
@@ -755,10 +791,13 @@ export function LiveMatchPage() {
                     selectRound(r.id);
                 }
             }}
+            // In two columns and on a phone on its side, the fan view has the table in
+            // the narrow column beside the board.
+            narrow={streamView && (twoColumns || phoneLandscape)}
         />
     );
 
-    /** How each finished game ended, for the game picker on a phone. */
+    /** How each finished game ended, for the game picker. */
     const results = useMemo(() => {
         const byId: Record<string, string> = {};
         for (const r of rounds) {
@@ -776,6 +815,18 @@ export function LiveMatchPage() {
         }
         return byId;
     }, [rounds, roundId, feed.result, crosstable]);
+    // The picker stands above the board on a screen with one column, and beside
+    // the board in two columns and on a phone on its side.
+    const gamePicker = (
+        <GamePicker
+            rounds={rounds}
+            roundId={roundId}
+            onSelect={selectRound}
+            admin={canAdmin ? { open: adminOpen, onOpen: () => setAdminOpen(true) } : undefined}
+            onRemove={isSensei ? (id) => void removeGame(id) : undefined}
+            results={results}
+        />
+    );
 
     const notation = (
         <Notation
@@ -785,6 +836,7 @@ export function LiveMatchPage() {
             guesses={myGuesses}
             onSelect={goTo}
             onLive={atLive ? undefined : () => goTo(null)}
+            gameOver={gameOver}
             onPromote={canAnalyze ? (n) => analysisApi.promote(n.path) : undefined}
             onDelete={canAnalyze ? (n) => analysisApi.remove(n.path) : undefined}
             // In the stream view the moves scroll in a short box, so the stream
@@ -806,7 +858,13 @@ export function LiveMatchPage() {
                 py: { xs: 2, md: 3 },
                 // A phone gives the board the width that wider margins would take.
                 px: { xs: 1.5, sm: 3 },
-                ...(streamView && { [PHONE_LANDSCAPE]: { py: 1 } }),
+                ...(streamView && {
+                    // The board's column ends 5px above the bottom of the screen. With
+                    // the same margin under the page, the board is still in its place
+                    // when the page has scrolled to its end.
+                    [TWO_COLUMNS]: { pb: '5px' },
+                    [PHONE_LANDSCAPE]: { py: 1 },
+                }),
             }}
         >
             {/* The two views differ in height. Reserving room for the scrollbar stops
@@ -851,24 +909,13 @@ export function LiveMatchPage() {
                 </Alert>
             )}
 
-            {rounds.length > 0 && (
+            {rounds.length > 0 && !pickerBeside && (
                 <Stack
                     direction='row'
-                    sx={{ alignItems: 'center', mb: handset ? 1 : 2, minWidth: 0 }}
+                    sx={{ alignItems: 'center', mb: picker ? 1 : 2, minWidth: 0 }}
                 >
-                    {handset ? (
-                        <GamePicker
-                            rounds={rounds}
-                            roundId={roundId}
-                            onSelect={selectRound}
-                            admin={
-                                canAdmin
-                                    ? { open: adminOpen, onOpen: () => setAdminOpen(true) }
-                                    : undefined
-                            }
-                            onRemove={isSensei ? (id) => void removeGame(id) : undefined}
-                            results={results}
-                        />
+                    {picker ? (
+                        gamePicker
                     ) : (
                         <Tabs
                             value={adminOpen ? ADMIN_TAB : (roundId ?? false)}
@@ -992,15 +1039,10 @@ export function LiveMatchPage() {
                           }
                         : {
                               xs: '1fr',
-                              // On a tablet on its side, or in a short window, the fan view's
-                              // board is no taller than the screen has room for. The header,
-                              // the tabs, the player bars and the move buttons take the rest.
-                              // Besides the header that is 225px, less the 46px that the eval
-                              // bar adds to the column. The column beside the board takes the
-                              // width that frees up.
-                              md: streamView
-                                  ? 'minmax(0, max(406px, calc(100dvh - var(--navbar-height) - 179px))) minmax(340px, 1fr)'
-                                  : 'minmax(0, 1fr) 340px',
+                              // On a tablet on its side, or in a short window, the board is
+                              // no taller than the screen has room for. The column beside
+                              // the board takes the width that frees up.
+                              md: `${boardColumnWidth(!fanWithoutTabs)} minmax(340px, 1fr)`,
                               // The leaderboard needs no more than this; wider only spreads it out.
                               lg: 'minmax(0, 620px) 340px minmax(280px, 360px)',
                           },
@@ -1008,7 +1050,7 @@ export function LiveMatchPage() {
                         ? {
                               // A phone stacks the parts in the order liveLayout gives them.
                               xs: 'none',
-                              md: '"top ." "board moves" "twitch twitch" "leaders leaders"',
+                              md: fanTwoColumnGrid.gridTemplateAreas,
                               lg: '"top . ." "board twitch twitch" "board moves leaders"',
                           }
                         : playerColumn
@@ -1023,8 +1065,14 @@ export function LiveMatchPage() {
                                 lg: '"top . ." "board moves leaders" "twitch twitch twitch"',
                             },
                     // In the stream view the board spans the stream row and the notation row.
-                    gridTemplateRows: streamView ? { lg: 'auto auto 1fr' } : undefined,
-                    ...(streamView && { [PHONE_LANDSCAPE]: fanLandscapeGrid }),
+                    gridTemplateRows: streamView
+                        ? { md: fanTwoColumnGrid.gridTemplateRows, lg: 'auto auto 1fr' }
+                        : undefined,
+                    ...(streamView && {
+                        [UPRIGHT_WIDE]: fanUprightWideGrid,
+                        [PHONE_LANDSCAPE]: fanLandscapeGrid,
+                        [SMALL_PHONE_LANDSCAPE]: fanSmallLandscapeGrid,
+                    }),
                 }}
             >
                 <Box
@@ -1034,6 +1082,7 @@ export function LiveMatchPage() {
                         // In analysis view 2 the player column replaces the bars, except on a phone.
                         display: playerColumn ? { xs: 'block', md: 'none' } : 'block',
                         ...fan('top'),
+                        ...(streamView && fanTopBarSx),
                     }}
                 >
                     <PlayerBar
@@ -1043,6 +1092,9 @@ export function LiveMatchPage() {
                         beside={streamView}
                     />
                 </Box>
+                {pickerBeside && rounds.length > 0 && (
+                    <Box sx={{ minWidth: 0, gridArea: 'games' }}>{gamePicker}</Box>
+                )}
                 {playerColumn && (
                     <Box
                         sx={{
@@ -1071,178 +1123,206 @@ export function LiveMatchPage() {
                     useFlexGap
                     sx={{ minWidth: 0, gridArea: 'board', ...(streamView && fanUnwrapSx) }}
                 >
-                    <Stack direction='row' spacing={EVAL_BAR_GAP} sx={fan('board')}>
-                        <EvalBar average={bar.average} pins={bar.pins} orientation={orientation} />
+                    <Box sx={streamView ? fanBoardBlockSx : { display: 'contents' }}>
+                        <Stack
+                            direction='row'
+                            spacing={EVAL_BAR_GAP}
+                            sx={[fan('board'), streamView && fanTabletSidesSx]}
+                        >
+                            <EvalBar
+                                average={bar.average}
+                                pins={bar.pins}
+                                orientation={orientation}
+                            />
+                            <Box
+                                sx={{
+                                    flexGrow: 1,
+                                    minWidth: 0,
+                                    // In analysis view 2 the board fits the window's height, so
+                                    // the bottom player card and the move buttons stay in view.
+                                    // 230px is the header, the tabs and the move buttons.
+                                    maxWidth: playerColumn
+                                        ? { md: 'max(360px, calc(100dvh - 230px))' }
+                                        : undefined,
+                                    ...(streamView
+                                        ? {
+                                              [TABLET_UPRIGHT]: { maxWidth: FAN_TABLET_BOARD },
+                                              [UPRIGHT_WIDE]: {
+                                                  maxWidth: FAN_UPRIGHT_WIDE_BOARD,
+                                              },
+                                              [PHONE_LANDSCAPE]: {
+                                                  flexGrow: 0,
+                                                  width: fanLandscapeBoard(!fanWithoutTabs),
+                                                  maxWidth: 'none',
+                                              },
+                                          }
+                                        : {
+                                              [ANALYSIS_PHONE_LANDSCAPE]: {
+                                                  maxWidth: ANALYSIS_LANDSCAPE_BOARD,
+                                              },
+                                          }),
+                                }}
+                            >
+                                <LiveBoard
+                                    fen={fen}
+                                    lastMove={node.ply > 0 ? [node.from, node.to] : undefined}
+                                    orientation={orientation}
+                                    onGuess={
+                                        canAnalyze
+                                            ? (uci) => {
+                                                  if (altHeld.current && canGuess) {
+                                                      void onGuess(uci);
+                                                      return false;
+                                                  }
+                                                  // The move stays on the board.
+                                                  return analysisMove(uci);
+                                              }
+                                            : canGuess
+                                              ? (uci) => {
+                                                    void onGuess(uci);
+                                                    return false;
+                                                }
+                                              : undefined
+                                    }
+                                    guessUci={canGuess ? myGuesses[nextPly] : undefined}
+                                    sizeVarsTo={layoutRef}
+                                />
+                            </Box>
+                        </Stack>
                         <Box
                             sx={{
-                                flexGrow: 1,
-                                minWidth: 0,
-                                // In analysis view 2 the board fits the window's height, so
-                                // the bottom player card and the move buttons stay in view.
-                                // 230px is the header, the tabs and the move buttons.
-                                maxWidth: playerColumn
-                                    ? { md: 'max(360px, calc(100dvh - 230px))' }
-                                    : undefined,
-                                ...(streamView && {
-                                    [PHONE_LANDSCAPE]: { flexGrow: 0, width: FAN_LANDSCAPE_BOARD },
-                                }),
+                                display: playerColumn ? { xs: 'block', md: 'none' } : 'block',
+                                ...fan('bottom'),
                             }}
                         >
-                            <LiveBoard
-                                fen={fen}
-                                lastMove={node.ply > 0 ? [node.from, node.to] : undefined}
-                                orientation={orientation}
-                                onGuess={
-                                    canAnalyze
-                                        ? (uci) => {
-                                              if (altHeld.current && canGuess) {
-                                                  void onGuess(uci);
-                                                  return false;
-                                              }
-                                              // The move stays on the board.
-                                              return analysisMove(uci);
-                                          }
-                                        : canGuess
-                                          ? (uci) => {
-                                                void onGuess(uci);
-                                                return false;
-                                            }
-                                          : undefined
-                                }
-                                guessUci={canGuess ? myGuesses[nextPly] : undefined}
-                                sizeVarsTo={layoutRef}
+                            <PlayerBar
+                                player={player(bottomColor)}
+                                seconds={clocks[bottomColor]}
+                                running={clocks.running === bottomColor}
+                                beside={streamView}
+                                underBar={<EvalAverage average={bar.average} />}
                             />
                         </Box>
-                    </Stack>
-                    <Box
-                        sx={{
-                            display: playerColumn ? { xs: 'block', md: 'none' } : 'block',
-                            ...fan('bottom'),
-                        }}
-                    >
-                        <PlayerBar
-                            player={player(bottomColor)}
-                            seconds={clocks[bottomColor]}
-                            running={clocks.running === bottomColor}
-                            beside={streamView}
-                            underBar={<EvalAverage average={bar.average} />}
-                        />
-                    </Box>
-                    <Stack
-                        direction='row'
-                        spacing={0.5}
-                        useFlexGap
-                        sx={[
-                            { alignItems: 'center' },
-                            fan('nav'),
-                            // On a phone the fan view's buttons close up, which leaves
-                            // the move between them room to show in full.
-                            streamView && { [PHONE]: { gap: 0 } },
-                        ]}
-                    >
-                        <Tooltip title='Start'>
-                            <span>
-                                <IconButton
-                                    size='small'
-                                    aria-label='Start'
-                                    onClick={() => goTo(tree)}
-                                    disabled={node.ply === 0}
-                                >
-                                    <FirstPageIcon />
-                                </IconButton>
-                            </span>
-                        </Tooltip>
-                        <Tooltip title='Back'>
-                            <span>
-                                <IconButton
-                                    size='small'
-                                    aria-label='Back'
-                                    onClick={stepBack}
-                                    disabled={node.ply === 0}
-                                >
-                                    <ChevronLeftIcon />
-                                </IconButton>
-                            </span>
-                        </Tooltip>
-                        <Typography
-                            data-testid='last-move'
-                            sx={{
-                                flexGrow: 1,
-                                textAlign: 'center',
-                                fontWeight: 800,
-                                fontSize: { xs: '1rem', sm: '1.25rem' },
-                                ...(streamView && { [PHONE]: { fontSize: '1rem' } }),
-                                fontVariantNumeric: 'tabular-nums',
-                                minWidth: 0,
-                                whiteSpace: 'nowrap',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                            }}
+                        <Stack
+                            direction='row'
+                            spacing={0.5}
+                            useFlexGap
+                            sx={[
+                                { alignItems: 'center' },
+                                fan('nav'),
+                                // On a phone the fan view's buttons close up, which leaves
+                                // the move between them room to show in full.
+                                streamView && { [PHONE]: { gap: 0 } },
+                            ]}
                         >
-                            {node.ply > 0 ? moveLabel(node.ply, node.san) : 'No moves yet'}
-                            {!atLive && (
-                                <Typography
-                                    component='span'
-                                    color='text.secondary'
-                                    sx={{ ml: 1, fontSize: '0.8rem', fontWeight: 400 }}
-                                >
-                                    {node.mainline ? '(not live)' : '(analysis)'}
-                                </Typography>
-                            )}
-                        </Typography>
-                        <Tooltip title='Next'>
-                            <span>
+                            <Tooltip title='Start'>
+                                <span>
+                                    <IconButton
+                                        size='small'
+                                        aria-label='Start'
+                                        onClick={() => goTo(tree)}
+                                        disabled={node.ply === 0}
+                                    >
+                                        <FirstPageIcon />
+                                    </IconButton>
+                                </span>
+                            </Tooltip>
+                            <Tooltip title='Back'>
+                                <span>
+                                    <IconButton
+                                        size='small'
+                                        aria-label='Back'
+                                        onClick={stepBack}
+                                        disabled={node.ply === 0}
+                                    >
+                                        <ChevronLeftIcon />
+                                    </IconButton>
+                                </span>
+                            </Tooltip>
+                            <Typography
+                                data-testid='last-move'
+                                sx={{
+                                    flexGrow: 1,
+                                    textAlign: 'center',
+                                    fontWeight: 800,
+                                    fontSize: { xs: '1rem', sm: '1.25rem' },
+                                    ...(streamView && { [PHONE]: { fontSize: '1rem' } }),
+                                    fontVariantNumeric: 'tabular-nums',
+                                    minWidth: 0,
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                }}
+                            >
+                                {node.ply > 0 ? moveLabel(node.ply, node.san) : 'No moves yet'}
+                                {/* A finished game has no live move, so its earlier
+                                    moves get no note. */}
+                                {!atLive && !(gameOver && node.mainline) && (
+                                    <Typography
+                                        component='span'
+                                        color='text.secondary'
+                                        sx={{ ml: 1, fontSize: '0.8rem', fontWeight: 400 }}
+                                    >
+                                        {node.mainline ? '(not live)' : '(analysis)'}
+                                    </Typography>
+                                )}
+                            </Typography>
+                            <Tooltip title='Next'>
+                                <span>
+                                    <IconButton
+                                        size='small'
+                                        aria-label='Next'
+                                        onClick={stepNext}
+                                        disabled={!nextOf(node)}
+                                    >
+                                        <ChevronRightIcon />
+                                    </IconButton>
+                                </span>
+                            </Tooltip>
+                            <Tooltip title={latestMoveLabel}>
+                                <span>
+                                    <IconButton
+                                        size='small'
+                                        aria-label={latestMoveLabel}
+                                        onClick={() => goTo(null)}
+                                        disabled={atLive}
+                                        color={atLive ? 'default' : 'primary'}
+                                    >
+                                        <LastPageIcon />
+                                    </IconButton>
+                                </span>
+                            </Tooltip>
+                            <Tooltip
+                                title={sounds.enabled ? 'Mute move sounds' : 'Play move sounds'}
+                            >
                                 <IconButton
                                     size='small'
-                                    aria-label='Next'
-                                    onClick={stepNext}
-                                    disabled={!nextOf(node)}
+                                    aria-label={
+                                        sounds.enabled ? 'Mute move sounds' : 'Play move sounds'
+                                    }
+                                    onClick={() => sounds.setEnabled(!sounds.enabled)}
                                 >
-                                    <ChevronRightIcon />
+                                    {sounds.enabled ? <VolumeUpIcon /> : <VolumeOffIcon />}
                                 </IconButton>
-                            </span>
-                        </Tooltip>
-                        <Tooltip title='Live'>
-                            <span>
+                            </Tooltip>
+                            <Tooltip title='Flip board'>
                                 <IconButton
                                     size='small'
-                                    aria-label='Live'
-                                    onClick={() => goTo(null)}
-                                    disabled={atLive}
-                                    color={atLive ? 'default' : 'primary'}
+                                    onClick={() =>
+                                        setOrientation((o) => (o === 'white' ? 'black' : 'white'))
+                                    }
                                 >
-                                    <LastPageIcon />
+                                    <SwapVertIcon />
                                 </IconButton>
-                            </span>
-                        </Tooltip>
-                        <Tooltip title={sounds.enabled ? 'Mute move sounds' : 'Play move sounds'}>
-                            <IconButton
-                                size='small'
-                                aria-label={
-                                    sounds.enabled ? 'Mute move sounds' : 'Play move sounds'
-                                }
-                                onClick={() => sounds.setEnabled(!sounds.enabled)}
-                            >
-                                {sounds.enabled ? <VolumeUpIcon /> : <VolumeOffIcon />}
-                            </IconButton>
-                        </Tooltip>
-                        <Tooltip title='Flip board'>
-                            <IconButton
-                                size='small'
-                                onClick={() =>
-                                    setOrientation((o) => (o === 'white' ? 'black' : 'white'))
-                                }
-                            >
-                                <SwapVertIcon />
-                            </IconButton>
-                        </Tooltip>
-                        <BoardThemeButton />
-                    </Stack>
-                    {canAnalyze && analysisApi.error && (
-                        <Typography variant='caption' color='error' sx={fan('error')}>
-                            {analysisApi.error}
-                        </Typography>
-                    )}
+                            </Tooltip>
+                            <BoardThemeButton />
+                        </Stack>
+                        {canAnalyze && analysisApi.error && (
+                            <Typography variant='caption' color='error' sx={fan('error')}>
+                                {analysisApi.error}
+                            </Typography>
+                        )}
+                    </Box>
                     {streamView && <Box sx={fan('evals')}>{senseiEvals}</Box>}
                     {streamView ? <Box sx={fan('cross')}>{crosstableView}</Box> : crosstableView}
                     {feed.status === 'error' && (
@@ -1250,8 +1330,8 @@ export function LiveMatchPage() {
                             Could not load this game from Lichess.
                         </Alert>
                     )}
-                    {/* A phone shows the result beside the game's name, in the game picker. */}
-                    {gameOver && !handset && (
+                    {/* The game picker shows the result beside the game's name. */}
+                    {gameOver && !picker && !pickerBeside && (
                         <Alert severity='info' sx={fan('notice')}>
                             {round?.name ?? 'This game'} ended {feed.result.replace('1/2', '½')}.
                         </Alert>
@@ -1299,7 +1379,20 @@ export function LiveMatchPage() {
                     {!streamView && guessPanel}
                 </Stack>
 
-                <Box sx={{ minWidth: 0, gridArea: 'twitch', ...fan('twitch') }}>
+                <Box
+                    sx={[
+                        { minWidth: 0, gridArea: 'twitch' },
+                        fan('twitch'),
+                        // The stream is short enough for the first screen to hold
+                        // what comes with it. This is an entry of its own, so it adds
+                        // to the rules above for the same screens and does not
+                        // replace them.
+                        streamView && {
+                            [TWO_COLUMNS]: { '--wc-stream-max-height': FAN_STREAM_MAX_HEIGHT },
+                        },
+                        streamView && fanLandscapeStreamSx,
+                    ]}
+                >
                     <StreamEmbed minimizable={streamView} />
                 </Box>
             </Box>
@@ -1330,13 +1423,26 @@ function PlayerBar({
     running: boolean;
     /** Shown in the space under the eval bar, left of the player. */
     underBar?: ReactNode;
-    /** The fan view puts the bar beside the board on a phone on its side, not above or below it. */
+    /**
+     * The bar is in the fan view. There it goes beside the board on a phone on
+     * its side, and lines up with the board on a tablet held upright.
+     */
     beside?: boolean;
 }) {
     return (
         // The same row as the board: a space as wide as the eval bar, the same
         // gap, then the player, so the photo starts exactly at the board's edge.
-        <Stack direction='row' spacing={EVAL_BAR_GAP} useFlexGap sx={{ alignItems: 'center' }}>
+        <Stack
+            direction='row'
+            spacing={EVAL_BAR_GAP}
+            useFlexGap
+            sx={{
+                alignItems: 'center',
+                // Under a board that is narrower than the screen, the bar starts and
+                // ends where the board does.
+                ...(beside && fanTabletSidesSx),
+            }}
+        >
             <Box
                 sx={{
                     width: EVAL_BAR_WIDTH,
@@ -1361,8 +1467,20 @@ function PlayerBar({
                     ...(beside && { [PHONE_LANDSCAPE]: { maxWidth: 'none' } }),
                 }}
             >
-                <Stack direction='row' spacing={1} sx={{ alignItems: 'center', minWidth: 0 }}>
-                    <PlayerPhoto name={player?.name} size={36} />
+                <Stack
+                    direction='row'
+                    spacing={1}
+                    sx={{
+                        alignItems: 'center',
+                        minWidth: 0,
+                        // On a phone on its side the two players share a line, which
+                        // has no room for the photos, nor for the space after them.
+                        ...(beside && {
+                            [PHONE_LANDSCAPE]: { '& > :not(style) ~ :not(style)': { ml: 0 } },
+                        }),
+                    }}
+                >
+                    <PlayerPhoto name={player?.name} size={36} hiddenOnPhoneOnItsSide={beside} />
                     <Typography
                         sx={{
                             fontWeight: 700,
@@ -1372,11 +1490,20 @@ function PlayerBar({
                                 fontSize: '0.9375rem',
                                 '& .rating': { display: 'none' },
                             },
+                            // Where two players share a line on a phone on its side, the
+                            // name also does without the title.
+                            '@container (max-width: 220px)': {
+                                '& .title': { display: 'none' },
+                            },
                         }}
                         noWrap
                     >
                         {player?.title && (
-                            <Box component='span' sx={{ color: 'warning.main', mr: 0.75 }}>
+                            <Box
+                                component='span'
+                                className='title'
+                                sx={{ color: 'warning.main', mr: 0.75 }}
+                            >
                                 {player.title}
                             </Box>
                         )}
@@ -1409,6 +1536,15 @@ function PlayerBar({
                         fontVariantNumeric: 'tabular-nums',
                         bgcolor: running ? 'text.primary' : 'action.hover',
                         color: running ? 'background.paper' : 'text.primary',
+                        // On a phone on its side the two players share a line, so the
+                        // clock is the small one there whatever the width.
+                        ...(beside && {
+                            [PHONE_LANDSCAPE]: {
+                                px: 1,
+                                fontSize: '1.1rem',
+                                '@supports (text-box: trim-both cap alphabetic)': { py: '8px' },
+                            },
+                        }),
                     }}
                     data-testid='player-clock'
                 >

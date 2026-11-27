@@ -11,6 +11,8 @@ interface CrosstableViewProps {
     /** The game being played right now, marked with a dot until it has a result. */
     liveNumber?: number;
     onSelectGame: (number: number) => void;
+    /** The table sits in a narrow column, so it takes the form it has on a phone. */
+    narrow?: boolean;
 }
 
 /**
@@ -22,11 +24,12 @@ export function CrosstableView({
     currentNumber,
     liveNumber,
     onSelectGame,
+    narrow,
 }: CrosstableViewProps) {
     // The table shows only once the browser has loaded the match, so the server
     // never renders it. That makes it safe to ask for the screen's real width on
     // the first render.
-    const phone = useMediaQuery(useTheme().breakpoints.down('sm'), { noSsr: true });
+    const phone = useMediaQuery(useTheme().breakpoints.down('sm'), { noSsr: true }) || !!narrow;
     if (!table || table.games.length === 0) {
         return null;
     }

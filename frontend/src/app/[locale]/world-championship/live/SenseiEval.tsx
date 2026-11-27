@@ -15,13 +15,13 @@ import { PHONE_LANDSCAPE } from './liveLayout';
 // Pins
 // ---------------------------------------------------------------------------
 
-/** A pin's size, the same everywhere or smaller on a phone. */
-type PinSize = number | { xs: number; md: number };
+/** A pin's size, the same everywhere or smaller below the lg breakpoint. */
+type PinSize = number | { xs: number; lg: number };
 
 /** A sensei's initial in their color, as on the bar. */
 export function SenseiPin({ sensei, size = 22 }: { sensei: WcSensei; size?: PinSize }) {
     const scaled = (factor: number) =>
-        typeof size === 'number' ? size * factor : { xs: size.xs * factor, md: size.md * factor };
+        typeof size === 'number' ? size * factor : { xs: size.xs * factor, lg: size.lg * factor };
     return (
         <Box
             aria-hidden='true'
@@ -99,6 +99,9 @@ function BeltIcon() {
 /** The eval bar's width. The player bars leave the same space, so they line up with the board. */
 export const EVAL_BAR_WIDTH = { xs: 20, sm: 38 };
 
+/** A phone on its side is wider than the sm breakpoint, and still has a phone's narrow bar. */
+const PHONE_BAR_WIDTH = EVAL_BAR_WIDTH.xs;
+
 /** The space between the eval bar and the board, in the theme's spacing units. */
 export const EVAL_BAR_GAP = { xs: 0.75, sm: 1 };
 
@@ -142,6 +145,7 @@ export function EvalBar({ average, pins, orientation }: EvalBarProps) {
             sx={{
                 position: 'relative',
                 width: EVAL_BAR_WIDTH,
+                [PHONE_LANDSCAPE]: { width: PHONE_BAR_WIDTH },
                 flexShrink: 0,
                 alignSelf: 'stretch',
             }}
@@ -229,6 +233,9 @@ export function EvalBar({ average, pins, orientation }: EvalBarProps) {
                                 xs: `calc(50% + ${4 + (p.column - (p.columns - 1) / 2) * 12}px)`,
                                 sm: `calc(50% + ${(p.column - (p.columns - 1) / 2) * 20}px)`,
                             },
+                            [PHONE_LANDSCAPE]: {
+                                left: `calc(50% + ${4 + (p.column - (p.columns - 1) / 2) * 12}px)`,
+                            },
                             transform: 'translate(-50%, -50%)',
                             transition: 'top 0.6s ease',
                             zIndex: 2,
@@ -267,9 +274,14 @@ export function EvalBar({ average, pins, orientation }: EvalBarProps) {
                     pointerEvents: 'none',
                     // A phone's bar is too narrow for the number, which EvalAverage
                     // shows under the bar. On its side the phone has nothing under
-                    // the bar, so the number stays here.
+                    // the bar, so the number stays here, as small as the bar needs.
                     display: { xs: 'none', sm: 'block' },
-                    [PHONE_LANDSCAPE]: { display: 'block', left: 0, right: 0 },
+                    [PHONE_LANDSCAPE]: {
+                        display: 'block',
+                        left: 0,
+                        right: 0,
+                        fontSize: '0.62rem',
+                    },
                 }}
             >
                 {formatEval(average)}
@@ -307,26 +319,27 @@ export function EvalAverage({ average }: { average: number }) {
 // The strip above the board
 // ---------------------------------------------------------------------------
 
-/** Kept for screen readers, but not shown, under the md breakpoint. */
-const HIDDEN_ON_A_PHONE = {
-    position: { xs: 'absolute', md: 'static' },
-    width: { xs: '1px', md: 'auto' },
-    height: { xs: '1px', md: 'auto' },
+/** Kept for screen readers, but not shown, under the lg breakpoint. */
+const HIDDEN_IN_A_ROW = {
+    position: { xs: 'absolute', lg: 'static' },
+    width: { xs: '1px', lg: 'auto' },
+    height: { xs: '1px', lg: 'auto' },
     overflow: 'hidden',
-    clipPath: { xs: 'inset(50%)', md: 'none' },
+    clipPath: { xs: 'inset(50%)', lg: 'none' },
 } as const;
 
 /** Each active sensei above the board, with the eval they have in force. */
 export function SenseiStrip({ roster, pins }: { roster: WcSensei[]; pins: WcPin[] }) {
     const active = roster.filter((s) => s.active);
-    // Three senseis fit a phone's row with their names. More do not, so then the
-    // row shows only their initials and evals.
+    // Three senseis fit a row with their names, even on a phone. More do not, so
+    // then the row shows only their initials and evals.
     const crowded = active.length > 3;
     return (
-        // On a phone the senseis share a row, and go to a second row if they do not fit.
+        // Under the lg breakpoint the senseis share a row, and go to a second row
+        // if they do not fit. On a wide screen each has a row under the board.
         <Stack
-            direction={{ xs: 'row', md: 'column' }}
-            spacing={{ xs: 0.5, md: 0.75 }}
+            direction={{ xs: 'row', lg: 'column' }}
+            spacing={{ xs: 0.5, lg: 0.75 }}
             useFlexGap
             data-testid='sensei-strip'
             sx={{ flexWrap: 'wrap' }}
@@ -338,21 +351,21 @@ export function SenseiStrip({ roster, pins }: { roster: WcSensei[]; pins: WcPin[
                         key={s.id}
                         data-testid={`sensei-chip-${s.id}`}
                         direction='row'
-                        spacing={{ xs: 0.5, md: 0.75 }}
+                        spacing={{ xs: 0.5, lg: 0.75 }}
                         sx={{
                             alignItems: 'center',
                             border: 1,
                             borderColor: 'divider',
                             borderRadius: 5,
                             py: 0.25,
-                            pl: { xs: 0.375, md: 0.5 },
-                            pr: { xs: 0.875, md: 1.25 },
-                            flex: { xs: '1 1 auto', md: 'none' },
-                            fontSize: { xs: '0.8125rem', md: '1rem' },
-                            ...(crowded && { justifyContent: { xs: 'center', md: 'flex-start' } }),
+                            pl: { xs: 0.375, lg: 0.5 },
+                            pr: { xs: 0.875, lg: 1.25 },
+                            flex: { xs: '1 1 auto', lg: 'none' },
+                            fontSize: { xs: '0.8125rem', lg: '1rem' },
+                            ...(crowded && { justifyContent: { xs: 'center', lg: 'flex-start' } }),
                         }}
                     >
-                        <SenseiPin sensei={s} size={{ xs: 20, md: 24 }} />
+                        <SenseiPin sensei={s} size={{ xs: 20, lg: 24 }} />
                         <Typography
                             sx={{
                                 fontSize: 'inherit',
@@ -365,7 +378,7 @@ export function SenseiStrip({ roster, pins }: { roster: WcSensei[]; pins: WcPin[
                                 textBox: 'trim-both cap alphabetic',
                                 py: '4px',
                                 my: '-4px',
-                                ...(crowded && HIDDEN_ON_A_PHONE),
+                                ...(crowded && HIDDEN_IN_A_ROW),
                             }}
                             noWrap
                         >
