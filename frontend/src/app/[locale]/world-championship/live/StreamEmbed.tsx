@@ -12,6 +12,7 @@ import {
     ToggleButtonGroup,
     Tooltip,
     Typography,
+    useMediaQuery,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
@@ -39,7 +40,10 @@ export function StreamEmbed({ minimizable }: { minimizable?: boolean } = {}) {
     const [savedMinimized, setMinimized] = useLocalStorage('wcLive.streamMinimized', false, {
         initializeWithValue: false,
     });
-    const minimized = !!minimizable && savedMinimized;
+    // A phone on its side hides the header, and with it the button that shows
+    // the stream again, so the stream is never minimized there.
+    const phoneLandscape = useMediaQuery(PHONE_LANDSCAPE);
+    const minimized = !!minimizable && savedMinimized && !phoneLandscape;
     useEffect(() => setHost(window.location.hostname), []);
     // The server cannot see the saved choice, so the first render is always
     // Twitch and the saved choice is read after that. Reading it straight away
