@@ -6,7 +6,6 @@ import LoadingPage from '@/loading/LoadingPage';
 import {
     AdminStatsMemberGroup,
     AdminStatsMembers,
-    AdminStatsMonth,
     GetAdminStatsResponse,
 } from '@jackstenglein/chess-dojo-common/src/adminStats/api';
 import { Refresh } from '@mui/icons-material';
@@ -30,20 +29,43 @@ import {
 } from '@mui/material';
 import { BarChart, LineChart } from '@mui/x-charts';
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
-import { convertedCount, formatMonth, formatPercent, lastMonths, percent } from './statsFormat';
+import {
+    convertedCount,
+    formatChange,
+    formatPercent,
+    formatPeriod,
+    formatWeek,
+    historyByPeriod,
+    percent,
+    Period,
+    SignupRow,
+    signupRows,
+    snapshotWeekAgo,
+    starterRows,
+} from './statsFormat';
 
-const RANGES = [
-    { value: 6, label: '6 months' },
-    { value: 12, label: '12 months' },
-    { value: 24, label: '24 months' },
-    { value: 0, label: 'All' },
-];
+const RANGES: Record<Period, { value: number; label: string }[]> = {
+    week: [
+        { value: 8, label: '8 weeks' },
+        { value: 13, label: '3 months' },
+        { value: 26, label: '6 months' },
+        { value: 52, label: '1 year' },
+    ],
+    month: [
+        { value: 6, label: '6 months' },
+        { value: 12, label: '12 months' },
+        { value: 24, label: '24 months' },
+        { value: 0, label: 'All' },
+    ],
+};
 
 const number = (n: number) => n.toLocaleString('en-US');
 
 export function AdminStats() {
     const request = useRequest<GetAdminStatsResponse>();
-    const [range, setRange] = useState(12);
+    const [period, setPeriod] = useState<Period>('week');
+    const [ranges, setRanges] = useState<Record<Period, number>>({ week: 13, month: 12 });
+    const range = ranges[period];
 
     const load = useCallback(() => {
         request.onStart();
@@ -60,9 +82,20 @@ export function AdminStats() {
     }, [request, load]);
 
     const stats = request.data;
-    const months = useMemo(
-        () => (stats ? lastMonths(stats.months, range, new Date(stats.generatedAt)) : []),
-        [stats, range],
+    const rows = useMemo(
+        () => (stats ? signupRows(stats, period, range, new Date(stats.generatedAt)) : []),
+        [stats, period, range],
+    );
+    const starterWeeks = useMemo(
+        () =>
+            stats?.starterWeeks
+                ? starterRows(stats.starterWeeks, ranges.week, new Date(stats.generatedAt))
+                : [],
+        [stats, ranges.week],
+    );
+    const history = useMemo(
+        () => (stats ? historyByPeriod(stats.history, period) : []),
+        [stats, period],
     );
 
     if (!stats) {
@@ -83,6 +116,26 @@ export function AdminStats() {
 
     const { totals } = stats;
     const totalPaid = totals.paying + totals.churned;
+    const weekAgo = snapshotWeekAgo(stats.history, new Date(stats.generatedAt));
+    const unit = period === 'week' ? 'week' : 'month';
+    const label = (key: string) => formatPeriod(key, period);
+
+    const rangeToggle = (
+        <ToggleButtonGroup
+            size='small'
+            exclusive
+            value={range}
+            onChange={(_, value: number | null) =>
+                value !== null && setRanges((r) => ({ ...r, [period]: value }))
+            }
+        >
+            {RANGES[period].map((r) => (
+                <ToggleButton key={r.value} value={r.value}>
+                    {r.label}
+                </ToggleButton>
+            ))}
+        </ToggleButtonGroup>
+    );
 
     return (
         <Container maxWidth='xl' sx={{ py: 5 }} data-testid='admin-stats'>
@@ -95,28 +148,57 @@ export function AdminStats() {
                     <Typography sx={{ color: 'text.secondary' }}>
                         As of {new Date(stats.generatedAt).toLocaleString()}
                     </Typography>
-                    <Button
-                        startIcon={<Refresh />}
-                        onClick={load}
-                        loading={request.isLoading()}
-                        sx={{ ml: 'auto' }}
-                    >
-                        Refresh
-                    </Button>
+                    <Stack direction='row' sx={{ ml: 'auto', alignItems: 'center', gap: 2 }}>
+                        <ToggleButtonGroup
+                            size='small'
+                            exclusive
+                            value={period}
+                            onChange={(_, value: Period | null) => value && setPeriod(value)}
+                            data-testid='admin-stats-period'
+                        >
+                            <ToggleButton value='week'>Weekly</ToggleButton>
+                            <ToggleButton value='month'>Monthly</ToggleButton>
+                        </ToggleButtonGroup>
+                        <Button
+                            startIcon={<Refresh />}
+                            onClick={load}
+                            loading={request.isLoading()}
+                        >
+                            Refresh
+                        </Button>
+                    </Stack>
                 </Stack>
 
-                <Section title='Accounts'>
+                <Section
+                    title='Accounts'
+                    subtitle={
+                        weekAgo
+                            ? `Changes are against ${formatWeek(weekAgo.date, true)}.`
+                            : 'Changes against last week appear once a week of nightly snapshots is saved.'
+                    }
+                >
                     <Grid container spacing={2}>
-                        <Tile label='Total accounts' value={number(totals.accounts)} />
+                        <Tile
+                            label='Total accounts'
+                            value={number(totals.accounts)}
+                            change={formatChange(totals.accounts, weekAgo?.accounts)}
+                        />
                         <Tile
                             label='Free'
                             value={number(totals.free)}
                             detail={`${number(totals.notOnboarded)} never picked a cohort`}
+                            change={formatChange(totals.free, weekAgo?.free)}
                         />
                         <Tile
                             label='Paying (lifetime)'
                             value={number(totalPaid)}
                             detail={`${formatPercent(percent(totalPaid, totals.accounts))} of accounts · ${number(totals.paying)} subscribed now, ${number(totals.churned)} canceled`}
+                            change={formatChange(totalPaid, weekAgo?.paid)}
+                        />
+                        <Tile
+                            label='Subscribed now'
+                            value={number(totals.paying)}
+                            change={formatChange(totals.paying, weekAgo?.paying)}
                         />
                         <Tile label='Complimentary' value={number(totals.complimentary)} />
                     </Grid>
@@ -128,16 +210,22 @@ export function AdminStats() {
                 >
                     <Grid container spacing={2}>
                         <Tile label='Active today' value={number(totals.active1)} />
-                        <Tile label='Active this week' value={number(totals.active7)} />
+                        <Tile
+                            label='Active this week'
+                            value={number(totals.active7)}
+                            change={formatChange(totals.active7, weekAgo?.active7)}
+                        />
                         <Tile
                             label='Active in 30 days'
                             value={number(totals.active30)}
                             detail={`${number(totals.freeActive30)} free + ${number(totals.paidActive30)} paying + ${number(totals.complimentaryActive30)} complimentary`}
+                            change={formatChange(totals.active30, weekAgo?.active30)}
                         />
                         <Tile
                             label='Free, active in 30 days'
                             value={number(totals.freeActive30)}
                             detail={`${formatPercent(percent(totals.freeActive30, totals.free))} of free`}
+                            change={formatChange(totals.freeActive30, weekAgo?.freeActive30)}
                         />
                         <Tile
                             label='Paying (lifetime), active in 30 days'
@@ -148,24 +236,9 @@ export function AdminStats() {
                 </Section>
 
                 <Section
-                    title='New accounts by month'
-                    subtitle='Each month’s signups, by what those accounts are now. The % above each bar is how many of them have paid.'
-                    action={
-                        <ToggleButtonGroup
-                            size='small'
-                            exclusive
-                            value={range}
-                            onChange={(_, value: number | null) =>
-                                value !== null && setRange(value)
-                            }
-                        >
-                            {RANGES.map((r) => (
-                                <ToggleButton key={r.value} value={r.value}>
-                                    {r.label}
-                                </ToggleButton>
-                            ))}
-                        </ToggleButtonGroup>
-                    }
+                    title={`New accounts by ${unit}`}
+                    subtitle={`Each ${unit}’s signups, by what those accounts are now. The % above each bar is how many of them have paid.${period === 'week' ? ' Weeks start on Monday (UTC).' : ''}`}
+                    action={rangeToggle}
                 >
                     <Card variant='outlined'>
                         <CardContent>
@@ -173,33 +246,33 @@ export function AdminStats() {
                                 height={320}
                                 xAxis={[
                                     {
-                                        data: months.map((m) => m.month),
+                                        data: rows.map((r) => r.key),
                                         scaleType: 'band',
-                                        valueFormatter: formatMonth,
+                                        valueFormatter: label,
                                     },
                                 ]}
                                 series={[
                                     {
-                                        data: months.map((m) => m.free),
+                                        data: rows.map((r) => r.free),
                                         label: 'Still free',
                                         stack: 'signups',
                                     },
                                     {
-                                        data: months.map((m) => m.complimentary),
+                                        data: rows.map((r) => r.complimentary),
                                         label: 'Complimentary',
                                         stack: 'signups',
                                     },
                                     {
-                                        data: months.map(convertedCount),
+                                        data: rows.map(convertedCount),
                                         label: 'Paying (lifetime)',
                                         stack: 'signups',
                                         // On top of the stack, so the label sits above each bar.
                                         barLabelPlacement: 'outside',
                                         barLabel: ({ dataIndex }) => {
-                                            const m = months[dataIndex];
-                                            return m.signups > 0
+                                            const r = rows[dataIndex];
+                                            return r.signups > 0
                                                 ? formatPercent(
-                                                      percent(convertedCount(m), m.signups),
+                                                      percent(convertedCount(r), r.signups),
                                                   )
                                                 : null;
                                         },
@@ -211,8 +284,9 @@ export function AdminStats() {
                 </Section>
 
                 <Section
-                    title='Conversion and retention by signup month'
-                    subtitle='Paying (lifetime) = ever paid, whether still subscribed or canceled since. Recent months have had less time to convert.'
+                    title={`Conversion and retention by signup ${unit}`}
+                    subtitle={`Paying (lifetime) = ever paid, whether still subscribed or canceled since. Recent ${unit}s have had less time to convert.`}
+                    action={rangeToggle}
                 >
                     <Card variant='outlined'>
                         <CardContent>
@@ -220,29 +294,35 @@ export function AdminStats() {
                                 height={300}
                                 xAxis={[
                                     {
-                                        data: months.map((m) => m.month),
+                                        data: rows.map((r) => r.key),
                                         scaleType: 'point',
-                                        valueFormatter: formatMonth,
+                                        valueFormatter: label,
                                     },
                                 ]}
                                 yAxis={[{ valueFormatter: (v: number) => `${v}%` }]}
                                 series={[
                                     {
-                                        data: months.map((m) =>
-                                            percent(convertedCount(m), m.signups),
+                                        data: rows.map((r) =>
+                                            percent(convertedCount(r), r.signups),
                                         ),
                                         label: 'Paying (lifetime)',
                                         valueFormatter: formatPercent,
                                         connectNulls: true,
                                     },
                                     {
-                                        data: months.map((m) => percent(m.onboarded, m.signups)),
+                                        data: rows.map((r) => percent(r.onboarded, r.signups)),
                                         label: 'Picked a cohort',
                                         valueFormatter: formatPercent,
                                         connectNulls: true,
                                     },
                                     {
-                                        data: months.map((m) => percent(m.active30, m.signups)),
+                                        data: rows.map((r) => percent(r.starterStarted, r.signups)),
+                                        label: 'Started the Starter Plan',
+                                        valueFormatter: formatPercent,
+                                        connectNulls: true,
+                                    },
+                                    {
+                                        data: rows.map((r) => percent(r.active30, r.signups)),
                                         label: 'Active in last 30 days',
                                         valueFormatter: formatPercent,
                                         connectNulls: true,
@@ -251,7 +331,7 @@ export function AdminStats() {
                             />
                         </CardContent>
                     </Card>
-                    <MonthTable months={[...months].reverse()} />
+                    <SignupTable rows={[...rows].reverse()} period={period} />
                 </Section>
 
                 {stats.members && (
@@ -260,6 +340,51 @@ export function AdminStats() {
                         subtitle='Paying means subscribed now (not complimentary). The Dojo Starter Plan is shown to members who joined since it launched, and to existing members who chose to start it.'
                     >
                         <MemberTable members={stats.members} />
+                    </Section>
+                )}
+
+                {stats.starterWeeks && (
+                    <Section
+                        title='Starter Plan activity by week'
+                        subtitle='Members who marked at least one Starter Plan task done that week. Always weekly; paying means subscribed now.'
+                        action={
+                            <ToggleButtonGroup
+                                size='small'
+                                exclusive
+                                value={ranges.week}
+                                onChange={(_, value: number | null) =>
+                                    value !== null && setRanges((r) => ({ ...r, week: value }))
+                                }
+                            >
+                                {RANGES.week.map((r) => (
+                                    <ToggleButton key={r.value} value={r.value}>
+                                        {r.label}
+                                    </ToggleButton>
+                                ))}
+                            </ToggleButtonGroup>
+                        }
+                    >
+                        <Card variant='outlined'>
+                            <CardContent>
+                                <BarChart
+                                    height={280}
+                                    xAxis={[
+                                        {
+                                            data: starterWeeks.map((w) => w.week),
+                                            scaleType: 'band',
+                                            valueFormatter: (w: string) => formatWeek(w),
+                                        },
+                                    ]}
+                                    series={[
+                                        { data: starterWeeks.map((w) => w.free), label: 'Free' },
+                                        {
+                                            data: starterWeeks.map((w) => w.paying),
+                                            label: 'Paying',
+                                        },
+                                    ]}
+                                />
+                            </CardContent>
+                        </Card>
                     </Section>
                 )}
 
@@ -298,14 +423,14 @@ export function AdminStats() {
                 </Section>
 
                 <Section
-                    title='History'
-                    subtitle='Totals saved every night, so this fills in over time.'
+                    title={`History by ${unit}`}
+                    subtitle={`Totals saved every night, shown as they were at the end of each ${unit}, so this fills in over time.`}
                 >
-                    {stats.history.length < 2 ? (
+                    {history.length < 2 ? (
                         <Typography sx={{ color: 'text.secondary' }}>
                             {stats.history.length === 0
                                 ? 'No nightly snapshots yet. The first one is saved tonight.'
-                                : 'One snapshot so far. The chart appears after the second night.'}
+                                : `Saved since ${formatWeek(stats.history[0].date, true)}. The chart appears once two ${unit}s have snapshots.`}
                         </Typography>
                     ) : (
                         <Card variant='outlined'>
@@ -314,23 +439,32 @@ export function AdminStats() {
                                     height={300}
                                     xAxis={[
                                         {
-                                            data: stats.history.map((h) => h.date),
+                                            data: history.map((h) => h.key),
                                             scaleType: 'point',
+                                            valueFormatter: label,
                                         },
                                     ]}
                                     series={[
                                         {
                                             // Snapshots from before `paid` was saved fall back to `paying`.
-                                            data: stats.history.map((h) => h.paid ?? h.paying),
+                                            data: history.map((h) => h.paid ?? h.paying),
                                             label: 'Paying (lifetime)',
                                         },
                                         {
-                                            data: stats.history.map((h) => h.active30),
+                                            data: history.map((h) => h.paying),
+                                            label: 'Subscribed now',
+                                        },
+                                        {
+                                            data: history.map((h) => h.active30),
                                             label: 'Active in 30 days',
                                         },
                                         {
-                                            data: stats.history.map((h) => h.active7),
+                                            data: history.map((h) => h.active7),
                                             label: 'Active this week',
+                                        },
+                                        {
+                                            data: history.map((h) => h.starterStarted ?? null),
+                                            label: 'Started the Starter Plan',
                                         },
                                     ]}
                                 />
@@ -374,7 +508,18 @@ function Section({
     );
 }
 
-function Tile({ label, value, detail }: { label: string; value: string; detail?: string }) {
+function Tile({
+    label,
+    value,
+    detail,
+    change,
+}: {
+    label: string;
+    value: string;
+    detail?: string;
+    /** The change against last week, e.g. "+12 vs last week". */
+    change?: string;
+}) {
     return (
         <Grid size={{ xs: 6, sm: 4, md: 'grow' }}>
             <Card variant='outlined' sx={{ height: 1 }}>
@@ -385,6 +530,22 @@ function Tile({ label, value, detail }: { label: string; value: string; detail?:
                     <Typography variant='h5' sx={{ fontWeight: 'bold' }}>
                         {value}
                     </Typography>
+                    {change && (
+                        <Typography
+                            variant='caption'
+                            component='div'
+                            sx={{
+                                fontWeight: 'bold',
+                                color: change.startsWith('+')
+                                    ? 'success.main'
+                                    : change.startsWith('-')
+                                      ? 'error.main'
+                                      : 'text.secondary',
+                            }}
+                        >
+                            {change}
+                        </Typography>
+                    )}
                     {detail && (
                         <Typography variant='caption' sx={{ color: 'text.secondary' }}>
                             {detail}
@@ -396,13 +557,15 @@ function Tile({ label, value, detail }: { label: string; value: string; detail?:
     );
 }
 
-function MonthTable({ months }: { months: AdminStatsMonth[] }) {
+function SignupTable({ rows, period }: { rows: SignupRow[]; period: Period }) {
+    const withPercent = (count: number, signups: number) =>
+        `${number(count)} (${formatPercent(percent(count, signups))})`;
     return (
         <TableContainer component={Card} variant='outlined'>
             <Table size='small'>
                 <TableHead>
                     <TableRow>
-                        <TableCell>Signup month</TableCell>
+                        <TableCell>{period === 'week' ? 'Signup week' : 'Signup month'}</TableCell>
                         <TableCell align='right'>New accounts</TableCell>
                         <TableCell align='right'>Picked a cohort</TableCell>
                         <TableCell align='right'>Still free</TableCell>
@@ -410,26 +573,35 @@ function MonthTable({ months }: { months: AdminStatsMonth[] }) {
                         <TableCell align='right'>Subscribed now</TableCell>
                         <TableCell align='right'>Canceled</TableCell>
                         <TableCell align='right'>Complimentary</TableCell>
+                        <TableCell align='right'>Started Starter Plan</TableCell>
+                        <TableCell align='right'>Finished or skipped it</TableCell>
                         <TableCell align='right'>Active in 30 days</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {months.map((m) => (
-                        <TableRow key={m.month} hover>
-                            <TableCell>{formatMonth(m.month)}</TableCell>
-                            <TableCell align='right'>{number(m.signups)}</TableCell>
-                            <TableCell align='right'>{number(m.onboarded)}</TableCell>
-                            <TableCell align='right'>{number(m.free)}</TableCell>
-                            <TableCell align='right'>
-                                {number(convertedCount(m))} (
-                                {formatPercent(percent(convertedCount(m), m.signups))})
+                    {rows.map((r) => (
+                        <TableRow key={r.key} hover>
+                            <TableCell>
+                                {period === 'week' ? 'Week of ' : ''}
+                                {formatPeriod(r.key, period, true)}
                             </TableCell>
-                            <TableCell align='right'>{number(m.paying)}</TableCell>
-                            <TableCell align='right'>{number(m.churned)}</TableCell>
-                            <TableCell align='right'>{number(m.complimentary)}</TableCell>
+                            <TableCell align='right'>{number(r.signups)}</TableCell>
                             <TableCell align='right'>
-                                {number(m.active30)} (
-                                {formatPercent(percent(m.active30, m.signups))})
+                                {withPercent(r.onboarded, r.signups)}
+                            </TableCell>
+                            <TableCell align='right'>{number(r.free)}</TableCell>
+                            <TableCell align='right'>
+                                {withPercent(convertedCount(r), r.signups)}
+                            </TableCell>
+                            <TableCell align='right'>{number(r.paying)}</TableCell>
+                            <TableCell align='right'>{number(r.churned)}</TableCell>
+                            <TableCell align='right'>{number(r.complimentary)}</TableCell>
+                            <TableCell align='right'>
+                                {withPercent(r.starterStarted, r.signups)}
+                            </TableCell>
+                            <TableCell align='right'>{number(r.starterFinished)}</TableCell>
+                            <TableCell align='right'>
+                                {withPercent(r.active30, r.signups)}
                             </TableCell>
                         </TableRow>
                     ))}

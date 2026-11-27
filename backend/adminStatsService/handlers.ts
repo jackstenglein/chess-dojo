@@ -58,7 +58,7 @@ export const getHandler: APIGatewayProxyHandlerV2 = async (event) => {
 export const snapshotHandler = async () => {
     const now = new Date();
     const stats = computeAccountStats(await listStatsUsers(), dojoCohorts, now);
-    const snapshot = toSnapshot(stats.totals, now);
+    const snapshot = toSnapshot(stats, now);
     await dynamo.send(
         new PutItemCommand({
             TableName: adminStatsHistoryTable,
