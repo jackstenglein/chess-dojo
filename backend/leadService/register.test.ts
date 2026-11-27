@@ -232,3 +232,56 @@ describe('register live class lead', () => {
         );
     });
 });
+
+describe('register Dojo Rush lead', () => {
+    it('saves the lead under the lowercased email and emails the code', async () => {
+        const result = await register({
+            type: 'RUSH_DEMO',
+            email: 'Player@Example.com',
+            rush: { bestScore: 17, scores: [9, 14, 17] },
+            attribution: { utm_source: 'twitch' },
+        });
+
+        expect(result.statusCode).toBe(200);
+        expect(mocks.dynamoSend).toHaveBeenCalledTimes(1);
+        const { Item, ConditionExpression } = putItem();
+        // Asking again is allowed: it updates the record and sends the email again.
+        expect(ConditionExpression).toBeUndefined();
+        expect(Item.hash).toEqual({ S: 'RUSH_DEMO' });
+        expect(Item.range).toEqual({ S: 'player@example.com' });
+        expect(Item.email).toEqual({ S: 'Player@Example.com' });
+        expect(Item.bestScore).toEqual({ N: '17' });
+        expect(Item.scores).toEqual({ L: [{ N: '9' }, { N: '14' }, { N: '17' }] });
+        expect(Item.code).toEqual({ S: 'WCC2026' });
+        expect(Item.attribution).toEqual({ M: { utm_source: { S: 'twitch' } } });
+        // No ttl, so the follow-up stream never sees a Rush lead.
+        expect(Item.ttl).toBeUndefined();
+
+        expect(mocks.sendEmailTemplate).toHaveBeenCalledWith(
+            'rushDemo/code',
+            { code: 'WCC2026', percentOff: '25', bestScore: '17' },
+            ['Player@Example.com'],
+            'ChessDojo <chessdojo@chessdojo.club>',
+        );
+    });
+
+    it('refuses a lead without a result', async () => {
+        const result = await register({ type: 'RUSH_DEMO', email: 'player@example.com' });
+
+        expect(result.statusCode).toBe(400);
+        expect(mocks.dynamoSend).not.toHaveBeenCalled();
+        expect(mocks.sendEmailTemplate).not.toHaveBeenCalled();
+    });
+
+    it('fails the request when the email cannot be sent, so the page does not promise one', async () => {
+        mocks.sendEmailTemplate.mockRejectedValue(new Error('SES is down'));
+
+        const result = await register({
+            type: 'RUSH_DEMO',
+            email: 'player@example.com',
+            rush: { bestScore: 9 },
+        });
+
+        expect(result.statusCode).toBeGreaterThanOrEqual(500);
+    });
+});

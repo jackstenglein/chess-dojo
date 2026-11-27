@@ -24,6 +24,11 @@ const mocks = vi.hoisted(() => ({
     onSubscribe: vi.fn(),
     trackEvent: vi.fn(),
     metaLead: vi.fn(),
+    post: vi.fn(),
+}));
+
+vi.mock('@/api/axiosService', () => ({
+    axiosService: { post: mocks.post },
 }));
 
 vi.mock('@/components/landing/fonts', () => {
@@ -128,6 +133,7 @@ function run(solved: number, misses = 2): RushDemoRun {
 
 beforeEach(() => {
     window.localStorage.clear();
+    mocks.post.mockReset().mockResolvedValue({ data: null });
     vi.stubGlobal(
         'IntersectionObserver',
         class {
@@ -282,22 +288,16 @@ describe('Unlock, while the coupon is switched off', () => {
     });
 
     it('asks for a valid email and consent before sending anything', () => {
-        const fetchMock = vi.fn();
-        vi.stubGlobal('fetch', fetchMock);
         render(<Unlock runs={runs} onReview={vi.fn()} />);
 
         fillAndSubmit('nope', false);
 
         expect(screen.getByText('Enter a valid email address.')).toBeTruthy();
         expect(screen.getByText('Tick the box so we can email you the code.')).toBeTruthy();
-        expect(fetchMock).not.toHaveBeenCalled();
+        expect(mocks.post).not.toHaveBeenCalled();
     });
 
     it('sends the lead with the best score and confirms it', async () => {
-        const fetchMock = vi
-            .fn()
-            .mockResolvedValue({ ok: true, json: () => Promise.resolve({ stored: true }) });
-        vi.stubGlobal('fetch', fetchMock);
         window.localStorage.setItem(
             'classLanding.attribution',
             JSON.stringify({ utm_source: 'twitch' }),
@@ -311,24 +311,23 @@ describe('Unlock, while the coupon is switched off', () => {
                 screen.getByText('Your 25% code is on its way to player@example.com.'),
             ).toBeTruthy(),
         );
-        const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-        expect(url).toBe('/api/rush-lead');
-        expect(JSON.parse(init.body as string)).toMatchObject({
-            email: 'player@example.com',
-            consent: true,
-            bestScore: 17,
-            scores: [9, 14, 17],
-            attribution: { utm_source: 'twitch' },
-        });
+        // The lead service takes the lead: it saves it and emails the code.
+        expect(mocks.post).toHaveBeenCalledWith(
+            '/public/lead',
+            {
+                type: 'RUSH_DEMO',
+                email: 'player@example.com',
+                rush: { bestScore: 17, scores: [9, 14, 17] },
+                attribution: { utm_source: 'twitch' },
+            },
+            { functionName: 'registerLead' },
+        );
         expect(mocks.metaLead).toHaveBeenCalledTimes(1);
         expect(mocks.trackEvent).toHaveBeenCalledWith('rush_demo_lead', { best_score: 17 });
     });
 
-    it('does not claim a code is coming when the email was not stored', async () => {
-        vi.stubGlobal(
-            'fetch',
-            vi.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve({ stored: false }) }),
-        );
+    it('does not claim a code is coming when the lead service refuses the lead', async () => {
+        mocks.post.mockRejectedValue(new Error('Request failed with status code 400'));
         render(<Unlock runs={runs} onReview={vi.fn()} />);
 
         fillAndSubmit('player@example.com', true);
@@ -340,7 +339,7 @@ describe('Unlock, while the coupon is switched off', () => {
     });
 
     it('handles a failed request the same way', async () => {
-        vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')));
+        mocks.post.mockRejectedValue(new Error('Network Error'));
         render(<Unlock runs={runs} onReview={vi.fn()} />);
 
         fillAndSubmit('player@example.com', true);
@@ -370,9 +369,9 @@ describe('Unlock, with the code on screen', () => {
         expect(screen.getByText('Here is your 25% off')).toBeTruthy();
         expect(screen.getByText(COUPON.code)).toBeTruthy();
         expect(screen.getByText(/^Takes 25% off your first payment on any plan./)).toBeTruthy();
-        // No email is asked for until the lead service can store one.
-        expect(LEAD_CAPTURE.ready).toBe(false);
-        expect(screen.queryByRole('button', { name: 'Email me the code' })).toBeNull();
+        // With the code on screen the email is a courtesy, offered under the main button.
+        expect(LEAD_CAPTURE.ready).toBe(true);
+        expect(screen.getByRole('button', { name: 'Email me the code' })).toBeTruthy();
         expect(offerLabel()).toBe('Use my 25% off');
         expect(screen.getByRole('button', { name: 'Use my 25% off' })).toBeTruthy();
 
@@ -383,6 +382,18 @@ describe('Unlock, with the code on screen', () => {
         expect(mocks.trackEvent).toHaveBeenCalledWith('rush_demo_code_copy', {
             placement: 'unlock',
         });
+    });
+
+    it('leaves the email form out when lead capture is switched off', () => {
+        LEAD_CAPTURE.ready = false;
+        try {
+            render(<Unlock runs={runs} onReview={vi.fn()} />);
+
+            expect(screen.getByText(COUPON.code)).toBeTruthy();
+            expect(screen.queryByRole('button', { name: 'Email me the code' })).toBeNull();
+        } finally {
+            LEAD_CAPTURE.ready = true;
+        }
     });
 
     it('reminds an unlocked buyer of the code above the plans', () => {

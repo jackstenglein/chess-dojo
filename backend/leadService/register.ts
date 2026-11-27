@@ -5,6 +5,7 @@ import {
     RegisterLeadRequest,
     registerLeadRequestSchema,
 } from '@jackstenglein/chess-dojo-common/src/lead/api';
+import { RUSH_COUPON } from '@jackstenglein/chess-dojo-common/src/lead/rush';
 import { WC_LOCK_AT_UTC } from '@jackstenglein/chess-dojo-common/src/lead/worldChampionship';
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import { LiveClassLeadId } from '../../common/src/lead/api';
@@ -37,6 +38,9 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
 
             case LeadType.enum.WC_RESULTS:
                 return await handleWcResultsSignup(request);
+
+            case LeadType.enum.RUSH_DEMO:
+                return await handleRushDemoLead(request);
 
             default:
                 throw new ApiError({
@@ -238,6 +242,58 @@ async function handleWcResultsSignup(request: RegisterLeadRequest) {
                 { removeUndefinedValues: true },
             ),
         }),
+    );
+
+    return success(null);
+}
+
+/**
+ * Saves the email of a visitor who finished their runs on the /rush page and
+ * emails them the code. The record is keyed by the lowercased email, so asking
+ * again updates it and sends the email again. The email is the point of the
+ * request: if it cannot be sent the request fails, and the page does not tell
+ * the visitor a code is on its way.
+ * @param request The request to register a lead.
+ */
+async function handleRushDemoLead(request: RegisterLeadRequest) {
+    const { email, rush, attribution } = request;
+
+    if (!rush) {
+        throw new ApiError({
+            statusCode: 400,
+            publicMessage: `Invalid ${LeadType.enum.RUSH_DEMO} lead: no rush result set`,
+        });
+    }
+
+    await dynamo.send(
+        new PutItemCommand({
+            TableName: leadTable,
+            Item: marshall(
+                {
+                    hash: LeadType.enum.RUSH_DEMO,
+                    range: email.toLowerCase(),
+                    leadType: LeadType.enum.RUSH_DEMO,
+                    createdAt: new Date().toISOString(),
+                    email,
+                    bestScore: rush.bestScore,
+                    scores: rush.scores,
+                    code: RUSH_COUPON.code,
+                    attribution,
+                },
+                { removeUndefinedValues: true },
+            ),
+        }),
+    );
+
+    await sendEmailTemplate(
+        'rushDemo/code',
+        {
+            code: RUSH_COUPON.code,
+            percentOff: `${RUSH_COUPON.percentOff}`,
+            bestScore: `${rush.bestScore}`,
+        },
+        [email],
+        'ChessDojo <chessdojo@chessdojo.club>',
     );
 
     return success(null);

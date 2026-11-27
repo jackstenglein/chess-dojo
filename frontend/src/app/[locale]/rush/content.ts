@@ -1,4 +1,5 @@
 import { SubscriptionTier } from '@jackstenglein/chess-dojo-common/src/database/user';
+import { RUSH_COUPON } from '@jackstenglein/chess-dojo-common/src/lead/rush';
 import {
     applyRushResult,
     currentRushRating,
@@ -34,23 +35,24 @@ export const RUSH_STRIKES = PUZZLE_RUSH_MAX_STRIKES;
  * this page, so swap the code here when it ends.
  *
  * While `confirmed` is false the unlock screen collects an email and shows no code.
- * `code` is the Stripe promotion code, and `terms` is one plain sentence.
+ * `code` is the Stripe promotion code, and `terms` is one plain sentence. The code
+ * and the percentage come from common, because the lead service emails them too.
  */
-export const COUPON = {
+export const COUPON: { confirmed: boolean; code: string; percentOff: number; terms: string } = {
     confirmed: true,
-    code: 'WCC2026',
-    percentOff: 25,
+    code: RUSH_COUPON.code,
+    percentOff: RUSH_COUPON.percentOff,
     terms: 'One-time discount on any ChessDojo membership, from the World Championship sale.',
 };
 
 /**
- * Whether the page can take an email. It cannot yet: leads go through the lead
- * service (`POST /public/lead`), which has no type for this page. Until it does,
- * the unlock screen shows the code and asks for nothing. Turn this on together
- * with the backend change, and point `submitRushLead` at the lead service.
+ * Whether the page takes an email. The lead goes to the lead service
+ * (`POST /public/lead`, type RUSH_DEMO), which saves it and emails the code. The
+ * form only works against a backend that has that type deployed, so this is the
+ * switch to turn off if the page has to ship ahead of the backend.
  */
 export const LEAD_CAPTURE = {
-    ready: false,
+    ready: true,
 };
 
 /**

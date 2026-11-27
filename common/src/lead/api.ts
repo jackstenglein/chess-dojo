@@ -1,7 +1,8 @@
 import { z } from 'zod';
+import { rushResultSchema } from './rush';
 import { WC_MAX_DISPLAY_NAME, wcPicksSchema } from './worldChampionship';
 
-export const LeadType = z.enum(['LIVE_CLASS', 'WC_PREDICTION', 'WC_RESULTS']);
+export const LeadType = z.enum(['LIVE_CLASS', 'WC_PREDICTION', 'WC_RESULTS', 'RUSH_DEMO']);
 
 export const LiveClassLeadId = z.enum(['LOGICAL_CHESS', 'CALCULATION', 'GAME_REVIEW']);
 
@@ -19,6 +20,8 @@ export const registerLeadRequestSchema = z.object({
     picks: wcPicksSchema.optional(),
     /** The name shown on the picks card, if the lead is a World Championship prediction. */
     displayName: z.string().trim().max(WC_MAX_DISPLAY_NAME).optional(),
+    /** The visitor's runs, if the lead asked for the Dojo Rush code on the /rush page. */
+    rush: rushResultSchema.optional(),
     /** The attribution of the lead. */
     attribution: z.record(z.string(), z.string().max(200)).optional(),
 });
