@@ -15,6 +15,7 @@ import {
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
+import { PHONE_LANDSCAPE } from './liveLayout';
 
 export const TWITCH_CHANNEL = 'chessdojo';
 
@@ -60,7 +61,15 @@ export function StreamEmbed({ minimizable }: { minimizable?: boolean } = {}) {
     return (
         <Paper
             variant='outlined'
-            sx={{ p: 1.5, containerType: 'inline-size' }}
+            sx={{
+                p: 1.5,
+                containerType: 'inline-size',
+                // Beside the board on a phone on its side there is room for the
+                // player and nothing else.
+                ...(minimizable && {
+                    [PHONE_LANDSCAPE]: { p: 0, border: 0, bgcolor: 'transparent' },
+                }),
+            }}
             data-testid='stream-embed'
         >
             <Stack
@@ -70,6 +79,7 @@ export function StreamEmbed({ minimizable }: { minimizable?: boolean } = {}) {
                 sx={{
                     alignItems: 'center',
                     mb: minimized ? 0 : 1,
+                    ...(minimizable && { [PHONE_LANDSCAPE]: { display: 'none' } }),
                     // A narrow card has two lines: the title and the minimize button,
                     // then the switch and the link.
                     flexWrap: 'wrap',
@@ -130,6 +140,9 @@ export function StreamEmbed({ minimizable }: { minimizable?: boolean } = {}) {
                     width: 1,
 
                     aspectRatio: '16 / 9',
+                    // The page can cap the player's height. A lower player shows
+                    // the picture with bars at its sides.
+                    maxHeight: 'var(--wc-stream-max-height, none)',
                     bgcolor: 'black',
                     borderRadius: 1,
                     overflow: 'hidden',

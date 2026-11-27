@@ -89,6 +89,45 @@ describe('Notation', () => {
         expect(screen.getByText('Nc6')).toBeTruthy();
     });
 
+    describe('the button back to the latest move', () => {
+        const fanTree = buildTree(moves, []);
+        const earlier = findNode(fanTree, ['e4', 'e5']) ?? fanTree;
+
+        it('goes back to the live move while the game is being played', () => {
+            const onLive = vi.fn();
+            render(
+                <Notation
+                    root={fanTree}
+                    current={earlier}
+                    moves={moves}
+                    guesses={{}}
+                    onSelect={() => undefined}
+                    onLive={onLive}
+                />,
+            );
+            fireEvent.click(screen.getByRole('button', { name: 'Back to live move' }));
+            expect(onLive).toHaveBeenCalledOnce();
+        });
+
+        it('goes back to the last move of a finished game and does not call it live', () => {
+            const onLive = vi.fn();
+            render(
+                <Notation
+                    root={fanTree}
+                    current={earlier}
+                    moves={moves}
+                    guesses={{}}
+                    onSelect={() => undefined}
+                    onLive={onLive}
+                    gameOver
+                />,
+            );
+            fireEvent.click(screen.getByRole('button', { name: 'Back to last move' }));
+            expect(onLive).toHaveBeenCalledOnce();
+            expect(screen.queryByText(/live/i)).toBeNull();
+        });
+    });
+
     describe('keeping the move on the board in view', () => {
         afterEach(() => vi.restoreAllMocks());
 
