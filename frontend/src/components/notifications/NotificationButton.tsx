@@ -100,7 +100,12 @@ const NotificationButton = () => {
                         <Divider key='divider' />,
                     ]}
                     {notifications.map((n) => (
-                        <NotificationListItem key={n.id} notification={n} menuItem />
+                        <NotificationListItem
+                            key={n.id}
+                            notification={n}
+                            menuItem
+                            onClick={handleClose}
+                        />
                     ))}
                     {notifications.length === 0 && (
                         <MenuItem onClick={handleClose}>{t('empty')}</MenuItem>
