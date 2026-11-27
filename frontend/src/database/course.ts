@@ -4,6 +4,7 @@ export enum CourseType {
     Opening = 'OPENING',
     Endgame = 'ENDGAME',
     Workshop = 'WORKSHOP',
+    Study = 'STUDY',
 }
 
 /**
@@ -96,6 +97,11 @@ export interface Course {
      * Whether to hide the module indices in the table of contents.
      */
     hideModuleIndices?: boolean;
+
+    /**
+     * Whether the course's games may be cloned, downloaded or copied as PGN.
+     */
+    allowExport?: boolean;
 }
 
 export enum CourseStatus {

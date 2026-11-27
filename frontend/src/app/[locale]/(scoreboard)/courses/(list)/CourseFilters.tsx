@@ -20,7 +20,8 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { getCategoryColor } from './CourseListItem';
 
-const { Workshop, ...courseTypes } = CourseType;
+// Study courses are task material, not catalogue items.
+const { Workshop, Study, ...courseTypes } = CourseType;
 
 export interface CourseFilters {
     /** A map from the category name to whether the category is included. */
