@@ -16,6 +16,25 @@ export interface AdminStatsMonth {
     onboarded: number;
     /** Of those, accounts active in the last 30 days. */
     active30: number;
+    /** Of those, accounts that began the Dojo Starter Plan. */
+    starterStarted?: number;
+    /** Of those, accounts that finished or skipped the Dojo Starter Plan. */
+    starterFinished?: number;
+}
+
+/** Accounts that signed up in one week, Monday to Sunday (UTC). The same counts as a month. */
+export interface AdminStatsWeek extends Omit<AdminStatsMonth, 'month'> {
+    /** The Monday the week starts, as YYYY-MM-DD. */
+    week: string;
+}
+
+/** Members who marked at least one Dojo Starter Plan task done in one week (UTC, from Monday). */
+export interface AdminStatsStarterWeek {
+    /** The Monday the week starts, as YYYY-MM-DD. */
+    week: string;
+    free: number;
+    /** Subscribed now, not complimentary. */
+    paying: number;
 }
 
 /** Current account counts. */
@@ -93,6 +112,14 @@ export interface AdminStatsSnapshot {
     paid: number;
     active7: number;
     active30: number;
+    /** Free accounts active in the last 30 days. Missing before 2026-11-27. */
+    freeActive30?: number;
+    /** Paying accounts (subscribed now) active in the last 30 days. Missing before 2026-11-27. */
+    payingActive30?: number;
+    /** Free and paying accounts that had begun the Dojo Starter Plan. Missing before 2026-11-27. */
+    starterStarted?: number;
+    /** Free and paying accounts that had finished or skipped it. Missing before 2026-11-27. */
+    starterFinished?: number;
 }
 
 /** The response of GET /admin/site-stats. */
@@ -102,6 +129,10 @@ export interface GetAdminStatsResponse {
     totals: AdminStatsTotals;
     /** Signup months, oldest first. */
     months: AdminStatsMonth[];
+    /** Signup weeks, oldest first. */
+    weeks: AdminStatsWeek[];
+    /** Weeks with Dojo Starter Plan tasks done, oldest first. */
+    starterWeeks: AdminStatsStarterWeek[];
     cohorts: AdminStatsCohort[];
     freePlan: AdminStatsFreePlan;
     members: AdminStatsMembers;
