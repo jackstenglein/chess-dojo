@@ -1,4 +1,4 @@
-import { Chess, Event, EventType } from '@jackstenglein/chess';
+import { EventType } from '@jackstenglein/chess';
 import { Box, Grid, Paper } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
@@ -23,15 +23,17 @@ const Variation: React.FC<VariationProps> = ({ handleScroll }) => {
             const observer = {
                 types: [
                     EventType.Initialized,
+                    EventType.LegalMove,
+                    EventType.NewVariation,
                     EventType.DeleteMove,
                     EventType.DeleteBeforeMove,
                     EventType.PromoteVariation,
-                    EventType.LegalMove,
+                    EventType.UpdateComment,
+                    EventType.UpdateNags,
+                    EventType.UpdateCommand,
                 ],
-                handler: (event: Event) => {
-                    if (shouldRerender(event, chess)) {
-                        setForceRender((v) => v + 1);
-                    }
+                handler: () => {
+                    setForceRender((v) => v + 1);
                 },
             };
 
@@ -81,30 +83,3 @@ const Variation: React.FC<VariationProps> = ({ handleScroll }) => {
 };
 
 export default Variation;
-
-/**
- * Returns true if the Variation component should rerender based on the given
- * event.
- * @param event The event that may trigger a rerender.
- * @param chess The chess instance.
- * @returns True if the Variation component should rerender.
- */
-function shouldRerender(event: Event, chess: Chess): boolean {
-    switch (event.type) {
-        case EventType.Initialized:
-        case EventType.DeleteBeforeMove:
-            return true;
-
-        case EventType.LegalMove:
-            return chess.lastMove() === event.move;
-
-        case EventType.DeleteMove:
-            return Boolean(event.mainlineMove);
-
-        case EventType.PromoteVariation:
-            return chess.isInMainline(event.variantRoot);
-
-        default:
-            return false;
-    }
-}

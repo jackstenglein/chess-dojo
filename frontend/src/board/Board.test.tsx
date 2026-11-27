@@ -49,7 +49,7 @@ describe('toDests', () => {
         expect(dests.get('e1') ?? []).toContain('e8');
     });
 
-    it('does not advertose the enemy king as a null-move destination when null moves are disabled', () => {
+    it('does not advertise the enemy king as a null-move destination when null moves are disabled', () => {
         const chess = new Chess({ disableNullMoves: true });
 
         const dests = toDests(chess);

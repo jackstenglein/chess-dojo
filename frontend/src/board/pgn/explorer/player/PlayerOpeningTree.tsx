@@ -48,13 +48,17 @@ export function PlayerOpeningTreeProvider({ children }: { children: ReactNode })
     const workerRef = useRef<Remote<OpeningTreeLoaderFactory>>(undefined);
     const openingTree = useRef<OpeningTree>(undefined);
     const loadComplete = useRef(false);
+    const loadId = useRef(0);
     const [filters, readonlyFilters] = useGameFilters(sources);
 
     useEffect(() => {
         const worker = new Worker(new URL('./OpeningTreeLoader.ts', import.meta.url));
-        const proxy = wrap<OpeningTreeLoaderFactory>(worker);
-        workerRef.current = proxy;
-        return proxy[releaseProxy];
+        const workerProxy = wrap<OpeningTreeLoaderFactory>(worker);
+        workerRef.current = workerProxy;
+        return () => {
+            workerProxy[releaseProxy]();
+            worker.terminate();
+        };
     }, []);
 
     const onLoad = useCallback(async () => {
@@ -77,22 +81,37 @@ export function PlayerOpeningTreeProvider({ children }: { children: ReactNode })
             return;
         }
 
+        const requestId = ++loadId.current;
+        loadComplete.current = false;
+        setIsLoading(true);
+        setIndexedCount(0);
+
         const loader = await workerRef.current?.newLoader();
-        if (!loader) {
+        if (!loader || requestId !== loadId.current) {
+            if (requestId === loadId.current) {
+                setIsLoading(false);
+            }
             return;
         }
 
-        setIsLoading(true);
-        setIndexedCount(0);
         const result = await loader.load(
             sources,
             proxy((inc = 1) => {
-                if (!loadComplete.current) {
-                    setIndexedCount((v) => v + inc);
+                if (requestId !== loadId.current || loadComplete.current) {
+                    return;
                 }
+                setIndexedCount((v) => v + inc);
             }),
-            proxy((tree) => (openingTree.current = OpeningTree.fromTree(tree))),
+            proxy((tree) => {
+                if (requestId !== loadId.current) {
+                    return;
+                }
+                openingTree.current = OpeningTree.fromTree(tree);
+            }),
         );
+        if (requestId !== loadId.current) {
+            return;
+        }
         const tree = OpeningTree.fromTree(result);
         logger.debug?.('loader finished with tree: ', tree);
         openingTree.current = tree;

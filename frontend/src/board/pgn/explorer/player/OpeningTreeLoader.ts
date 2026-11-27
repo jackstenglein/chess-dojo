@@ -49,7 +49,7 @@ export class OpeningTreeLoader {
      * Loads the opening tree for the given sources.
      * @param sources The sources to load.
      * @param incrementIndexedCount A callback function invoked to increment the count of indexed games.
-     * @param updateProgress A callback function invoked with the partial tree while still downloading.
+     * @param updateProgress A callback function invoked once with the finished tree. Partial trees are not published.
      * @returns The final opening tree with all sources merged.
      */
     async load(
@@ -74,6 +74,7 @@ export class OpeningTreeLoader {
 
         const promises = [this.loadChesscom(chesscomSources), this.loadLichess(lichessSources)];
         await Promise.allSettled(promises);
+        this.updateProgress?.(this.openingTree);
         return this.openingTree;
     }
 
@@ -283,7 +284,7 @@ export class OpeningTreeLoader {
 
     /**
      * Indexes a single game into the opening tree. If necessary, the
-     * indexed count and progress are updated.
+     * indexed count is updated. The tree itself is published only when loading finishes.
      * @param game The game data.
      * @param pgn The PGN of the game.
      * @returns A Promise that resolves once the game has been indexed.
@@ -293,7 +294,6 @@ export class OpeningTreeLoader {
             if (this.openingTree?.indexGame(game, pgn)) {
                 if (this.openingTree.getGameCount() % MIN_DOWNLOAD_LIMIT === 0) {
                     this.incrementIndexedCount?.(MIN_DOWNLOAD_LIMIT);
-                    this.updateProgress?.(this.openingTree);
                 }
             }
         });

@@ -2,7 +2,7 @@ import { GameData } from '@/database/explorer';
 import { GameResult } from '@/database/game';
 import { Chess, FEN } from '@jackstenglein/chess';
 import { describe, expect, it } from 'vitest';
-import { OpeningTree } from './OpeningTree';
+import { OpeningTree, packGameIds } from './OpeningTree';
 import { Color, GameFilters, MAX_DOWNLOAD_LIMIT, MAX_PLY_COUNT, SourceType } from './PlayerSource';
 import { createRepertoireSpyMoveProvider } from './repertoireSpyMoveProvider';
 
@@ -48,17 +48,17 @@ function game(url: string, playerColor = Color.White): GameData {
 
 function treeWithStartingMoves(): OpeningTree {
     const tree = new OpeningTree();
-    tree.setGame(game('g1'));
-    tree.setGame(game('g2'));
-    tree.setGame(game('g3'));
+    const g1 = tree.setGame(game('g1'));
+    const g2 = tree.setGame(game('g2'));
+    const g3 = tree.setGame(game('g3'));
     tree.setPosition(FEN.start, {
         white: 3,
         black: 0,
         draws: 0,
-        games: new Set(['g1', 'g2', 'g3']),
+        terminalGames: packGameIds(),
         moves: [
-            { san: 'e4', white: 2, black: 0, draws: 0, games: new Set(['g1', 'g2']) },
-            { san: 'd4', white: 1, black: 0, draws: 0, games: new Set(['g3']) },
+            { san: 'e4', white: 2, black: 0, draws: 0, games: packGameIds([g1, g2]) },
+            { san: 'd4', white: 1, black: 0, draws: 0, games: packGameIds([g3]) },
         ],
     });
     return tree;
@@ -66,16 +66,16 @@ function treeWithStartingMoves(): OpeningTree {
 
 function treeWithTargetAndOpponentBlackMoves(fen: string): OpeningTree {
     const tree = new OpeningTree();
-    tree.setGame(game('target-as-white', Color.White));
-    tree.setGame(game('target-as-black', Color.Black));
+    const asWhite = tree.setGame(game('target-as-white', Color.White));
+    const asBlack = tree.setGame(game('target-as-black', Color.Black));
     tree.setPosition(fen, {
         white: 1,
         black: 1,
         draws: 0,
-        games: new Set(['target-as-white', 'target-as-black']),
+        terminalGames: packGameIds(),
         moves: [
-            { san: 'e5', white: 1, black: 0, draws: 0, games: new Set(['target-as-white']) },
-            { san: 'c5', white: 0, black: 1, draws: 0, games: new Set(['target-as-black']) },
+            { san: 'e5', white: 1, black: 0, draws: 0, games: packGameIds([asWhite]) },
+            { san: 'c5', white: 0, black: 1, draws: 0, games: packGameIds([asBlack]) },
         ],
     });
     return tree;

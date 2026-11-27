@@ -5,7 +5,7 @@ import { useReconcile } from '@/board/Board';
 import useGame from '@/context/useGame';
 import { HIGHLIGHT_ENGINE_LINES } from '@/stockfish/engine/engine';
 import { StockfishIcon } from '@/style/ChessIcons';
-import { Chess, Event, EventType, Move, TimeControl } from '@jackstenglein/chess';
+import { Chess, Move, TimeControl } from '@jackstenglein/chess';
 import { clockToSeconds } from '@jackstenglein/chess-dojo-common/src/pgn/clock';
 import { Backspace, Chat, Help, KeyboardReturn, Merge } from '@mui/icons-material';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
@@ -398,9 +398,8 @@ const MoveButton: React.FC<MoveButtonProps> = ({
     const { chess, config } = useChess();
     const reconcile = useReconcile();
     const ref = useRef<HTMLButtonElement>(null);
-    const [isCurrentMove, setIsCurrentMove] = useState(chess?.currentMove() === move);
+    const isCurrentMove = chess?.currentMove() === move;
     const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement>();
-    const [, setForceRender] = useState(0);
 
     const [viewerShowMoveTimes] = useLocalStorage(
         ShowMoveTimesInPgn.Key,
@@ -417,55 +416,10 @@ const MoveButton: React.FC<MoveButtonProps> = ({
     );
 
     useEffect(() => {
-        if (chess) {
-            const observer = {
-                types: [
-                    EventType.LegalMove,
-                    EventType.NewVariation,
-                    EventType.UpdateNags,
-                    EventType.UpdateCommand,
-                ],
-                handler: (event: Event) => {
-                    if (
-                        event.type === EventType.LegalMove ||
-                        event.type === EventType.NewVariation
-                    ) {
-                        if (event.move === move) {
-                            setIsCurrentMove(true);
-                        } else if (event.previousMove === move) {
-                            setIsCurrentMove(false);
-                        }
-                    }
-
-                    if (
-                        event.type === EventType.UpdateCommand &&
-                        (event.move === move || event.move === move.previous) &&
-                        (event.commandName !== 'clk' || showMoveTimes)
-                    ) {
-                        setForceRender((v) => v + 1);
-                    }
-
-                    if (event.type === EventType.UpdateNags && event.move === move) {
-                        setForceRender((v) => v + 1);
-                    }
-
-                    if (event.move === move || (firstMove && event.move === null)) {
-                        handleScroll(ref.current);
-                    }
-                },
-            };
-
-            chess.addObserver(observer);
-            return () => chess.removeObserver(observer);
-        }
-    }, [chess, move, firstMove, handleScroll, setIsCurrentMove, setForceRender, showMoveTimes]);
-
-    useEffect(() => {
-        setIsCurrentMove(chess?.currentMove() === move);
-        if (chess?.currentMove() === move || (firstMove && chess?.currentMove() === null)) {
+        if (isCurrentMove || (firstMove && chess?.currentMove() === null)) {
             handleScroll(ref.current);
         }
-    }, [move, chess, setIsCurrentMove, firstMove, handleScroll]);
+    }, [isCurrentMove, move, chess, firstMove, handleScroll]);
 
     const onRightClick = useCallback(
         (event: React.MouseEvent<HTMLButtonElement> | LongPressReactEvents<HTMLButtonElement>) => {

@@ -1,6 +1,7 @@
+import { FEN } from '@jackstenglein/chess';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { OpeningTreeLoader } from './OpeningTreeLoader';
-import { SourceType } from './PlayerSource';
+import { Color, MAX_DOWNLOAD_LIMIT, MAX_PLY_COUNT, SourceType } from './PlayerSource';
 
 function lichessGame(id: string) {
     return {
@@ -40,7 +41,7 @@ describe('OpeningTreeLoader Lichess stream', () => {
         const splitAt = Math.floor(first.length / 2);
         vi.stubGlobal(
             'fetch',
-            vi.fn(async () => ({
+            vi.fn(() => ({
                 body: responseBody([
                     first.slice(0, splitAt),
                     `${first.slice(splitAt)}\n${second}\n`,
@@ -55,5 +56,48 @@ describe('OpeningTreeLoader Lichess stream', () => {
         );
 
         expect(tree.getGameCount()).toBe(2);
+        const position = tree.getPosition(FEN.start, {
+            color: Color.Both,
+            win: true,
+            draw: true,
+            loss: true,
+            rated: true,
+            casual: true,
+            bullet: true,
+            blitz: true,
+            rapid: true,
+            classical: true,
+            daily: true,
+            opponentRating: [0, 4000],
+            downloadLimit: MAX_DOWNLOAD_LIMIT,
+            dateRange: ['', ''],
+            plyCount: [0, MAX_PLY_COUNT],
+            hiddenSources: [],
+        });
+        expect(position?.white).toBe(2);
+        expect(position?.moves.map((move) => move.san)).toEqual(['e4']);
+    });
+
+    it('reports a count while loading and does not publish a partial tree', async () => {
+        const lines = Array.from({ length: 150 }, (_, i) =>
+            JSON.stringify(lichessGame(`game-${i}`)),
+        );
+        vi.stubGlobal(
+            'fetch',
+            vi.fn(() => ({
+                body: responseBody([`${lines.join('\n')}\n`]),
+            })),
+        );
+
+        const snapshots: number[] = [];
+        const tree = await new OpeningTreeLoader().load(
+            [{ type: SourceType.Lichess, username: 'bob' }],
+            () => undefined,
+            (partial) => snapshots.push(partial.getGameCount()),
+        );
+
+        expect(tree.getGameCount()).toBe(150);
+        expect(snapshots.length).toBeLessThanOrEqual(1);
+        expect(snapshots.every((count) => count === tree.getGameCount())).toBe(true);
     });
 });
