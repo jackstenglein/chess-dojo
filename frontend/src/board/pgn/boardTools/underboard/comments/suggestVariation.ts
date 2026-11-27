@@ -18,7 +18,37 @@ export function isSuggestedVariation(move: Move | null | undefined): boolean {
  * @returns True if move is part of an unsaved suggested variation.
  */
 export function isUnsavedVariation(move: Move | null | undefined): boolean {
-    return Boolean(move?.commentDiag?.dojoComment?.endsWith(',unsaved'));
+    const marker = move?.commentDiag?.dojoComment;
+    return Boolean(marker?.endsWith(',unsaved') || marker?.endsWith(',dirty'));
+}
+
+/** Marks a saved suggested variation as edited so it can be saved back to its comment. */
+export function markSuggestedVariationDirty(user: User | undefined, chess: Chess, move: Move) {
+    if (!user) {
+        return;
+    }
+
+    const root = getSuggestedVariationRoot(user, move);
+    const stack = [root];
+    while (stack.length > 0) {
+        const current = stack.pop();
+        const marker = current?.commentDiag?.dojoComment;
+        if (
+            current &&
+            marker?.startsWith(`${user.username},`) &&
+            !marker.endsWith(',unsaved') &&
+            !marker.endsWith(',dirty')
+        ) {
+            chess.setCommand('dojoComment', `${marker},dirty`, current);
+        }
+
+        if (current?.next) {
+            stack.push(current.next);
+        }
+        for (const variation of current?.variations ?? []) {
+            stack.push(variation[0]);
+        }
+    }
 }
 
 /**
@@ -122,7 +152,12 @@ function markSuggestedVariationSaved(chess: Chess, root: Move, commentId: string
         const move = stack.pop();
         const comment = move?.commentDiag?.dojoComment;
         if (comment) {
-            chess.setCommand('dojoComment', comment.replace(/,unsaved$/, `,${commentId}`), move);
+            const savedComment = comment.endsWith(',dirty')
+                ? comment.replace(/,dirty$/, '')
+                : comment.replace(/,unsaved$/, `,${commentId}`);
+            if (savedComment !== comment) {
+                chess.setCommand('dojoComment', savedComment, move);
+            }
         }
 
         if (move?.next) {
@@ -163,7 +198,12 @@ export async function saveSuggestedVariation(
         skipComments: true,
     });
 
-    if (isUnsavedVariation(root)) {
+    const marker = root.commentDiag?.dojoComment || '';
+    const isNewComment = marker.endsWith(',unsaved');
+    const savedMarker = marker.replace(/,dirty$/, '');
+    const commentId = isNewComment ? '' : savedMarker.substring(savedMarker.lastIndexOf(',') + 1);
+
+    if (isNewComment) {
         const positionComment: PositionComment = {
             id: '',
             fen: chess.normalizedFen(root.previous),
@@ -193,10 +233,7 @@ export async function saveSuggestedVariation(
         return response.data;
     }
 
-    const commentId = root.commentDiag?.dojoComment.substring(
-        root.commentDiag.dojoComment.lastIndexOf(',') + 1,
-    );
-    const comment = game.positionComments[chess.normalizedFen(root.previous)][commentId || ''];
+    const comment = game.positionComments[chess.normalizedFen(root.previous)][commentId];
     if (!comment) {
         return;
     }
